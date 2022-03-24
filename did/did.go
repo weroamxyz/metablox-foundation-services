@@ -1,13 +1,11 @@
 package did
 
 import (
-	"crypto/ecdsa"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math/big"
 	"regexp"
 	"strings"
 	"time"
@@ -17,7 +15,7 @@ import (
 	"github.com/metabloxDID/models"
 )
 
-func CreateDID() (*models.DIDDocument, *ecdsa.PrivateKey, error) {
+func CreateDID() (*models.DIDDocument, []byte, error) {
 
 	document := new(models.DIDDocument)
 
@@ -37,7 +35,8 @@ func CreateDID() (*models.DIDDocument, *ecdsa.PrivateKey, error) {
 	hashData := hash.Sum(nil)
 	didString := base58.Encode(hashData)
 	document.ID = "did:metablox:" + didString
-	document.Context = "https://w3id.org/did/v1"
+	document.Context = make([]string, 0)
+	document.Context = append(document.Context, "https://w3id.org/did/v1")
 	document.Created = time.Now().Format(time.RFC3339)
 	document.Updated = document.Created
 	document.Version = 1
@@ -58,7 +57,7 @@ func CreateDID() (*models.DIDDocument, *ecdsa.PrivateKey, error) {
 
 	//once blockchain is implemented, will also need to upload the document to the blockchain
 
-	return document, privKey, nil
+	return document, privData, nil
 }
 
 func DocumentToJson(document *models.DIDDocument) ([]byte, error) {
@@ -150,7 +149,7 @@ func ResolveRepresentation(did string, options *models.RepresentationResolutionO
 	}
 }
 
-func AuthenticateDocumentSubject(document *models.DIDDocument, message string, x, y *big.Int) (bool, error) {
+func AuthenticateDocumentSubject(document *models.DIDDocument, message, signature []byte) (bool, error) {
 	//The subject of the document is the person who has the private key matching the public key in the Authentication verification method
 
 	//Get Authentication VM
@@ -171,12 +170,11 @@ func AuthenticateDocumentSubject(document *models.DIDDocument, message string, x
 		if err != nil {
 			return false, err
 		}
-		pubKey, err := secp256k1.ToECDSAPublicKey(pubData)
+
+		result, err := secp256k1.Verify(message, signature, pubData)
 		if err != nil {
 			return false, err
 		}
-
-		result := ecdsa.Verify(pubKey, []byte(message), x, y)
 		return result, nil
 
 	default:
@@ -187,7 +185,10 @@ func AuthenticateDocumentSubject(document *models.DIDDocument, message string, x
 func MetabloxRead(identifier string, options *models.ResolutionOptions) (*models.ResolutionMetadata, *models.DIDDocument, *models.DocumentMetadata) {
 	//Once blockchain is implemented, this function will use the identifier to retrieve the matching document from the blockchain (if it exists).
 	//Some mechanism should likely be in place to ensure the document was not modified during the transfer, ex. an encrypted hash.
-	return nil, nil, nil
+
+	placeholderDoc, _, _ := CreateDID()
+	placeholderDoc.ID = "did:metablox:sampleIssuer"
+	return &models.ResolutionMetadata{}, placeholderDoc, nil
 }
 
 func MetabloxReadRepresentation(identifier string, options *models.RepresentationResolutionOptions) (*models.RepresentationResolutionMetadata, []byte, *models.DocumentMetadata) {

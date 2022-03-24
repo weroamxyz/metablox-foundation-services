@@ -1,26 +1,27 @@
 package main
 
 import (
-	"crypto/ecdsa"
-	"crypto/rand"
-	"fmt"
+	"crypto/sha256"
 
+	"github.com/dappley/go-dappley/crypto/keystore/secp256k1"
+	"github.com/metabloxDID/credentials"
 	"github.com/metabloxDID/did"
 	"github.com/metabloxDID/models"
+	logger "github.com/sirupsen/logrus"
 )
 
 func main() {
-	document, privKey, err := did.CreateDID()
+	document, privData, err := did.CreateDID()
 	if err != nil {
-		fmt.Println(err)
+		logger.Info(err)
 		return
 	}
 	jsonDoc, err := did.DocumentToJson(document)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error(err)
 		return
 	}
-	fmt.Println("created DID document: ", string(jsonDoc))
+	logger.Info("Created DID document: ", string(jsonDoc))
 
 	options := &models.ResolutionOptions{}
 	did.Resolve("bad:did", options)
@@ -31,19 +32,67 @@ func main() {
 	did.Resolve("did:metablox:jhbwehj", options)
 
 	sampleMessage := "This message will be encrypted with a private key"
-	x, y, err := ecdsa.Sign(rand.Reader, privKey, []byte(sampleMessage))
+	hashedMessage := sha256.Sum256([]byte(sampleMessage))
+	signature, err := secp256k1.Sign(hashedMessage[:], privData)
 	if err != nil {
-		fmt.Println("Failed to create signature: ", err)
+		logger.Error("Failed to create signature: ", err)
 		return
 	}
-	verificationResult, err := did.AuthenticateDocumentSubject(document, sampleMessage, x, y)
+	verificationResult, err := did.AuthenticateDocumentSubject(document, hashedMessage[:], signature)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error(err)
+		return
 	}
 
 	if verificationResult {
-		fmt.Println("Successfully verified document subject!")
+		logger.Info("Successfully verified document subject!")
 	} else {
-		fmt.Println("Failed to verify document subject")
+		logger.Info("Failed to verify document subject")
+	}
+
+	sampleSubject := models.CreateSubjectInfo()
+	sampleSubject.ID = document.ID
+	sampleSubject.Type = make([]string, 0)
+	sampleSubject.Type = append(sampleSubject.Type, "sampleType")
+	sampleSubject.GivenName = "John"
+	sampleSubject.FamilyName = "Jacobs"
+	sampleSubject.Gender = "Male"
+	sampleSubject.BirthCountry = "Canada"
+	sampleSubject.BirthDate = "2022-03-22"
+
+	document.ID = "did:metablox:sampleIssuer"
+
+	sampleVC, err := credentials.CreateVC(document, sampleSubject, privData)
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+	jsonVC, err := credentials.VCToJson(sampleVC)
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+	logger.Info("Created VC: ", string(jsonVC))
+
+	verificationResult, err = credentials.VerifyVC(sampleVC) //since did.Resolve isn't implemented fully yet, this is expected to fail
+	if err != nil {
+		logger.Error(err)
+	}
+
+	if verificationResult {
+		logger.Info("Successfully verified credential!")
+	} else {
+		logger.Info("Failed to verify credential")
+	}
+
+	verificationResult, err = credentials.VerifyVCSecp256k1(sampleVC, document.VerificationMethod[0]) //can use this function to just test the verification without needed to use did.Resolve
+	if err != nil {
+		logger.Error(err)
+	}
+
+	if verificationResult {
+		logger.Info("Successfully verified credential!")
+	} else {
+		logger.Info("Failed to verify credential")
 	}
 }
