@@ -95,4 +95,11 @@ func main() {
 	} else {
 		logger.Info("Failed to verify credential")
 	}
+
+	sampleService := models.CreateService()
+	sampleService.ID = document.ID + "#service1"
+	sampleService.Type = "DIDResolve"
+	sampleService.ServiceEndpoint = "https://did.baidu.com"
+	document.AddService(*sampleService)
+	logger.Info(document.Service)
 }

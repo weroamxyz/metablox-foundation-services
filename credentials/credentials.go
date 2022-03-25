@@ -101,7 +101,6 @@ func VerifyVC(vc *models.VerifiableCredential) (bool, error) {
 }
 
 func VerifyVCSecp256k1(vc *models.VerifiableCredential, targetVM models.VerificationMethod) (bool, error) {
-
 	copiedVC := *vc
 	//have to make sure to remove the signature from the copy, as the original did not have a signature at the time the signature was generated
 	copiedVC.Proof.SignatureValue = ""
