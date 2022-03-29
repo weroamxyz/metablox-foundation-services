@@ -78,7 +78,7 @@ func JsonToDocument(jsonDoc []byte) (*models.DIDDocument, error) {
 }
 
 //check format of DID string
-func prepareDID(did string) ([]string, bool) {
+func PrepareDID(did string) ([]string, bool) {
 	splitString := strings.Split(did, ":")
 	if len(splitString) < 3 {
 		fmt.Println("Not enough sections in DID")
@@ -118,7 +118,7 @@ func prepareDID(did string) ([]string, bool) {
 }
 
 func Resolve(did string, options *models.ResolutionOptions) (*models.ResolutionMetadata, *models.DIDDocument, *models.DocumentMetadata) {
-	splitDID, valid := prepareDID(did)
+	splitDID, valid := PrepareDID(did)
 	if !valid {
 		return &models.ResolutionMetadata{Error: "invalid Did"}, nil, &models.DocumentMetadata{}
 	}
@@ -134,7 +134,7 @@ func Resolve(did string, options *models.ResolutionOptions) (*models.ResolutionM
 }
 
 func ResolveRepresentation(did string, options *models.RepresentationResolutionOptions) (*models.RepresentationResolutionMetadata, []byte, *models.DocumentMetadata) {
-	splitDID, valid := prepareDID(did)
+	splitDID, valid := PrepareDID(did)
 	if !valid {
 		return &models.RepresentationResolutionMetadata{Error: "invalid Did"}, nil, &models.DocumentMetadata{}
 	}

@@ -16,9 +16,9 @@ type DIDDocument struct {
 
 type VerificationMethod struct {
 	ID         string `json:"id"`
-	MethodType string `json:"type"`
+	MethodType string `json:"type" mapstructure:"type"`
 	Controller string `json:"controller"`
-	Key        string `json:"publicKeyHex"`
+	Key        string `json:"publicKeyHex" mapstructure:"publicKeyHex"`
 }
 
 type ResolutionOptions struct {

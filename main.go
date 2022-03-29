@@ -7,6 +7,7 @@ import (
 	"github.com/metabloxDID/credentials"
 	"github.com/metabloxDID/did"
 	"github.com/metabloxDID/models"
+	"github.com/metabloxDID/routers"
 	logger "github.com/sirupsen/logrus"
 )
 
@@ -95,4 +96,5 @@ func main() {
 	} else {
 		logger.Info("Failed to verify credential")
 	}
+	routers.Setup()
 }
