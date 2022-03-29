@@ -1,8 +1,8 @@
 package did
 
 import (
+	"crypto/ecdsa"
 	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,24 +10,19 @@ import (
 	"strings"
 	"time"
 
-	"github.com/btcsuite/btcutil/base58"
 	"github.com/dappley/go-dappley/crypto/keystore/secp256k1"
 	"github.com/metabloxDID/models"
+	"github.com/mr-tron/base58"
+	"github.com/multiformats/go-multibase"
 )
 
-func CreateDID() (*models.DIDDocument, []byte, error) {
+func CreateDID(privKey *ecdsa.PrivateKey) (*models.DIDDocument, error) {
 
 	document := new(models.DIDDocument)
 
-	//document subject needs to keep this private key to use the authentication method and prove ownership
-	privKey, err := secp256k1.NewECDSAPrivateKey()
-	if err != nil {
-		return nil, nil, err
-	}
-
 	privData, err := secp256k1.FromECDSAPrivateKey(privKey)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	hash := sha256.New()
@@ -37,27 +32,32 @@ func CreateDID() (*models.DIDDocument, []byte, error) {
 	document.ID = "did:metablox:" + didString
 	document.Context = make([]string, 0)
 	document.Context = append(document.Context, "https://w3id.org/did/v1")
+	document.Context = append(document.Context, "https://ns.did.ai/suites/secp256k1-2019/v1/")
 	document.Created = time.Now().Format(time.RFC3339)
 	document.Updated = document.Created
 	document.Version = 1
 
 	pubData, err := secp256k1.FromECDSAPublicKey(&privKey.PublicKey)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	VM := models.VerificationMethod{}
 	VM.ID = document.ID + "#verification"
-	VM.Key = hex.EncodeToString(pubData)
+	VM.MultibaseKey, err = multibase.Encode(multibase.Base58BTC, pubData)
+	if err != nil {
+		return nil, err
+	}
 	VM.Controller = document.ID
-	VM.MethodType = "Secp256k1"
+	VM.MethodType = "EcdsaSecp256k1VerificationKey2019"
+	VM.Expires = time.Now().AddDate(10, 0, 0).Format(time.RFC3339) //set to expire 10 years from now as a placeholder
 
 	document.VerificationMethod = append(document.VerificationMethod, VM)
 	document.Authentication = VM.ID
 
 	//once blockchain is implemented, will also need to upload the document to the blockchain
 
-	return document, privData, nil
+	return document, nil
 }
 
 func DocumentToJson(document *models.DIDDocument) ([]byte, error) {
@@ -165,8 +165,8 @@ func AuthenticateDocumentSubject(document *models.DIDDocument, message, signatur
 	}
 
 	switch authenticationMethod.MethodType {
-	case "Secp256k1":
-		pubData, err := hex.DecodeString(authenticationMethod.Key)
+	case "EcdsaSecp256k1VerificationKey2019":
+		_, pubData, err := multibase.Decode(authenticationMethod.MultibaseKey)
 		if err != nil {
 			return false, err
 		}
@@ -186,7 +186,8 @@ func MetabloxRead(identifier string, options *models.ResolutionOptions) (*models
 	//Once blockchain is implemented, this function will use the identifier to retrieve the matching document from the blockchain (if it exists).
 	//Some mechanism should likely be in place to ensure the document was not modified during the transfer, ex. an encrypted hash.
 
-	placeholderDoc, _, _ := CreateDID()
+	placeholderKey, _ := secp256k1.NewECDSAPrivateKey()
+	placeholderDoc, _ := CreateDID(placeholderKey)
 	placeholderDoc.ID = "did:metablox:sampleIssuer"
 	return &models.ResolutionMetadata{}, placeholderDoc, nil
 }

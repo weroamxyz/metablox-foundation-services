@@ -6,12 +6,33 @@ import (
 	"github.com/dappley/go-dappley/crypto/keystore/secp256k1"
 	"github.com/metabloxDID/credentials"
 	"github.com/metabloxDID/did"
+	"github.com/metabloxDID/key"
 	"github.com/metabloxDID/models"
+	"github.com/metabloxDID/settings"
 	logger "github.com/sirupsen/logrus"
 )
 
 func main() {
-	document, privData, err := did.CreateDID()
+	err := settings.Init()
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+
+	_, fileName, err := key.GenerateNewPrivateKey()
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+	logger.Info("dumped data into file: ", fileName)
+
+	loadedPrivKey, err := key.LoadPrivateKey("privateKey1")
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+
+	document, err := did.CreateDID(loadedPrivKey)
 	if err != nil {
 		logger.Info(err)
 		return
@@ -30,6 +51,12 @@ func main() {
 	did.Resolve("did:valid::!@#$%^&*()", options)
 	did.Resolve("did:valid:iuhienwd:", options)
 	did.Resolve("did:metablox:jhbwehj", options)
+
+	privData, err := secp256k1.FromECDSAPrivateKey(loadedPrivKey)
+	if err != nil {
+		logger.Error(err)
+		return
+	}
 
 	sampleMessage := "This message will be encrypted with a private key"
 	hashedMessage := sha256.Sum256([]byte(sampleMessage))
@@ -62,7 +89,7 @@ func main() {
 
 	document.ID = "did:metablox:sampleIssuer"
 
-	sampleVC, err := credentials.CreateVC(document, sampleSubject, privData)
+	sampleVC, err := credentials.CreateVC(document, sampleSubject, loadedPrivKey)
 	if err != nil {
 		logger.Error(err)
 		return
