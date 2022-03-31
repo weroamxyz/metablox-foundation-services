@@ -1,8 +1,9 @@
 package credentials
 
 import (
+	"bytes"
+	"crypto/ecdsa"
 	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,16 +12,19 @@ import (
 	"github.com/dappley/go-dappley/crypto/keystore/secp256k1"
 	"github.com/metabloxDID/did"
 	"github.com/metabloxDID/models"
+	"github.com/multiformats/go-multibase"
+	gojose "gopkg.in/square/go-jose.v2"
 )
 
 const sampleTrustedIssuer = "did:metablox:sampleIssuer"
 
 //In the future, will probably need to set up multiple different creation functions for different types of VCs.
 //This function serves as an example of making a resident card
-func CreateVC(issuerDocument *models.DIDDocument, subjectInfo *models.SubjectInfo, issuerPrivKey []byte) (*models.VerifiableCredential, error) {
+func CreateVC(issuerDocument *models.DIDDocument, subjectInfo *models.SubjectInfo, issuerPrivKey *ecdsa.PrivateKey) (*models.VerifiableCredential, error) {
 	newVC := models.CreateVerifiableCredential()
 	newVC.Context = make([]string, 0)
 	newVC.Context = append(newVC.Context, "https://www.w3.org/2018/credentials/v1")
+	newVC.Context = append(newVC.Context, "https://ns.did.ai/suites/secp256k1-2019/v1/")
 	newVC.Type = make([]string, 0)
 	newVC.Type = append(newVC.Type, "VerifiableCredential")
 	newVC.Type = append(newVC.Type, "PermanentResidentCard")
@@ -31,9 +35,11 @@ func CreateVC(issuerDocument *models.DIDDocument, subjectInfo *models.SubjectInf
 	newVC.CredentialSubject = *subjectInfo //subject info is gathered ahead of time through an input form or some other means
 
 	vcProof := models.CreateVCProof()
-	vcProof.Type = "Secp256k1"
+	vcProof.Type = "EcdsaSecp256k1Signature2019"
 	vcProof.VerificationMethod = issuerDocument.Authentication
-	vcProof.SignatureValue = ""
+	vcProof.JWSSignature = ""
+	vcProof.Created = time.Now().Format(time.RFC3339)
+	vcProof.ProofPurpose = "Authentication"
 	newVC.Proof = *vcProof
 	//Create the proof's signature using a stringified version of the VC and the issuer's private key.
 	//This way, the signature can be verified by re-stringifying the VC and looking up the public key in the issuer's DID document.
@@ -42,11 +48,11 @@ func CreateVC(issuerDocument *models.DIDDocument, subjectInfo *models.SubjectInf
 	stringVC := fmt.Sprintf("%v", *newVC)
 	hashedVC := sha256.Sum256([]byte(stringVC))
 
-	signatureData, err := secp256k1.Sign(hashedVC[:], issuerPrivKey)
+	signatureData, err := CreateJWSSignature(issuerPrivKey, hashedVC[:])
 	if err != nil {
 		return nil, err
 	}
-	newVC.Proof.SignatureValue = string(signatureData)
+	newVC.Proof.JWSSignature = signatureData
 
 	return newVC, nil
 }
@@ -87,13 +93,12 @@ func VerifyVC(vc *models.VerifiableCredential) (bool, error) {
 		return false, err
 	}
 
-	if targetVM.MethodType != vc.Proof.Type {
-		return false, errors.New("proof type (" + vc.Proof.Type + ") does not match verification method type(" + targetVM.MethodType + ")")
-	}
-
-	//currently only support Secp256k1, but it's possible we could introduce more
+	//currently only support EcdsaSecp256k1Signature2019, but it's possible we could introduce more
 	switch vc.Proof.Type {
-	case "Secp256k1":
+	case "EcdsaSecp256k1Signature2019":
+		if targetVM.MethodType != "EcdsaSecp256k1VerificationKey2019" {
+			return false, errors.New("must use a verification method with a type of 'EcdsaSecp256k1VerificationKey2019' to verify a 'EcdsaSecp256k1Signature2019' proof")
+		}
 		return VerifyVCSecp256k1(vc, targetVM)
 	default:
 		return false, errors.New("unable to verify unknown proof type " + vc.Proof.Type)
@@ -101,19 +106,58 @@ func VerifyVC(vc *models.VerifiableCredential) (bool, error) {
 }
 
 func VerifyVCSecp256k1(vc *models.VerifiableCredential, targetVM models.VerificationMethod) (bool, error) {
-
 	copiedVC := *vc
 	//have to make sure to remove the signature from the copy, as the original did not have a signature at the time the signature was generated
-	copiedVC.Proof.SignatureValue = ""
+	copiedVC.Proof.JWSSignature = ""
 	stringVC := fmt.Sprintf("%v", copiedVC)
 	hashedVC := sha256.Sum256([]byte(stringVC))
-	pubData, err := hex.DecodeString(targetVM.Key)
+	_, pubData, err := multibase.Decode(targetVM.MultibaseKey)
 	if err != nil {
 		return false, err
 	}
-	result, err := secp256k1.Verify(hashedVC[:], []byte(vc.Proof.SignatureValue), pubData)
+	pubKey, err := secp256k1.ToECDSAPublicKey(pubData)
+	if err != nil {
+		return false, err
+	}
+	result, err := VerifyJWSSignature(vc.Proof.JWSSignature, pubKey, hashedVC[:])
 	if err != nil {
 		return false, err
 	}
 	return result, nil
+}
+
+func CreateJWSSignature(privKey *ecdsa.PrivateKey, message []byte) (string, error) {
+	signer, err := gojose.NewSigner(gojose.SigningKey{Algorithm: gojose.ES256, Key: privKey}, nil)
+	if err != nil {
+		return "", err
+	}
+
+	signature, err := signer.Sign(message)
+	if err != nil {
+		return "", err
+	}
+
+	compactserialized, err := signature.DetachedCompactSerialize()
+	if err != nil {
+		return "", err
+	}
+	return compactserialized, nil
+}
+
+func VerifyJWSSignature(signature string, pubKey *ecdsa.PublicKey, message []byte) (bool, error) {
+	sigObject, err := gojose.ParseDetached(signature, message)
+	if err != nil {
+		return false, err
+	}
+
+	result, err := sigObject.Verify(pubKey)
+	if err != nil {
+		return false, err
+	}
+
+	if !bytes.Equal(message, result) {
+		return false, nil
+	} else {
+		return true, nil
+	}
 }

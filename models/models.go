@@ -15,10 +15,11 @@ type DIDDocument struct {
 }
 
 type VerificationMethod struct {
-	ID         string `json:"id"`
-	MethodType string `json:"type" mapstructure:"type"`
-	Controller string `json:"controller"`
-	Key        string `json:"publicKeyHex" mapstructure:"publicKeyHex"`
+	ID           string `json:"id"`
+	MethodType   string `json:"type" mapstructure:"type"`
+	Controller   string `json:"controller"`
+	Expires      string `json:"expires"`
+	MultibaseKey string `json:"publicKeyMultibase" mapstructure:"publicKeyMultibase"`
 }
 
 type ResolutionOptions struct {
@@ -74,8 +75,10 @@ type SubjectInfo struct {
 
 type VCProof struct {
 	Type               string `json:"type"`
+	Created            string `json:"created"`
 	VerificationMethod string `json:"verificationMethod"`
-	SignatureValue     string `json:"signatureValue"` //signature is created from a hash of the issuer's DID document
+	ProofPurpose       string `json:"proofPurpose"`
+	JWSSignature       string `json:"jws"` //signature is created from a hash of the issuer's DID document
 }
 
 func CreateDIDDocument() *DIDDocument {

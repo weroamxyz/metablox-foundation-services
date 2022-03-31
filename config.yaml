@@ -1,0 +1,3 @@
+storage:
+  key_saving: "./wallet/"
+  key_loading: "./wallet/"

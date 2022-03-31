@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 
+	"github.com/dappley/go-dappley/crypto/keystore/secp256k1"
 	"github.com/gin-gonic/gin"
 	"github.com/metabloxDID/credentials"
 	"github.com/metabloxDID/did"
@@ -40,9 +41,9 @@ func IssueVCHandler(c *gin.Context) {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed to resolve did '"+subjectInfo.ID+"'")
 		return
 	}
-	issuerPrivateData := []byte{66, 94, 211, 215, 5, 230, 103, 245, 103, 92, 207, 182, 241, 116, 121, 103, 52, 172, 68, 78, 93, 241, 37, 34, 220, 30, 122, 173, 224, 212, 11, 124} //TODO: modify to get actual issuer private key as opposed to arbitrary hard-coded value
+	issuerPrivateKey, _ := secp256k1.NewECDSAPrivateKey() //TODO: modify to get actual issuer private key as opposed to arbitrary value
 
-	newVC, err := credentials.CreateVC(issuerDocument, subjectInfo, issuerPrivateData)
+	newVC, err := credentials.CreateVC(issuerDocument, subjectInfo, issuerPrivateKey)
 	if err != nil {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error creating VC: "+err.Error())
 		return
