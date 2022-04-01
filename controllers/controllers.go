@@ -11,8 +11,6 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-const CtxUserToken = "userToken"
-
 func IssueVCHandler(c *gin.Context) {
 	response := &ResponseData{}
 	if err := c.ShouldBindJSON(response); err != nil {
