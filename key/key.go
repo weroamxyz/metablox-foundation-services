@@ -1,6 +1,7 @@
 package key
 
 import (
+	"bytes"
 	"crypto/ecdsa"
 	"errors"
 	"os"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/dappley/go-dappley/crypto/keystore/secp256k1"
 	"github.com/spf13/viper"
+	gojose "gopkg.in/square/go-jose.v2"
 )
 
 func GenerateNewPrivateKey() (*ecdsa.PrivateKey, string, error) {
@@ -54,4 +56,40 @@ func LoadPrivateKey(keyFileName string) (*ecdsa.PrivateKey, error) {
 	}
 
 	return privKey, nil
+}
+
+func CreateJWSSignature(privKey *ecdsa.PrivateKey, message []byte) (string, error) {
+	signer, err := gojose.NewSigner(gojose.SigningKey{Algorithm: gojose.ES256, Key: privKey}, nil)
+	if err != nil {
+		return "", err
+	}
+
+	signature, err := signer.Sign(message)
+	if err != nil {
+		return "", err
+	}
+
+	compactserialized, err := signature.DetachedCompactSerialize()
+	if err != nil {
+		return "", err
+	}
+	return compactserialized, nil
+}
+
+func VerifyJWSSignature(signature string, pubKey *ecdsa.PublicKey, message []byte) (bool, error) {
+	sigObject, err := gojose.ParseDetached(signature, message)
+	if err != nil {
+		return false, err
+	}
+
+	result, err := sigObject.Verify(pubKey)
+	if err != nil {
+		return false, err
+	}
+
+	if !bytes.Equal(message, result) {
+		return false, nil
+	} else {
+		return true, nil
+	}
 }

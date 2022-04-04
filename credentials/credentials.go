@@ -11,9 +11,9 @@ import (
 
 	"github.com/dappley/go-dappley/crypto/keystore/secp256k1"
 	"github.com/metabloxDID/did"
+	"github.com/metabloxDID/key"
 	"github.com/metabloxDID/models"
 	"github.com/multiformats/go-multibase"
-	gojose "gopkg.in/square/go-jose.v2"
 )
 
 const sampleTrustedIssuer = "did:metablox:sampleIssuer"
@@ -34,7 +34,7 @@ func CreateVC(issuerDocument *models.DIDDocument, subjectInfo *models.SubjectInf
 	newVC.Description = "Government of Example Permanent Resident Card"
 	newVC.CredentialSubject = *subjectInfo //subject info is gathered ahead of time through an input form or some other means
 
-	vcProof := models.CreateVCProof()
+	vcProof := models.CreateProof()
 	vcProof.Type = "EcdsaSecp256k1Signature2019"
 	vcProof.VerificationMethod = issuerDocument.Authentication
 	vcProof.JWSSignature = ""
@@ -48,7 +48,7 @@ func CreateVC(issuerDocument *models.DIDDocument, subjectInfo *models.SubjectInf
 	stringVC := fmt.Sprintf("%v", *newVC)
 	hashedVC := sha256.Sum256([]byte(stringVC))
 
-	signatureData, err := CreateJWSSignature(issuerPrivKey, hashedVC[:])
+	signatureData, err := key.CreateJWSSignature(issuerPrivKey, hashedVC[:])
 	if err != nil {
 		return nil, err
 	}
@@ -119,45 +119,28 @@ func VerifyVCSecp256k1(vc *models.VerifiableCredential, targetVM models.Verifica
 	if err != nil {
 		return false, err
 	}
-	result, err := VerifyJWSSignature(vc.Proof.JWSSignature, pubKey, hashedVC[:])
+	result, err := key.VerifyJWSSignature(vc.Proof.JWSSignature, pubKey, hashedVC[:])
 	if err != nil {
 		return false, err
 	}
 	return result, nil
 }
 
-func CreateJWSSignature(privKey *ecdsa.PrivateKey, message []byte) (string, error) {
-	signer, err := gojose.NewSigner(gojose.SigningKey{Algorithm: gojose.ES256, Key: privKey}, nil)
-	if err != nil {
-		return "", err
+func ConvertVCToBytes(vc models.VerifiableCredential) []byte {
+	var convertedBytes []byte
+	for _, item := range vc.Context {
+		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(item)}, []byte{})
 	}
 
-	signature, err := signer.Sign(message)
-	if err != nil {
-		return "", err
+	for _, item := range vc.Type {
+		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(item)}, []byte{})
 	}
 
-	compactserialized, err := signature.DetachedCompactSerialize()
-	if err != nil {
-		return "", err
-	}
-	return compactserialized, nil
-}
-
-func VerifyJWSSignature(signature string, pubKey *ecdsa.PublicKey, message []byte) (bool, error) {
-	sigObject, err := gojose.ParseDetached(signature, message)
-	if err != nil {
-		return false, err
+	convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(vc.Issuer), []byte(vc.IssuanceDate), []byte(vc.ExpirationDate), []byte(vc.Description), []byte(vc.CredentialSubject.ID)}, []byte{})
+	for _, item := range vc.CredentialSubject.Type {
+		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(item)}, []byte{})
 	}
 
-	result, err := sigObject.Verify(pubKey)
-	if err != nil {
-		return false, err
-	}
-
-	if !bytes.Equal(message, result) {
-		return false, nil
-	} else {
-		return true, nil
-	}
+	convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(vc.CredentialSubject.GivenName), []byte(vc.CredentialSubject.FamilyName), []byte(vc.CredentialSubject.Gender), []byte(vc.CredentialSubject.BirthCountry), []byte(vc.CredentialSubject.BirthDate), []byte(vc.Proof.Type), []byte(vc.Proof.Created), []byte(vc.Proof.VerificationMethod), []byte(vc.Proof.ProofPurpose), []byte(vc.Proof.JWSSignature)}, []byte{})
+	return convertedBytes
 }
