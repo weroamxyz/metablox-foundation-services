@@ -62,7 +62,7 @@ type VerifiableCredential struct {
 	ExpirationDate    string      `json:"expirationDate"`
 	Description       string      `json:"description"`
 	CredentialSubject SubjectInfo `json:"credentialSubject"`
-	Proof             VCProof     `json:"proof"`
+	Proof             Proof       `json:"proof"`
 }
 
 //This can be a type of input form to set up the VC.
@@ -77,12 +77,21 @@ type SubjectInfo struct {
 	BirthDate    string   `json:"birthName"`
 }
 
-type VCProof struct {
+//used as proof models for both VCs and VPs
+type Proof struct {
 	Type               string `json:"type"`
 	Created            string `json:"created"`
 	VerificationMethod string `json:"verificationMethod"`
 	ProofPurpose       string `json:"proofPurpose"`
-	JWSSignature       string `json:"jws"` //signature is created from a hash of the issuer's DID document
+	JWSSignature       string `json:"jws"` //signature is created from a hash of the VC/VP
+}
+
+type VerifiablePresentation struct {
+	Context              []string               `json:"context"`
+	Type                 []string               `json:"type"`
+	VerifiableCredential []VerifiableCredential `json:"verifiableCredential"`
+	Holder               string                 `json:"holder"`
+	Proof                Proof                  `json:"proof"`
 }
 
 type Service struct {
@@ -112,7 +121,7 @@ func CreateVerifiableCredential() *VerifiableCredential {
 	return &VerifiableCredential{}
 }
 
-func InitializeVerifiableCredential(context, vctype []string, issuer, expirationDate, description string, subject SubjectInfo, proof VCProof) *VerifiableCredential {
+func InitializeVerifiableCredential(context, vctype []string, issuer, expirationDate, description string, subject SubjectInfo, proof Proof) *VerifiableCredential {
 	return &VerifiableCredential{Context: context, Type: vctype, Issuer: issuer, IssuanceDate: time.Now().Format(time.RFC3339), ExpirationDate: expirationDate, Description: description, CredentialSubject: subject, Proof: proof}
 }
 
@@ -120,12 +129,25 @@ func CreateSubjectInfo() *SubjectInfo {
 	return &SubjectInfo{}
 }
 
-func CreateVCProof() *VCProof {
-	return &VCProof{}
+func CreateProof() *Proof {
+	return &Proof{}
 }
 
 func CreateResolutionOptions() *ResolutionOptions {
 	return &ResolutionOptions{}
+}
+
+func CreatePresentation() *VerifiablePresentation {
+	return &VerifiablePresentation{}
+}
+
+func InitializePresentation(credentials []VerifiableCredential, holder string, proof Proof) *VerifiablePresentation {
+	context := make([]string, 0)
+	context = append(context, "https://www.w3.org/2018/credentials/v1")
+	context = append(context, "https://ns.did.ai/suites/secp256k1-2019/v1/")
+	presentationType := make([]string, 0)
+	presentationType = append(presentationType, "VerifiablePresentation")
+	return &VerifiablePresentation{Context: context, Type: presentationType, VerifiableCredential: credentials, Holder: holder, Proof: proof}
 }
 
 func GenerateTestPrivKey() *ecdsa.PrivateKey {
@@ -168,7 +190,7 @@ func GenerateTestVC() *VerifiableCredential {
 	vc.Issuer = "did:metablox:sampleIssuer"
 	vc.ExpirationDate = "2032-03-31T12:53:19-07:00"
 	vc.Description = "Government of Example Permanent Resident Card"
-	vcProof := CreateVCProof()
+	vcProof := CreateProof()
 	vcProof.Type = "EcdsaSecp256k1Signature2019"
 	vcProof.VerificationMethod = "did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo#verification"
 	vcProof.JWSSignature = "eyJhbGciOiJFUzI1NiJ9..b79nsPjFxYqE0Wta211yA7Rj-MtxMfHsG9dE7V7DGqrK-kMa66d7yjJ0lunAnIUCL7RO55NZ_OuWN-3NK_0J_w"
@@ -180,4 +202,19 @@ func GenerateTestVC() *VerifiableCredential {
 
 func CreateService() *Service {
 	return &Service{}
+}
+
+func GenerateTestPresentation() *VerifiablePresentation {
+	presentation := CreatePresentation()
+	presentation.Context = []string{"https://www.w3.org/2018/credentials/v1", "https://ns.did.ai/suites/secp256k1-2019/v1/"}
+	presentation.Type = []string{"VerifiablePresentation"}
+	presentation.Holder = "did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo"
+	presentation.VerifiableCredential = []VerifiableCredential{*GenerateTestVC()}
+	presentation.Proof.Type = "EcdsaSecp256k1Signature2019"
+	presentation.Proof.VerificationMethod = "did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo#verification"
+	presentation.Proof.JWSSignature = "eyJhbGciOiJFUzI1NiJ9..b79nsPjFxYqE0Wta211yA7Rj-MtxMfHsG9dE7V7DGqrK-kMa66d7yjJ0lunAnIUCL7RO55NZ_OuWN-3NK_0J_w"
+	presentation.Proof.Created = "2022-03-31T12:53:19-07:00"
+	presentation.Proof.ProofPurpose = "Authentication"
+
+	return presentation
 }

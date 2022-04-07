@@ -10,9 +10,9 @@ import (
 
 	"github.com/dappley/go-dappley/crypto/keystore/secp256k1"
 	"github.com/metabloxDID/did"
+	"github.com/metabloxDID/key"
 	"github.com/metabloxDID/models"
 	"github.com/multiformats/go-multibase"
-	gojose "gopkg.in/square/go-jose.v2"
 )
 
 const sampleTrustedIssuer = "did:metablox:sampleIssuer"
@@ -29,7 +29,7 @@ func CreateVC(issuerDocument *models.DIDDocument, subjectInfo *models.SubjectInf
 	expirationDate := time.Now().AddDate(10, 0, 0).Format(time.RFC3339) //arbitrarily setting VCs to last for 10 years for the moment, can change when necessary
 	description := "Government of Example Permanent Resident Card"
 
-	vcProof := models.CreateVCProof()
+	vcProof := models.CreateProof()
 	vcProof.Type = "EcdsaSecp256k1Signature2019"
 	vcProof.VerificationMethod = issuerDocument.Authentication
 	vcProof.JWSSignature = ""
@@ -43,7 +43,7 @@ func CreateVC(issuerDocument *models.DIDDocument, subjectInfo *models.SubjectInf
 	//public key matches the private key used to make the signature
 	hashedVC := sha256.Sum256(ConvertVCToBytes(*newVC))
 
-	signatureData, err := CreateJWSSignature(issuerPrivKey, hashedVC[:])
+	signatureData, err := key.CreateJWSSignature(issuerPrivKey, hashedVC[:])
 	if err != nil {
 		return nil, err
 	}
@@ -113,47 +113,11 @@ func VerifyVCSecp256k1(vc *models.VerifiableCredential, targetVM models.Verifica
 	if err != nil {
 		return false, err
 	}
-	result, err := VerifyJWSSignature(vc.Proof.JWSSignature, pubKey, hashedVC[:])
+	result, err := key.VerifyJWSSignature(vc.Proof.JWSSignature, pubKey, hashedVC[:])
 	if err != nil {
 		return false, err
 	}
 	return result, nil
-}
-
-func CreateJWSSignature(privKey *ecdsa.PrivateKey, message []byte) (string, error) {
-	signer, err := gojose.NewSigner(gojose.SigningKey{Algorithm: gojose.ES256, Key: privKey}, nil)
-	if err != nil {
-		return "", err
-	}
-
-	signature, err := signer.Sign(message)
-	if err != nil {
-		return "", err
-	}
-
-	compactserialized, err := signature.DetachedCompactSerialize()
-	if err != nil {
-		return "", err
-	}
-	return compactserialized, nil
-}
-
-func VerifyJWSSignature(signature string, pubKey *ecdsa.PublicKey, message []byte) (bool, error) {
-	sigObject, err := gojose.ParseDetached(signature, message)
-	if err != nil {
-		return false, err
-	}
-
-	result, err := sigObject.Verify(pubKey)
-	if err != nil {
-		return false, err
-	}
-
-	if !bytes.Equal(message, result) {
-		return false, nil
-	} else {
-		return true, nil
-	}
 }
 
 func ConvertVCToBytes(vc models.VerifiableCredential) []byte {
