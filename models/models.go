@@ -16,6 +16,7 @@ type DIDDocument struct {
 	Version            int                  `json:"version"`
 	VerificationMethod []VerificationMethod `json:"verificationMethod"`
 	Authentication     string               `json:"authentication"`
+	Service            []Service            `json:"service"`
 }
 
 type VerificationMethod struct {
@@ -84,6 +85,12 @@ type VCProof struct {
 	JWSSignature       string `json:"jws"` //signature is created from a hash of the issuer's DID document
 }
 
+type Service struct {
+	ID              string `json:"id"`
+	Type            string `json:"type"`
+	ServiceEndpoint string `json:"serviceEndpoint"`
+}
+
 func CreateDIDDocument() *DIDDocument {
 	return &DIDDocument{}
 }
@@ -95,6 +102,10 @@ func (doc DIDDocument) RetrieveVerificationMethod(vmID string) (VerificationMeth
 		}
 	}
 	return VerificationMethod{}, errors.New("failed to find verification method with ID " + vmID)
+}
+
+func (doc *DIDDocument) AddService(service Service) {
+	doc.Service = append(doc.Service, service)
 }
 
 func CreateVerifiableCredential() *VerifiableCredential {
@@ -165,4 +176,8 @@ func GenerateTestVC() *VerifiableCredential {
 	vcProof.ProofPurpose = "Authentication"
 	vc.Proof = *vcProof
 	return vc
+}
+
+func CreateService() *Service {
+	return &Service{}
 }
