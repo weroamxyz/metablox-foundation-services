@@ -50,7 +50,6 @@ func CreateDID(privKey *ecdsa.PrivateKey) (*models.DIDDocument, error) {
 	}
 	VM.Controller = document.ID
 	VM.MethodType = "EcdsaSecp256k1VerificationKey2019"
-	VM.Expires = time.Now().AddDate(10, 0, 0).Format(time.RFC3339) //set to expire 10 years from now as a placeholder
 
 	document.VerificationMethod = append(document.VerificationMethod, VM)
 	document.Authentication = VM.ID
