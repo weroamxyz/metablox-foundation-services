@@ -1,6 +1,7 @@
 package did
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/metabloxDID/models"
@@ -12,6 +13,7 @@ const exampleDIDDocString = `{"@context":["https://w3id.org/did/v1","https://ns.
 var invalidDIDMetadata = &models.ResolutionMetadata{Error: "invalid Did"}
 var unknownMethodMetadata = &models.ResolutionMetadata{Error: "methodNotSupported"}
 var emptyResolutionMetadata = &models.ResolutionMetadata{}
+var emptyJSONRepresentationResolutionMetadata = &models.RepresentationResolutionMetadata{ContentType: "application/did+json"}
 var emptyDocumentMetadata = &models.DocumentMetadata{}
 
 func TestCreateDID(t *testing.T) {
@@ -67,8 +69,33 @@ func TestResolveDID(t *testing.T) {
 	assert.Nil(t, document)
 	assert.Equal(t, emptyDocumentMetadata, documentMeta)
 
-	resolutionMeta, document, documentMeta = Resolve("did:metablox:jhbwehj", options) //resolvable did
+	resolutionMeta, document, documentMeta = Resolve("did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo", options) //resolvable did
 	assert.Equal(t, emptyResolutionMetadata, resolutionMeta)
-	assert.NotNil(t, document) //may change once proper DID resolution is implemented
+	exampleDocument := models.GenerateTestDIDDocument()
+	assert.Equal(t, exampleDocument.Context, document.Context)
+	assert.Equal(t, exampleDocument.ID, document.ID)
+	//no point comparing create/update time, won't be equal
+	assert.Equal(t, exampleDocument.Version, document.Version)
+	assert.Equal(t, exampleDocument.VerificationMethod, document.VerificationMethod)
+	assert.Equal(t, exampleDocument.Authentication, document.Authentication)
+	assert.Nil(t, documentMeta)
+}
+
+func TestResolveDIDRepresentation(t *testing.T) {
+	options := &models.RepresentationResolutionOptions{Accept: "application/did+json"}
+
+	resolutionMeta, byteStream, documentMeta := ResolveRepresentation("did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo", options) //resolvable did
+	assert.Equal(t, emptyJSONRepresentationResolutionMetadata, resolutionMeta)
+	exampleDocument := models.GenerateTestDIDDocument()
+	document := models.CreateDIDDocument()
+	err := json.Unmarshal(byteStream, document)
+	assert.Nil(t, err)
+
+	assert.Equal(t, exampleDocument.Context, document.Context)
+	assert.Equal(t, exampleDocument.ID, document.ID)
+	//no point comparing create/update time, won't be equal
+	assert.Equal(t, exampleDocument.Version, document.Version)
+	assert.Equal(t, exampleDocument.VerificationMethod, document.VerificationMethod)
+	assert.Equal(t, exampleDocument.Authentication, document.Authentication)
 	assert.Nil(t, documentMeta)
 }

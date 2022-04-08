@@ -1,18 +1,19 @@
 package credentials
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/metabloxDID/models"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCreateAndVerifyVC(t *testing.T) {
-	document := models.GenerateTestDIDDocument()
-	document.ID = "did:metablox:sampleIssuer"
+func TestCreateVC(t *testing.T) {
+	issuerDocument := models.GenerateTestDIDDocument()
+	issuerDocument.ID = "did:metablox:sampleIssuer"
 	subjectInfo := models.GenerateTestSubjectInfo()
-	privKey := models.GenerateTestPrivKey()
-	vc, err := CreateVC(document, subjectInfo, privKey)
+	issuerPrivKey := models.GenerateTestPrivKey()
+	vc, err := CreateVC(issuerDocument, subjectInfo, issuerPrivKey)
 	assert.Nil(t, err)
 	sampleVC := models.GenerateTestVC()
 	assert.Equal(t, sampleVC.Context, vc.Context)
@@ -20,10 +21,19 @@ func TestCreateAndVerifyVC(t *testing.T) {
 	assert.Equal(t, sampleVC.Issuer, vc.Issuer)
 	assert.Equal(t, sampleVC.Description, vc.Description)
 	assert.Equal(t, sampleVC.Proof.Type, vc.Proof.Type)
-	assert.Equal(t, sampleVC.Proof.JWSSignature, sampleVC.Proof.JWSSignature)
 	assert.Equal(t, sampleVC.Proof.ProofPurpose, vc.Proof.ProofPurpose)
-	assert.Equal(t, sampleVC.Proof.VerificationMethod, sampleVC.Proof.VerificationMethod)
-	success, err := VerifyVCSecp256k1(vc, document.VerificationMethod[0])
+	assert.Equal(t, sampleVC.Proof.VerificationMethod, vc.Proof.VerificationMethod)
+}
+
+func TestVerifyVC(t *testing.T) {
+	vc := models.GenerateTestVC()
+	issuerDocument := models.GenerateTestDIDDocument()
+
+	success, err := VerifyVCSecp256k1(vc, issuerDocument.VerificationMethod[0])
 	assert.Nil(t, err)
 	assert.True(t, success)
+	vc.Type = append(vc.Type, "Modified")
+	success, err = VerifyVCSecp256k1(vc, issuerDocument.VerificationMethod[0])
+	assert.Equal(t, errors.New("square/go-jose: error in cryptographic primitive"), err)
+	assert.False(t, success)
 }

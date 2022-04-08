@@ -29,14 +29,14 @@ func CreateVC(issuerDocument *models.DIDDocument, subjectInfo *models.SubjectInf
 	expirationDate := time.Now().AddDate(10, 0, 0).Format(time.RFC3339) //arbitrarily setting VCs to last for 10 years for the moment, can change when necessary
 	description := "Government of Example Permanent Resident Card"
 
-	vcProof := models.CreateProof()
+	vcProof := models.CreateVCProof()
 	vcProof.Type = "EcdsaSecp256k1Signature2019"
 	vcProof.VerificationMethod = issuerDocument.Authentication
 	vcProof.JWSSignature = ""
 	vcProof.Created = time.Now().Format(time.RFC3339)
 	vcProof.ProofPurpose = "Authentication"
 
-	newVC := models.InitializeVerifiableCredential(context, vcType, issuerDocument.ID, expirationDate, description, *subjectInfo, *vcProof)
+	newVC := models.NewVerifiableCredential(context, vcType, issuerDocument.ID, time.Now().Format(time.RFC3339), expirationDate, description, *subjectInfo, *vcProof)
 	//Create the proof's signature using a stringified version of the VC and the issuer's private key.
 	//This way, the signature can be verified by re-stringifying the VC and looking up the public key in the issuer's DID document.
 	//Verification will only succeed if the VC was unchanged since the signature and if the issuer
