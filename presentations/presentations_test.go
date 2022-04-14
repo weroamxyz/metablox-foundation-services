@@ -5,16 +5,32 @@ import (
 	"testing"
 
 	"github.com/metabloxDID/credentials"
+	"github.com/metabloxDID/dao"
 	"github.com/metabloxDID/models"
+	"github.com/metabloxDID/settings"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateVP(t *testing.T) {
+	err := settings.Init()
+	assert.Nil(t, err)
+	err = dao.TestDBInit()
+	assert.Nil(t, err)
+	t.Cleanup(dao.Close)
+	t.Cleanup(dao.DeleteTestCredentialsTable)
+	t.Cleanup(dao.DeleteTestWifiAccessTable)
+
+	err = dao.CreateTestCredentialsTable()
+	assert.Nil(t, err)
+
+	err = dao.CreateTestWifiAccessTable()
+	assert.Nil(t, err)
+
 	issuerDocument := models.GenerateTestDIDDocument()
 	issuerDocument.ID = "did:metablox:sampleIssuer"
-	subjectInfo := models.GenerateTestSubjectInfo()
+	wifiAccessInfo := models.GenerateTestWifiAccessInfo()
 	issuerPrivKey := models.GenerateTestPrivKey()
-	vc, err := credentials.CreateVC(issuerDocument, subjectInfo, issuerPrivKey)
+	vc, err := credentials.CreateWifiAccessVC(issuerDocument, wifiAccessInfo, issuerPrivKey)
 	assert.Nil(t, err)
 	credentialArray := make([]models.VerifiableCredential, 0)
 	credentialArray = append(credentialArray, *vc)
@@ -37,14 +53,11 @@ func TestVerifyVP(t *testing.T) {
 	issuerDocument := models.GenerateTestDIDDocument()
 	samplePresentation := models.GenerateTestPresentation()
 
-	success, err := VerifyVPSecp256k1(samplePresentation, issuerDocument.VerificationMethod[0], "sampleNonce")
+	success, err := VerifyVPSecp256k1(samplePresentation, issuerDocument.VerificationMethod[0])
 	assert.Nil(t, err)
 	assert.True(t, success)
 	samplePresentation.Type = append(samplePresentation.Type, "Modified")
-	success, err = VerifyVPSecp256k1(samplePresentation, issuerDocument.VerificationMethod[0], "sampleNonce")
+	success, err = VerifyVPSecp256k1(samplePresentation, issuerDocument.VerificationMethod[0])
 	assert.Equal(t, errors.New("square/go-jose: error in cryptographic primitive"), err)
-	assert.False(t, success)
-	success, err = VerifyVPSecp256k1(samplePresentation, issuerDocument.VerificationMethod[0], "sampleNonce2")
-	assert.Nil(t, err)
 	assert.False(t, success)
 }

@@ -12,24 +12,21 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dappley/go-dappley/crypto/keystore/secp256k1"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/metabloxDID/models"
 	"github.com/mr-tron/base58"
 	"github.com/multiformats/go-multibase"
 )
 
-func GenerateDIDString(privKey *ecdsa.PrivateKey) (string, error) {
-	privData, err := secp256k1.FromECDSAPrivateKey(privKey)
-	if err != nil {
-		return "", err
-	}
+func GenerateDIDString(privKey *ecdsa.PrivateKey) string {
+	privData := crypto.FromECDSA(privKey)
 
 	hash := sha256.New()
 	hash.Write(privData)
 	hashData := hash.Sum(nil)
 	didString := base58.Encode(hashData)
 	returnString := "did:metablox:" + didString
-	return returnString, nil
+	return returnString
 }
 
 func CreateDID(privKey *ecdsa.PrivateKey) (*models.DIDDocument, error) {
@@ -37,7 +34,7 @@ func CreateDID(privKey *ecdsa.PrivateKey) (*models.DIDDocument, error) {
 	document := new(models.DIDDocument)
 
 	var err error
-	document.ID, err = GenerateDIDString(privKey)
+	document.ID = GenerateDIDString(privKey)
 	if err != nil {
 		return nil, err
 	}
@@ -48,10 +45,7 @@ func CreateDID(privKey *ecdsa.PrivateKey) (*models.DIDDocument, error) {
 	document.Updated = document.Created
 	document.Version = 1
 
-	pubData, err := secp256k1.FromECDSAPublicKey(&privKey.PublicKey)
-	if err != nil {
-		return nil, err
-	}
+	pubData := crypto.FromECDSAPub(&privKey.PublicKey)
 
 	VM := models.VerificationMethod{}
 	VM.ID = document.ID + "#verification"
@@ -186,10 +180,7 @@ func AuthenticateDocumentSubject(document *models.DIDDocument, message, signatur
 			return false, err
 		}
 
-		result, err := secp256k1.Verify(message, signature, pubData)
-		if err != nil {
-			return false, err
-		}
+		result := crypto.VerifySignature(pubData, message, signature)
 		return result, nil
 
 	default:

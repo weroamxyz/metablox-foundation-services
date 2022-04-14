@@ -7,7 +7,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/dappley/go-dappley/crypto/keystore/secp256k1"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/metabloxDID/credentials"
 	"github.com/metabloxDID/did"
 	"github.com/metabloxDID/key"
@@ -44,7 +44,7 @@ func CreatePresentation(credentials []models.VerifiableCredential, holderDocumen
 
 //Need to first verify the presentation's proof using the holder's DID document. Afterwards, need to verify
 //the proof of each credential included inside the presentation
-func VerifyVP(presentation *models.VerifiablePresentation, nonce string) (bool, error) {
+func VerifyVP(presentation *models.VerifiablePresentation) (bool, error) {
 	resolutionMeta, holderDoc, _ := did.Resolve(presentation.Holder, models.CreateResolutionOptions())
 	if resolutionMeta.Error != "" {
 		return false, errors.New("failed to resolve holder document: " + resolutionMeta.Error)
@@ -62,7 +62,7 @@ func VerifyVP(presentation *models.VerifiablePresentation, nonce string) (bool, 
 		if targetVM.MethodType != "EcdsaSecp256k1VerificationKey2019" {
 			return false, errors.New("must use a verification method with a type of 'EcdsaSecp256k1VerificationKey2019' to verify a 'EcdsaSecp256k1Signature2019' proof")
 		}
-		success, err = VerifyVPSecp256k1(presentation, targetVM, nonce)
+		success, err = VerifyVPSecp256k1(presentation, targetVM)
 	default:
 		return false, errors.New("unable to verify unknown proof type " + presentation.Proof.Type)
 	}
@@ -81,11 +81,7 @@ func VerifyVP(presentation *models.VerifiablePresentation, nonce string) (bool, 
 	return true, nil
 }
 
-func VerifyVPSecp256k1(presentation *models.VerifiablePresentation, targetVM models.VerificationMethod, nonce string) (bool, error) {
-	//presentation must include the requested nonce
-	if presentation.Proof.Nonce != nonce {
-		return false, nil
-	}
+func VerifyVPSecp256k1(presentation *models.VerifiablePresentation, targetVM models.VerificationMethod) (bool, error) {
 	copiedVP := *presentation
 	//have to make sure to remove the signature from the copy, as the original did not have a signature at the time the signature was generated
 	copiedVP.Proof.JWSSignature = ""
@@ -94,7 +90,8 @@ func VerifyVPSecp256k1(presentation *models.VerifiablePresentation, targetVM mod
 	if err != nil {
 		return false, err
 	}
-	pubKey, err := secp256k1.ToECDSAPublicKey(pubData)
+
+	pubKey, err := crypto.UnmarshalPubkey(pubData)
 	if err != nil {
 		return false, err
 	}

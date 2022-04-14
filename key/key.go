@@ -7,21 +7,18 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/dappley/go-dappley/crypto/keystore/secp256k1"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/spf13/viper"
 	gojose "gopkg.in/square/go-jose.v2"
 )
 
 func GenerateNewPrivateKey() (*ecdsa.PrivateKey, string, error) {
-	privKey, err := secp256k1.NewECDSAPrivateKey()
+	privKey, err := crypto.GenerateKey()
 	if err != nil {
 		return nil, "", err
 	}
 
-	privData, err := secp256k1.FromECDSAPrivateKey(privKey)
-	if err != nil {
-		return nil, "", err
-	}
+	privData := crypto.FromECDSA(privKey)
 
 	saveLocation := viper.GetString("storage.key_saving")
 	fileNumber := 1
@@ -50,7 +47,7 @@ func LoadPrivateKey(keyFileName string) (*ecdsa.PrivateKey, error) {
 		return nil, err
 	}
 
-	privKey, err := secp256k1.ToECDSAPrivateKey(privData)
+	privKey, err := crypto.ToECDSA(privData)
 	if err != nil {
 		return nil, err
 	}

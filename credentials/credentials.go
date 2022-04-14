@@ -6,9 +6,12 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
+	"strconv"
+	"strings"
 	"time"
 
-	"github.com/dappley/go-dappley/crypto/keystore/secp256k1"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/metabloxDID/dao"
 	"github.com/metabloxDID/did"
 	"github.com/metabloxDID/key"
 	"github.com/metabloxDID/models"
@@ -16,18 +19,15 @@ import (
 )
 
 const sampleTrustedIssuer = "did:metablox:sampleIssuer"
+const baseIDString = "http://metablox.com/credentials/"
 
 //In the future, will probably need to set up multiple different creation functions for different types of VCs.
 //This function serves as an example of making a resident card
-func CreateVC(issuerDocument *models.DIDDocument, subjectInfo *models.SubjectInfo, issuerPrivKey *ecdsa.PrivateKey) (*models.VerifiableCredential, error) {
-	context := make([]string, 0)
-	context = append(context, "https://www.w3.org/2018/credentials/v1")
-	context = append(context, "https://ns.did.ai/suites/secp256k1-2019/v1/")
-	vcType := make([]string, 0)
-	vcType = append(vcType, "VerifiableCredential")
-	vcType = append(vcType, "PermanentResidentCard")
+func CreateVC(issuerDocument *models.DIDDocument, issuerPrivKey *ecdsa.PrivateKey) (*models.VerifiableCredential, error) {
+	context := []string{"https://www.w3.org/2018/credentials/v1", "https://ns.did.ai/suites/secp256k1-2019/v1/"}
+	vcType := []string{"VerifiableCredential"}
 	expirationDate := time.Now().AddDate(10, 0, 0).Format(time.RFC3339) //arbitrarily setting VCs to last for 10 years for the moment, can change when necessary
-	description := "Government of Example Permanent Resident Card"
+	description := ""
 
 	vcProof := models.CreateVCProof()
 	vcProof.Type = "EcdsaSecp256k1Signature2019"
@@ -36,7 +36,29 @@ func CreateVC(issuerDocument *models.DIDDocument, subjectInfo *models.SubjectInf
 	vcProof.Created = time.Now().Format(time.RFC3339)
 	vcProof.ProofPurpose = "Authentication"
 
-	newVC := models.NewVerifiableCredential(context, vcType, issuerDocument.ID, time.Now().Format(time.RFC3339), expirationDate, description, *subjectInfo, *vcProof)
+	newVC := models.NewVerifiableCredential(context, "0", vcType, "", issuerDocument.ID, time.Now().Format(time.RFC3339), expirationDate, description, nil, *vcProof, false)
+
+	return newVC, nil
+}
+
+func CreateWifiAccessVC(issuerDocument *models.DIDDocument, wifiAccessInfo *models.WifiAccessInfo, issuerPrivKey *ecdsa.PrivateKey) (*models.VerifiableCredential, error) {
+	newVC, err := CreateVC(issuerDocument, issuerPrivKey)
+	if err != nil {
+		return nil, err
+	}
+
+	newVC.Type = append(newVC.Type, "WifiAccess")
+	newVC.SubType = "WifiAccess"
+	newVC.Description = "Example Wifi Access Credential"
+	newVC.CredentialSubject = *wifiAccessInfo
+
+	//Upload VC to DB and generate ID. Has to be done before creating signature, as changing the ID will change the signature
+	generatedID, err := dao.UploadWifiAccessVC(*newVC)
+	if err != nil {
+		return nil, err
+	}
+	newVC.ID = baseIDString + strconv.Itoa(generatedID)
+
 	//Create the proof's signature using a stringified version of the VC and the issuer's private key.
 	//This way, the signature can be verified by re-stringifying the VC and looking up the public key in the issuer's DID document.
 	//Verification will only succeed if the VC was unchanged since the signature and if the issuer
@@ -50,6 +72,78 @@ func CreateVC(issuerDocument *models.DIDDocument, subjectInfo *models.SubjectInf
 	newVC.Proof.JWSSignature = signatureData
 
 	return newVC, nil
+}
+
+func CreateMiningLicenseVC(issuerDocument *models.DIDDocument, miningLicenseInfo *models.MiningLicenseInfo, issuerPrivKey *ecdsa.PrivateKey) (*models.VerifiableCredential, error) {
+	newVC, err := CreateVC(issuerDocument, issuerPrivKey)
+	if err != nil {
+		return nil, err
+	}
+
+	newVC.Type = append(newVC.Type, "MiningLicense")
+	newVC.SubType = "MiningLicense"
+	newVC.Description = "Example Mining License Credential"
+	newVC.CredentialSubject = *miningLicenseInfo
+
+	//Upload VC to DB and generate ID. Has to be done before creating signature, as changing the ID will change the signature
+	generatedID, err := dao.UploadMiningLicenseVC(*newVC)
+	if err != nil {
+		return nil, err
+	}
+	newVC.ID = baseIDString + strconv.Itoa(generatedID)
+
+	//Create the proof's signature using a stringified version of the VC and the issuer's private key.
+	//This way, the signature can be verified by re-stringifying the VC and looking up the public key in the issuer's DID document.
+	//Verification will only succeed if the VC was unchanged since the signature and if the issuer
+	//public key matches the private key used to make the signature
+	hashedVC := sha256.Sum256(ConvertVCToBytes(*newVC))
+
+	signatureData, err := key.CreateJWSSignature(issuerPrivKey, hashedVC[:])
+	if err != nil {
+		return nil, err
+	}
+	newVC.Proof.JWSSignature = signatureData
+
+	return newVC, nil
+}
+
+func RenewVC(vc *models.VerifiableCredential) error {
+	splitID := strings.Split(vc.ID, "/")
+	idNum := splitID[len(splitID)-1]
+
+	revoked, err := dao.GetCredentialStatusByID(idNum)
+	if err != nil {
+		return err
+	}
+
+	if revoked {
+		return errors.New("VC has been revoked, cannot renew")
+	}
+
+	oldExpirationDate, err := time.Parse(time.RFC3339, vc.ExpirationDate)
+	if err != nil {
+		return err
+	}
+
+	newExpirationDate := oldExpirationDate.AddDate(1, 0, 0) //TODO: come up with better logic for how much to extend expiration date by
+	vc.ExpirationDate = newExpirationDate.Format(time.RFC3339)
+	err = dao.UpdateVCExpirationDate(idNum, newExpirationDate.Format("2006-01-02 15:04:05"))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func RevokeVC(vc *models.VerifiableCredential) error {
+	vc.Revoked = true
+	splitID := strings.Split(vc.ID, "/")
+	idNum := splitID[len(splitID)-1]
+
+	err := dao.RevokeVC(idNum)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func VCToJson(vc *models.VerifiableCredential) ([]byte, error) {
@@ -109,7 +203,8 @@ func VerifyVCSecp256k1(vc *models.VerifiableCredential, targetVM models.Verifica
 	if err != nil {
 		return false, err
 	}
-	pubKey, err := secp256k1.ToECDSAPublicKey(pubData)
+
+	pubKey, err := crypto.UnmarshalPubkey(pubData)
 	if err != nil {
 		return false, err
 	}
@@ -130,11 +225,17 @@ func ConvertVCToBytes(vc models.VerifiableCredential) []byte {
 		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(item)}, []byte{})
 	}
 
-	convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(vc.Issuer), []byte(vc.IssuanceDate), []byte(vc.ExpirationDate), []byte(vc.Description), []byte(vc.CredentialSubject.ID)}, []byte{})
-	for _, item := range vc.CredentialSubject.Type {
-		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(item)}, []byte{})
+	convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(vc.Issuer), []byte(vc.IssuanceDate), []byte(vc.ExpirationDate), []byte(vc.Description)}, []byte{})
+
+	switch vc.Type[1] {
+	case "WifiAccess":
+		wifiAccessInfo := vc.CredentialSubject.(models.WifiAccessInfo)
+		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(wifiAccessInfo.ID), []byte(wifiAccessInfo.PlaceholderParameter)}, []byte{})
+	case "MiningLicense":
+		miningLicenseInfo := vc.CredentialSubject.(models.MiningLicenseInfo)
+		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(miningLicenseInfo.ID), []byte(miningLicenseInfo.PlaceholderParameter2)}, []byte{})
 	}
 
-	convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(vc.CredentialSubject.GivenName), []byte(vc.CredentialSubject.FamilyName), []byte(vc.CredentialSubject.Gender), []byte(vc.CredentialSubject.BirthCountry), []byte(vc.CredentialSubject.BirthDate), []byte(vc.Proof.Type), []byte(vc.Proof.Created), []byte(vc.Proof.VerificationMethod), []byte(vc.Proof.ProofPurpose), []byte(vc.Proof.JWSSignature)}, []byte{})
+	convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(vc.Proof.Type), []byte(vc.Proof.Created), []byte(vc.Proof.VerificationMethod), []byte(vc.Proof.ProofPurpose), []byte(vc.Proof.JWSSignature)}, []byte{})
 	return convertedBytes
 }
