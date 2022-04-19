@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/metabloxDID/key"
 	"github.com/metabloxDID/models"
 	"github.com/mr-tron/base58"
 	"github.com/multiformats/go-multibase"
@@ -233,6 +234,33 @@ func MetabloxReadRepresentation(identifier string, options *models.Representatio
 		}
 		return &models.RepresentationResolutionMetadata{ContentType: "application/did+json"}, byteStream, readDocumentMeta
 	}
+}
+
+func AuthenticateDocumentHolder(doc *models.DIDDocument, signature, nonce string) (bool, error) {
+	authenticationMethod, err := doc.RetrieveVerificationMethod(doc.Authentication)
+	if err != nil {
+		return false, err
+	}
+
+	switch authenticationMethod.MethodType {
+	case "EcdsaSecp256k1VerificationKey2019":
+		return AuthenticateSecp256k1(signature, nonce, authenticationMethod)
+	default:
+		return false, errors.New("unable to verify unknown proof type " + authenticationMethod.MethodType)
+	}
+}
+
+func AuthenticateSecp256k1(signature, nonce string, vm models.VerificationMethod) (bool, error) {
+	_, pubData, err := multibase.Decode(vm.MultibaseKey)
+	if err != nil {
+		return false, err
+	}
+
+	pubKey, err := crypto.UnmarshalPubkey(pubData)
+	if err != nil {
+		return false, err
+	}
+	return key.VerifyJWSSignature(signature, pubKey, []byte(nonce))
 }
 
 func ConvertDocToBytes(doc models.DIDDocument) []byte {

@@ -64,9 +64,9 @@ func UploadWifiAccessVC(vc models.VerifiableCredential) (int, error) {
 		return 0, err
 	}
 	newID, _ := result.LastInsertId()
-	sqlStr = "insert into WifiAccessInfo (CredentialID, PlaceholderParameter) values (?,?)"
+	sqlStr = "insert into WifiAccessInfo (CredentialID, ID, PlaceholderParameter) values (?,?,?)"
 	wifiAccessInfo := vc.CredentialSubject.(models.WifiAccessInfo)
-	_, err = tx.Exec(sqlStr, newID, wifiAccessInfo.PlaceholderParameter)
+	_, err = tx.Exec(sqlStr, newID, wifiAccessInfo.ID, wifiAccessInfo.PlaceholderParameter)
 	if err != nil {
 		tx.Rollback()
 		return 0, err
@@ -91,9 +91,9 @@ func UploadMiningLicenseVC(vc models.VerifiableCredential) (int, error) {
 		return 0, err
 	}
 	newID, _ := result.LastInsertId()
-	sqlStr = "insert into MiningLicenseInfo (CredentialID, PlaceholderParameter2) values (?,?)"
+	sqlStr = "insert into MiningLicenseInfo (CredentialID, ID, PlaceholderParameter2) values (?,?,?)"
 	miningLicenseInfo := vc.CredentialSubject.(models.MiningLicenseInfo)
-	_, err = tx.Exec(sqlStr, newID, miningLicenseInfo.PlaceholderParameter2)
+	_, err = tx.Exec(sqlStr, newID, miningLicenseInfo.ID, miningLicenseInfo.PlaceholderParameter2)
 	if err != nil {
 		tx.Rollback()
 		return 0, err
@@ -132,4 +132,50 @@ func GetCredentialStatusByID(id string) (bool, error) {
 	}
 
 	return revoked, nil
+}
+
+func CheckWifiAccessForExistence(id string) (bool, error) {
+	var count int
+	sqlStr := "select count(*) from WifiAccessInfo where ID = ?"
+	err := SqlDB.Get(&count, sqlStr, id)
+	if err != nil {
+		return false, err
+	}
+	if count > 0 {
+		return true, nil
+	}
+	return false, nil
+}
+
+func CheckMiningLicenseForExistence(id string) (bool, error) {
+	var count int
+	sqlStr := "select count(*) from MiningLicenseInfo where ID = ?"
+	err := SqlDB.Get(&count, sqlStr, id)
+	if err != nil {
+		return false, err
+	}
+	if count > 0 {
+		return true, nil
+	}
+	return false, nil
+}
+
+func GetMinerList() ([]models.MinerInfo, error) {
+	sqlStr := "select * from MinerInfo"
+	rows, err := SqlDB.Queryx(sqlStr)
+	if err != nil {
+		return nil, err
+	}
+
+	var miners []models.MinerInfo
+
+	for rows.Next() {
+		miner := models.CreateMinerInfo()
+		err = rows.StructScan(miner)
+		if err != nil {
+			return nil, err
+		}
+		miners = append(miners, *miner)
+	}
+	return miners, nil
 }

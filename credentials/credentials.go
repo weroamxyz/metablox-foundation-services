@@ -21,8 +21,7 @@ import (
 const sampleTrustedIssuer = "did:metablox:sampleIssuer"
 const baseIDString = "http://metablox.com/credentials/"
 
-//In the future, will probably need to set up multiple different creation functions for different types of VCs.
-//This function serves as an example of making a resident card
+//Base function for creating VCs. Called by any function that creates a type of VC
 func CreateVC(issuerDocument *models.DIDDocument, issuerPrivKey *ecdsa.PrivateKey) (*models.VerifiableCredential, error) {
 	context := []string{"https://www.w3.org/2018/credentials/v1", "https://ns.did.ai/suites/secp256k1-2019/v1/"}
 	vcType := []string{"VerifiableCredential"}
@@ -42,6 +41,14 @@ func CreateVC(issuerDocument *models.DIDDocument, issuerPrivKey *ecdsa.PrivateKe
 }
 
 func CreateWifiAccessVC(issuerDocument *models.DIDDocument, wifiAccessInfo *models.WifiAccessInfo, issuerPrivKey *ecdsa.PrivateKey) (*models.VerifiableCredential, error) {
+	exists, err := dao.CheckWifiAccessForExistence(wifiAccessInfo.ID)
+	if err != nil {
+		return nil, err
+	}
+	if exists {
+		return nil, errors.New("wifi access vc already exists for user")
+	}
+
 	newVC, err := CreateVC(issuerDocument, issuerPrivKey)
 	if err != nil {
 		return nil, err
@@ -75,6 +82,14 @@ func CreateWifiAccessVC(issuerDocument *models.DIDDocument, wifiAccessInfo *mode
 }
 
 func CreateMiningLicenseVC(issuerDocument *models.DIDDocument, miningLicenseInfo *models.MiningLicenseInfo, issuerPrivKey *ecdsa.PrivateKey) (*models.VerifiableCredential, error) {
+	exists, err := dao.CheckMiningLicenseForExistence(miningLicenseInfo.ID)
+	if err != nil {
+		return nil, err
+	}
+	if exists {
+		return nil, errors.New("mining license vc already exists for user")
+	}
+
 	newVC, err := CreateVC(issuerDocument, issuerPrivKey)
 	if err != nil {
 		return nil, err

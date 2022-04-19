@@ -13,8 +13,17 @@ import (
 func TestCreateMiningLicenseVC(t *testing.T) {
 	err := settings.Init()
 	assert.Nil(t, err)
-	err = dao.InitSql()
+	err = dao.TestDBInit()
 	assert.Nil(t, err)
+	t.Cleanup(dao.Close)
+	t.Cleanup(dao.DeleteTestCredentialsTable)
+	t.Cleanup(dao.DeleteTestMiningLicenseTable)
+
+	err = dao.CreateTestCredentialsTable()
+	assert.Nil(t, err)
+	err = dao.CreateTestMiningLicenseTable()
+	assert.Nil(t, err)
+
 	issuerDocument := models.GenerateTestDIDDocument()
 	issuerDocument.ID = "did:metablox:sampleIssuer"
 	miningLicenseInfo := models.GenerateTestMiningLicenseInfo()
@@ -29,13 +38,24 @@ func TestCreateMiningLicenseVC(t *testing.T) {
 	assert.Equal(t, sampleVC.Proof.Type, vc.Proof.Type)
 	assert.Equal(t, sampleVC.Proof.ProofPurpose, vc.Proof.ProofPurpose)
 	assert.Equal(t, sampleVC.Proof.VerificationMethod, vc.Proof.VerificationMethod)
+	_, err = CreateMiningLicenseVC(issuerDocument, miningLicenseInfo, issuerPrivKey)
+	assert.Equal(t, errors.New("mining license vc already exists for user"), err)
 }
 
 func TestCreateWifiAccessVC(t *testing.T) {
 	err := settings.Init()
 	assert.Nil(t, err)
-	err = dao.InitSql()
+	err = dao.TestDBInit()
 	assert.Nil(t, err)
+	t.Cleanup(dao.Close)
+	t.Cleanup(dao.DeleteTestCredentialsTable)
+	t.Cleanup(dao.DeleteTestWifiAccessTable)
+
+	err = dao.CreateTestCredentialsTable()
+	assert.Nil(t, err)
+	err = dao.CreateTestWifiAccessTable()
+	assert.Nil(t, err)
+
 	issuerDocument := models.GenerateTestDIDDocument()
 	issuerDocument.ID = "did:metablox:sampleIssuer"
 	wifiAccessInfo := models.GenerateTestWifiAccessInfo()

@@ -110,13 +110,27 @@ type Service struct {
 }
 
 type WifiAccessInfo struct {
-	ID                   string `json:"id"`
+	CredentialID         string `json:"-"`
+	ID                   string `json:"id"` //id of the user the credential is assigned to
 	PlaceholderParameter string `json:"placeholderParameter"`
 }
 
 type MiningLicenseInfo struct {
-	ID                    string `json:"id"`
+	CredentialID          string `json:"-"`
+	ID                    string `json:"id"` //id of the user the credential is assigned to
 	PlaceholderParameter2 string `json:"placeholderParameter2"`
+}
+
+type MinerInfo struct {
+	ID         string `json:"id" db:"ID"`
+	Name       string `json:"name" db:"Name"`
+	MAC        string `json:"mac" db:"MAC"`
+	CreateTime string `json:"createTime" db:"CreateTime"`
+}
+
+type AuthenticationInfo struct {
+	Signature string `json:"signature"`
+	Nonce     string `json:"nonce"`
 }
 
 func CreateDIDDocument() *DIDDocument {
@@ -184,6 +198,14 @@ func CreatePresentation() *VerifiablePresentation {
 	return &VerifiablePresentation{}
 }
 
+func CreateMinerInfo() *MinerInfo {
+	return &MinerInfo{}
+}
+
+func CreateAuthenticationInfo() *AuthenticationInfo {
+	return &AuthenticationInfo{}
+}
+
 func NewPresentation(context, presentationType []string, credentials []VerifiableCredential, holder string, proof VPProof) *VerifiablePresentation {
 	return &VerifiablePresentation{
 		Context:              context,
@@ -234,8 +256,9 @@ func GenerateTestSubjectInfo() *SubjectInfo {
 	)
 }
 
-func NewWifiAccessInfo(id, placeholder string) *WifiAccessInfo {
+func NewWifiAccessInfo(credentialID, id, placeholder string) *WifiAccessInfo {
 	return &WifiAccessInfo{
+		CredentialID:         credentialID,
 		ID:                   id,
 		PlaceholderParameter: placeholder,
 	}
@@ -244,12 +267,14 @@ func NewWifiAccessInfo(id, placeholder string) *WifiAccessInfo {
 func GenerateTestWifiAccessInfo() *WifiAccessInfo {
 	return NewWifiAccessInfo(
 		"sampleID",
+		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo",
 		"ThisIsAPlaceholder",
 	)
 }
 
-func NewMiningLicenseInfo(id, placeholder string) *MiningLicenseInfo {
+func NewMiningLicenseInfo(credentialID, id, placeholder string) *MiningLicenseInfo {
 	return &MiningLicenseInfo{
+		CredentialID:          credentialID,
 		ID:                    id,
 		PlaceholderParameter2: placeholder,
 	}
@@ -258,6 +283,7 @@ func NewMiningLicenseInfo(id, placeholder string) *MiningLicenseInfo {
 func GenerateTestMiningLicenseInfo() *MiningLicenseInfo {
 	return NewMiningLicenseInfo(
 		"sampleID2",
+		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo",
 		"ThisIsAPlaceholder2",
 	)
 }
@@ -280,6 +306,13 @@ func NewVPProof(proofType, created, vm, purpose, sig, nonce string) *VPProof {
 		ProofPurpose:       purpose,
 		JWSSignature:       sig,
 		Nonce:              nonce,
+	}
+}
+
+func NewAuthenticationInfo(signature, nonce string) *AuthenticationInfo {
+	return &AuthenticationInfo{
+		Signature: signature,
+		Nonce:     nonce,
 	}
 }
 
@@ -400,5 +433,12 @@ func GenerateTestWifiAccessPresentation() *VerifiablePresentation {
 		[]VerifiableCredential{*GenerateTestWifiAccessVC()},
 		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo",
 		*vpProof,
+	)
+}
+
+func GenerateTestAuthenticationInfo() *AuthenticationInfo {
+	return NewAuthenticationInfo(
+		"eyJhbGciOiJFUzI1NiJ9..liXdQpeQZOp6GP4xIjj0YxwIoJ-NeklgnondsexzHc4haChZlCQckwT5pnaFHhTYtaZf9V74EKfvl-CqQ85Elg",
+		"2022-04-19 13:56:52.926803645 -0700 PDT m=+37.117567171",
 	)
 }

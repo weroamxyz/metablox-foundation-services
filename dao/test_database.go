@@ -80,6 +80,7 @@ func RetrieveSampleFromCredentials(id string) (*models.VerifiableCredential, err
 func CreateTestMiningLicenseTable() error {
 	sqlStr := `CREATE TABLE MiningLicenseInfo (
 		CredentialID int NOT NULL,
+		ID varchar(100) NOT NULL,
 		PlaceholderParameter2 varchar(100) NOT NULL,
 		PRIMARY KEY (CredentialID)
 	  )`
@@ -108,6 +109,7 @@ func RetrieveSampleFromMiningLicenseInfo(id string) (*models.MiningLicenseInfo, 
 func CreateTestWifiAccessTable() error {
 	sqlStr := `CREATE TABLE WifiAccessInfo (
 		CredentialID int NOT NULL,
+		ID varchar(100) NOT NULL,
 		PlaceholderParameter varchar(100) NOT NULL,
 		PRIMARY KEY (CredentialID)
 	  )`
