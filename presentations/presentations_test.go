@@ -1,11 +1,11 @@
 package presentations
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/metabloxDID/credentials"
 	"github.com/metabloxDID/dao"
+	"github.com/metabloxDID/errval"
 	"github.com/metabloxDID/models"
 	"github.com/metabloxDID/settings"
 	"github.com/stretchr/testify/assert"
@@ -58,6 +58,6 @@ func TestVerifyVP(t *testing.T) {
 	assert.True(t, success)
 	samplePresentation.Type = append(samplePresentation.Type, "Modified")
 	success, err = VerifyVPSecp256k1(samplePresentation, issuerDocument.VerificationMethod[0])
-	assert.Equal(t, errors.New("square/go-jose: error in cryptographic primitive"), err)
+	assert.Equal(t, errval.ErrJWSAuthentication, err)
 	assert.False(t, success)
 }

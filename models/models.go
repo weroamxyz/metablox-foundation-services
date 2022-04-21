@@ -2,10 +2,22 @@ package models
 
 import (
 	"crypto/ecdsa"
-	"errors"
 
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/metabloxDID/errval"
 )
+
+const Secp256k1Sig = "EcdsaSecp256k1Signature2019"
+const Secp256k1Key = "EcdsaSecp256k1VerificationKey2019"
+const PurposeAuth = "Authentication"
+
+const ContextDID = "https://w3id.org/did/v1"
+const ContextCredential = "https://www.w3.org/2018/credentials/v1"
+const ContextSecp256k1 = "https://ns.did.ai/suites/secp256k1-2019/v1/"
+
+const TypeCredential = "VerifiableCredential"
+const TypeWifi = "WifiAccess"
+const TypeMining = "MiningLicense"
 
 type DIDDocument struct {
 	Context            []string             `json:"@context"`
@@ -143,7 +155,7 @@ func (doc DIDDocument) RetrieveVerificationMethod(vmID string) (VerificationMeth
 			return vm, nil
 		}
 	}
-	return VerificationMethod{}, errors.New("failed to find verification method with ID " + vmID)
+	return VerificationMethod{}, errval.ErrMissingVM
 }
 
 func (doc *DIDDocument) AddService(service Service) {
@@ -223,8 +235,8 @@ func GenerateTestPrivKey() *ecdsa.PrivateKey {
 
 func GenerateTestDIDDocument() *DIDDocument {
 	document := CreateDIDDocument()
-	document.Context = append(document.Context, "https://w3id.org/did/v1")
-	document.Context = append(document.Context, "https://ns.did.ai/suites/secp256k1-2019/v1/")
+	document.Context = append(document.Context, ContextDID)
+	document.Context = append(document.Context, ContextSecp256k1)
 	document.ID = "did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo"
 	document.Created = "2022-03-31T12:53:19-07:00"
 	document.Updated = "2022-03-31T12:53:19-07:00"
@@ -318,19 +330,19 @@ func NewAuthenticationInfo(signature, nonce string) *AuthenticationInfo {
 
 func GenerateTestVC() *VerifiableCredential {
 	vcProof := NewVCProof(
-		"EcdsaSecp256k1Signature2019",
+		Secp256k1Sig,
 		"2022-03-31T12:53:19-07:00",
 		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo#verification",
-		"Authentication",
+		PurposeAuth,
 		"eyJhbGciOiJFUzI1NiJ9..lvLWxsW_5GIZGCztNs_ioBHHyC4PZ1JP9CQL0NgdTwjf7EHMDgCViLzLwv_FFJtYSEUh7Y67VbIFhM50B5cnxg",
 	)
 
 	subjectInfo := GenerateTestSubjectInfo()
 
 	return NewVerifiableCredential(
-		[]string{"https://www.w3.org/2018/credentials/v1", "https://ns.did.ai/suites/secp256k1-2019/v1/"},
+		[]string{ContextCredential, ContextSecp256k1},
 		"http://metablox.com/credentials/1",
-		[]string{"VerifiableCredential", "PermanentResidentCard"},
+		[]string{TypeCredential, "PermanentResidentCard"},
 		"PermanentResidentCard",
 		"did:metablox:sampleIssuer",
 		"2022-03-31T12:53:19-07:00",
@@ -344,20 +356,20 @@ func GenerateTestVC() *VerifiableCredential {
 
 func GenerateTestWifiAccessVC() *VerifiableCredential {
 	vcProof := NewVCProof(
-		"EcdsaSecp256k1Signature2019",
+		Secp256k1Sig,
 		"2022-03-31T12:53:19-07:00",
 		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo#verification",
-		"Authentication",
+		PurposeAuth,
 		"eyJhbGciOiJFUzI1NiJ9..zYvdJMDdwS8IBuXMYCzLSdU_VBn5iG6bYzSIKz366O_KkP0bJ2fV3sUmzzQM7CBBuRSOPH08CAeFzoNXIl0LdA",
 	)
 
 	wifiAccessInfo := GenerateTestWifiAccessInfo()
 
 	return NewVerifiableCredential(
-		[]string{"https://www.w3.org/2018/credentials/v1", "https://ns.did.ai/suites/secp256k1-2019/v1/"},
+		[]string{ContextCredential, ContextSecp256k1},
 		"http://metablox.com/credentials/1",
-		[]string{"VerifiableCredential", "WifiAccess"},
-		"WifiAccess",
+		[]string{TypeCredential, TypeWifi},
+		TypeWifi,
 		"did:metablox:sampleIssuer",
 		"2022-03-31T12:53:19-07:00",
 		"2032-03-31T12:53:19-07:00",
@@ -370,20 +382,20 @@ func GenerateTestWifiAccessVC() *VerifiableCredential {
 
 func GenerateTestMiningLicenseVC() *VerifiableCredential {
 	vcProof := NewVCProof(
-		"EcdsaSecp256k1Signature2019",
+		Secp256k1Sig,
 		"2022-03-31T12:53:19-07:00",
 		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo#verification",
-		"Authentication",
+		PurposeAuth,
 		"eyJhbGciOiJFUzI1NiJ9..zYvdJMDdwS8IBuXMYCzLSdU_VBn5iG6bYzSIKz366O_KkP0bJ2fV3sUmzzQM7CBBuRSOPH08CAeFzoNXIl0LdA",
 	)
 
 	miningLicenseInfo := GenerateTestMiningLicenseInfo()
 
 	return NewVerifiableCredential(
-		[]string{"https://www.w3.org/2018/credentials/v1", "https://ns.did.ai/suites/secp256k1-2019/v1/"},
+		[]string{ContextCredential, ContextSecp256k1},
 		"http://metablox.com/credentials/1",
-		[]string{"VerifiableCredential", "MiningLicense"},
-		"MiningLicense",
+		[]string{TypeCredential, TypeMining},
+		TypeMining,
 		"did:metablox:sampleIssuer",
 		"2022-03-31T12:53:19-07:00",
 		"2032-03-31T12:53:19-07:00",
@@ -400,16 +412,16 @@ func CreateService() *Service {
 
 func GenerateTestPresentation() *VerifiablePresentation {
 	vpProof := NewVPProof(
-		"EcdsaSecp256k1Signature2019",
+		Secp256k1Sig,
 		"2022-03-31T12:53:19-07:00",
 		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo#verification",
-		"Authentication",
+		PurposeAuth,
 		"eyJhbGciOiJFUzI1NiJ9..bmj6KhHcBkLOHgAZrLqgweE-StyBXvvj6bmZqC6TqiYVtC_tXf076xDAAXzmx160dAqivTzgX-943ZU-VWXDqw",
 		"sampleNonce",
 	)
 
 	return NewPresentation(
-		[]string{"https://www.w3.org/2018/credentials/v1", "https://ns.did.ai/suites/secp256k1-2019/v1/"},
+		[]string{ContextCredential, ContextSecp256k1},
 		[]string{"VerifiablePresentation"},
 		[]VerifiableCredential{*GenerateTestVC()},
 		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo",
@@ -419,16 +431,16 @@ func GenerateTestPresentation() *VerifiablePresentation {
 
 func GenerateTestWifiAccessPresentation() *VerifiablePresentation {
 	vpProof := NewVPProof(
-		"EcdsaSecp256k1Signature2019",
+		Secp256k1Sig,
 		"2022-03-31T12:53:19-07:00",
 		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo#verification",
-		"Authentication",
+		PurposeAuth,
 		"eyJhbGciOiJFUzI1NiJ9..bmj6KhHcBkLOHgAZrLqgweE-StyBXvvj6bmZqC6TqiYVtC_tXf076xDAAXzmx160dAqivTzgX-943ZU-VWXDqw",
 		"sampleNonce",
 	)
 
 	return NewPresentation(
-		[]string{"https://www.w3.org/2018/credentials/v1", "https://ns.did.ai/suites/secp256k1-2019/v1/"},
+		[]string{ContextCredential, ContextSecp256k1},
 		[]string{"VerifiablePresentation"},
 		[]VerifiableCredential{*GenerateTestWifiAccessVC()},
 		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo",

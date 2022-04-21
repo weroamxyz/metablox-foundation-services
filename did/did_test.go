@@ -2,9 +2,9 @@ package did
 
 import (
 	"encoding/json"
-	"errors"
 	"testing"
 
+	"github.com/metabloxDID/errval"
 	"github.com/metabloxDID/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -104,30 +104,30 @@ func TestAuthenticateDocumentHolder(t *testing.T) {
 
 	authenticationInfo.Nonce = "newValue"
 	success, err = AuthenticateDocumentHolder(doc, authenticationInfo.Signature, authenticationInfo.Nonce)
-	assert.Equal(t, errors.New("square/go-jose: error in cryptographic primitive"), err)
+	assert.Equal(t, errval.ErrJWSAuthentication, err)
 	assert.False(t, success)
 
 	authenticationInfo.Nonce = "2022-04-19 13:56:52.926803645 -0700 PDT m=+37.117567171"
 	authenticationInfo.Signature = "eyJhbGciOiJVUzI1NiJ9..liXdQpeQZOp6GP4xIjj0YxwIoJ-NeklgnondsexzHc4haChZlCQckwT5pnaFHhTYtaZf9V74EKfvl-CqQ85Elv"
 	success, err = AuthenticateDocumentHolder(doc, authenticationInfo.Signature, authenticationInfo.Nonce)
-	assert.Equal(t, errors.New("square/go-jose: error in cryptographic primitive"), err)
+	assert.Equal(t, errval.ErrJWSAuthentication, err)
 	assert.False(t, success)
 
 	authenticationInfo.Signature = "eyJhbGciOiJFUzI1NiJ9..liXdQpeQZOp6GP4xIjj0YxwIoJ-NeklgnondsexzHc4haChZlCQckwT5pnaFHhTYtaZf9V74EKfvl-CqQ85Elg"
 	doc.VerificationMethod[0].MultibaseKey = "zR4TQJaWaLA3vvYukULRJoxTsRmqCMsWuEJdDE8CJwRFCUijDGwCBP89xVcWdLRQaEM6b7wD294xCs8byy3CdDMYb"
 	success, err = AuthenticateDocumentHolder(doc, authenticationInfo.Signature, authenticationInfo.Nonce)
-	assert.Equal(t, errors.New("invalid secp256k1 public key"), err)
+	assert.Equal(t, errval.ErrInvalidSecp256k1PubKey, err)
 	assert.False(t, success)
 
 	doc.VerificationMethod[0].MultibaseKey = "zR4TQJaWaLA3vvYukULRJoxTsRmqCMsWuEJdDE8CJwRFCUijDGwCBP89xVcWdLRQaEM6b7wD294xCs8byy3CdDMYa"
 	doc.Authentication = "newValue"
 	success, err = AuthenticateDocumentHolder(doc, authenticationInfo.Signature, authenticationInfo.Nonce)
-	assert.Equal(t, errors.New("failed to find verification method with ID newValue"), err)
+	assert.Equal(t, errval.ErrMissingVM, err)
 	assert.False(t, success)
 
 	doc.Authentication = "did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo#verification"
 	doc.VerificationMethod[0].MethodType = "newValue"
 	success, err = AuthenticateDocumentHolder(doc, authenticationInfo.Signature, authenticationInfo.Nonce)
-	assert.Equal(t, errors.New("unable to verify unknown proof type newValue"), err)
+	assert.Equal(t, errval.ErrUnknownProofType, err)
 	assert.False(t, success)
 }

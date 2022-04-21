@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/metabloxDID/contract"
 	"github.com/metabloxDID/controllers"
-	"github.com/metabloxDID/daily"
 	"github.com/metabloxDID/dao"
 	"github.com/metabloxDID/routers"
 	"github.com/metabloxDID/settings"
@@ -30,12 +29,6 @@ func main() {
 	}
 
 	err = controllers.InitializeValues()
-	if err != nil {
-		logger.Error(err)
-		return
-	}
-
-	err = daily.StartDailyTimer()
 	if err != nil {
 		logger.Error(err)
 		return

@@ -1,10 +1,10 @@
 package credentials
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/metabloxDID/dao"
+	"github.com/metabloxDID/errval"
 	"github.com/metabloxDID/models"
 	"github.com/metabloxDID/settings"
 	"github.com/stretchr/testify/assert"
@@ -39,7 +39,7 @@ func TestCreateMiningLicenseVC(t *testing.T) {
 	assert.Equal(t, sampleVC.Proof.ProofPurpose, vc.Proof.ProofPurpose)
 	assert.Equal(t, sampleVC.Proof.VerificationMethod, vc.Proof.VerificationMethod)
 	_, err = CreateMiningLicenseVC(issuerDocument, miningLicenseInfo, issuerPrivKey)
-	assert.Equal(t, errors.New("mining license vc already exists for user"), err)
+	assert.Equal(t, errval.ErrMiningExists, err)
 }
 
 func TestCreateWifiAccessVC(t *testing.T) {
@@ -129,6 +129,6 @@ func TestVerifyVC(t *testing.T) {
 	assert.True(t, success)
 	vc.Type = append(vc.Type, "Modified")
 	success, err = VerifyVCSecp256k1(vc, issuerDocument.VerificationMethod[0])
-	assert.Equal(t, errors.New("square/go-jose: error in cryptographic primitive"), err)
+	assert.Equal(t, errval.ErrJWSAuthentication, err)
 	assert.False(t, success)
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/metabloxDID/dao"
 	"github.com/metabloxDID/did"
+	"github.com/metabloxDID/errval"
 	"github.com/metabloxDID/key"
 	"github.com/metabloxDID/models"
 	"github.com/multiformats/go-multibase"
@@ -22,18 +23,18 @@ const sampleTrustedIssuer = "did:metablox:sampleIssuer"
 const baseIDString = "http://metablox.com/credentials/"
 
 //Base function for creating VCs. Called by any function that creates a type of VC
-func CreateVC(issuerDocument *models.DIDDocument, issuerPrivKey *ecdsa.PrivateKey) (*models.VerifiableCredential, error) {
-	context := []string{"https://www.w3.org/2018/credentials/v1", "https://ns.did.ai/suites/secp256k1-2019/v1/"}
-	vcType := []string{"VerifiableCredential"}
+func CreateVC(issuerDocument *models.DIDDocument) (*models.VerifiableCredential, error) {
+	context := []string{models.ContextCredential, models.ContextSecp256k1}
+	vcType := []string{models.TypeCredential}
 	expirationDate := time.Now().AddDate(10, 0, 0).Format(time.RFC3339) //arbitrarily setting VCs to last for 10 years for the moment, can change when necessary
 	description := ""
 
 	vcProof := models.CreateVCProof()
-	vcProof.Type = "EcdsaSecp256k1Signature2019"
+	vcProof.Type = models.Secp256k1Sig
 	vcProof.VerificationMethod = issuerDocument.Authentication
 	vcProof.JWSSignature = ""
 	vcProof.Created = time.Now().Format(time.RFC3339)
-	vcProof.ProofPurpose = "Authentication"
+	vcProof.ProofPurpose = models.PurposeAuth
 
 	newVC := models.NewVerifiableCredential(context, "0", vcType, "", issuerDocument.ID, time.Now().Format(time.RFC3339), expirationDate, description, nil, *vcProof, false)
 
@@ -46,16 +47,16 @@ func CreateWifiAccessVC(issuerDocument *models.DIDDocument, wifiAccessInfo *mode
 		return nil, err
 	}
 	if exists {
-		return nil, errors.New("wifi access vc already exists for user")
+		return nil, errval.ErrWifiExists
 	}
 
-	newVC, err := CreateVC(issuerDocument, issuerPrivKey)
+	newVC, err := CreateVC(issuerDocument)
 	if err != nil {
 		return nil, err
 	}
 
-	newVC.Type = append(newVC.Type, "WifiAccess")
-	newVC.SubType = "WifiAccess"
+	newVC.Type = append(newVC.Type, models.TypeWifi)
+	newVC.SubType = models.TypeWifi
 	newVC.Description = "Example Wifi Access Credential"
 	newVC.CredentialSubject = *wifiAccessInfo
 
@@ -87,16 +88,16 @@ func CreateMiningLicenseVC(issuerDocument *models.DIDDocument, miningLicenseInfo
 		return nil, err
 	}
 	if exists {
-		return nil, errors.New("mining license vc already exists for user")
+		return nil, errval.ErrMiningExists
 	}
 
-	newVC, err := CreateVC(issuerDocument, issuerPrivKey)
+	newVC, err := CreateVC(issuerDocument)
 	if err != nil {
 		return nil, err
 	}
 
-	newVC.Type = append(newVC.Type, "MiningLicense")
-	newVC.SubType = "MiningLicense"
+	newVC.Type = append(newVC.Type, models.TypeMining)
+	newVC.SubType = models.TypeMining
 	newVC.Description = "Example Mining License Credential"
 	newVC.CredentialSubject = *miningLicenseInfo
 
@@ -132,7 +133,7 @@ func RenewVC(vc *models.VerifiableCredential) error {
 	}
 
 	if revoked {
-		return errors.New("VC has been revoked, cannot renew")
+		return errval.ErrRenewRevoked
 	}
 
 	oldExpirationDate, err := time.Parse(time.RFC3339, vc.ExpirationDate)
@@ -184,12 +185,12 @@ func VerifyVC(vc *models.VerifiableCredential) (bool, error) {
 	//can modify to match the DID of the actual trusted issuer(s). May also want different
 	//trusted issuers for different types of VCs
 	if vc.Issuer != sampleTrustedIssuer {
-		return false, errors.New("unknown issuer")
+		return false, errval.ErrUnknownIssuer
 	}
 
 	resolutionMeta, issuerDoc, _ := did.Resolve(vc.Issuer, models.CreateResolutionOptions())
 	if resolutionMeta.Error != "" {
-		return false, errors.New("failed to resolve issuer document: " + resolutionMeta.Error)
+		return false, errors.New(resolutionMeta.Error)
 	}
 
 	targetVM, err := issuerDoc.RetrieveVerificationMethod(vc.Proof.VerificationMethod)
@@ -199,13 +200,13 @@ func VerifyVC(vc *models.VerifiableCredential) (bool, error) {
 
 	//currently only support EcdsaSecp256k1Signature2019, but it's possible we could introduce more
 	switch vc.Proof.Type {
-	case "EcdsaSecp256k1Signature2019":
-		if targetVM.MethodType != "EcdsaSecp256k1VerificationKey2019" {
-			return false, errors.New("must use a verification method with a type of 'EcdsaSecp256k1VerificationKey2019' to verify a 'EcdsaSecp256k1Signature2019' proof")
+	case models.Secp256k1Sig:
+		if targetVM.MethodType != models.Secp256k1Key {
+			return false, errval.ErrSecp256k1WrongVMType
 		}
 		return VerifyVCSecp256k1(vc, targetVM)
 	default:
-		return false, errors.New("unable to verify unknown proof type " + vc.Proof.Type)
+		return false, errval.ErrUnknownProofType
 	}
 }
 
@@ -243,10 +244,10 @@ func ConvertVCToBytes(vc models.VerifiableCredential) []byte {
 	convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(vc.Issuer), []byte(vc.IssuanceDate), []byte(vc.ExpirationDate), []byte(vc.Description)}, []byte{})
 
 	switch vc.Type[1] {
-	case "WifiAccess":
+	case models.TypeWifi:
 		wifiAccessInfo := vc.CredentialSubject.(models.WifiAccessInfo)
 		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(wifiAccessInfo.ID), []byte(wifiAccessInfo.PlaceholderParameter)}, []byte{})
-	case "MiningLicense":
+	case models.TypeMining:
 		miningLicenseInfo := vc.CredentialSubject.(models.MiningLicenseInfo)
 		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(miningLicenseInfo.ID), []byte(miningLicenseInfo.PlaceholderParameter2)}, []byte{})
 	}

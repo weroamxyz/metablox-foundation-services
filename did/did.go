@@ -5,7 +5,6 @@ import (
 	"crypto/ecdsa"
 	"crypto/sha256"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -14,6 +13,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/metabloxDID/contract"
+	"github.com/metabloxDID/errval"
 	"github.com/metabloxDID/key"
 	"github.com/metabloxDID/models"
 	"github.com/mr-tron/base58"
@@ -41,8 +41,8 @@ func CreateDID(privKey *ecdsa.PrivateKey) (*models.DIDDocument, error) {
 		return nil, err
 	}
 	document.Context = make([]string, 0)
-	document.Context = append(document.Context, "https://w3id.org/did/v1")
-	document.Context = append(document.Context, "https://ns.did.ai/suites/secp256k1-2019/v1/")
+	document.Context = append(document.Context, models.ContextDID)
+	document.Context = append(document.Context, models.ContextSecp256k1)
 	document.Created = time.Now().Format(time.RFC3339)
 	document.Updated = document.Created
 	document.Version = 1
@@ -56,7 +56,7 @@ func CreateDID(privKey *ecdsa.PrivateKey) (*models.DIDDocument, error) {
 		return nil, err
 	}
 	VM.Controller = document.ID
-	VM.MethodType = "EcdsaSecp256k1VerificationKey2019"
+	VM.MethodType = models.Secp256k1Key
 
 	document.VerificationMethod = append(document.VerificationMethod, VM)
 	document.Authentication = VM.ID
@@ -189,11 +189,11 @@ func AuthenticateDocumentSubject(document *models.DIDDocument, message, signatur
 		}
 	}
 	if authenticationMethod == nil {
-		return false, errors.New("Failed to find authentication method '" + document.Authentication + "'")
+		return false, errval.ErrMissingAuthentication
 	}
 
 	switch authenticationMethod.MethodType {
-	case "EcdsaSecp256k1VerificationKey2019":
+	case models.Secp256k1Key:
 		_, pubData, err := multibase.Decode(authenticationMethod.MultibaseKey)
 		if err != nil {
 			return false, err
@@ -203,7 +203,7 @@ func AuthenticateDocumentSubject(document *models.DIDDocument, message, signatur
 		return result, nil
 
 	default:
-		return false, errors.New("Unable to resolve unknown verification method type '" + authenticationMethod.MethodType + "'")
+		return false, errval.ErrUnknownVMType
 	}
 }
 
@@ -214,10 +214,10 @@ func AuthenticateDocumentHolder(doc *models.DIDDocument, signature, nonce string
 	}
 
 	switch authenticationMethod.MethodType {
-	case "EcdsaSecp256k1VerificationKey2019":
+	case models.Secp256k1Key:
 		return AuthenticateSecp256k1(signature, nonce, authenticationMethod)
 	default:
-		return false, errors.New("unable to verify unknown proof type " + authenticationMethod.MethodType)
+		return false, errval.ErrUnknownProofType
 	}
 }
 

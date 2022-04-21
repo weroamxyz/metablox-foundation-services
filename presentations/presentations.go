@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/metabloxDID/credentials"
 	"github.com/metabloxDID/did"
+	"github.com/metabloxDID/errval"
 	"github.com/metabloxDID/key"
 	"github.com/metabloxDID/models"
 	"github.com/multiformats/go-multibase"
@@ -17,13 +18,13 @@ import (
 
 func CreatePresentation(credentials []models.VerifiableCredential, holderDocument models.DIDDocument, holderPrivKey *ecdsa.PrivateKey, nonce string) (*models.VerifiablePresentation, error) {
 	presentationProof := models.CreateVPProof()
-	presentationProof.Type = "EcdsaSecp256k1Signature2019"
+	presentationProof.Type = models.Secp256k1Sig
 	presentationProof.VerificationMethod = holderDocument.Authentication
 	presentationProof.JWSSignature = ""
 	presentationProof.Created = time.Now().Format(time.RFC3339)
 	presentationProof.ProofPurpose = "Authentication"
 	presentationProof.Nonce = nonce
-	context := []string{"https://www.w3.org/2018/credentials/v1", "https://ns.did.ai/suites/secp256k1-2019/v1/"}
+	context := []string{models.ContextCredential, models.ContextSecp256k1}
 	presentationType := []string{"VerifiablePresentation"}
 	presentation := models.NewPresentation(context, presentationType, credentials, holderDocument.ID, *presentationProof)
 	//Create the proof's signature using a stringified version of the VP and the holder's private key.
@@ -47,7 +48,7 @@ func CreatePresentation(credentials []models.VerifiableCredential, holderDocumen
 func VerifyVP(presentation *models.VerifiablePresentation) (bool, error) {
 	resolutionMeta, holderDoc, _ := did.Resolve(presentation.Holder, models.CreateResolutionOptions())
 	if resolutionMeta.Error != "" {
-		return false, errors.New("failed to resolve holder document: " + resolutionMeta.Error)
+		return false, errors.New(resolutionMeta.Error)
 	}
 
 	targetVM, err := holderDoc.RetrieveVerificationMethod(presentation.Proof.VerificationMethod)
@@ -58,13 +59,13 @@ func VerifyVP(presentation *models.VerifiablePresentation) (bool, error) {
 	//currently only support EcdsaSecp256k1Signature2019, but it's possible we could introduce more
 	var success bool
 	switch presentation.Proof.Type {
-	case "EcdsaSecp256k1Signature2019":
-		if targetVM.MethodType != "EcdsaSecp256k1VerificationKey2019" {
-			return false, errors.New("must use a verification method with a type of 'EcdsaSecp256k1VerificationKey2019' to verify a 'EcdsaSecp256k1Signature2019' proof")
+	case models.Secp256k1Sig:
+		if targetVM.MethodType != models.Secp256k1Key {
+			return false, errval.ErrSecp256k1WrongVMType
 		}
 		success, err = VerifyVPSecp256k1(presentation, targetVM)
 	default:
-		return false, errors.New("unable to verify unknown proof type " + presentation.Proof.Type)
+		return false, errval.ErrUnknownProofType
 	}
 
 	if !success {
