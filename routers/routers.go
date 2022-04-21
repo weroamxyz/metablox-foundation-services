@@ -20,6 +20,8 @@ func Setup() {
 
 	r.GET("/minerlist/:did", controllers.GetMinerListHandler)
 
-	r.GET("/testing/signatures/:message", controllers.GenerateTestSignatures)
+	r.GET("/nonce", controllers.GenerateNonceHandler)
+
+	r.GET("/testing/signatures/:message", controllers.GenerateTestSignatures) //todo: don't leave this active in any release version as it is only for testing
 	r.Run(":8888")
 }

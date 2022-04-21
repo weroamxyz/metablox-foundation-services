@@ -1,16 +1,11 @@
 package contract
 
 import (
-	"context"
 	"crypto/ecdsa"
-	"log"
-	"math/big"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/metabloxDID/credentials"
 	"github.com/metabloxDID/models"
 	"github.com/metabloxDID/registry"
 )
@@ -36,9 +31,8 @@ func Init() error {
 	return nil
 }
 
-func CreateVC(vc *models.VerifiableCredential) error {
-
-	publicKey := foundationPrivateKey.Public()
+func CreateVC(vcBytes [32]byte) error {
+	/*publicKey := foundationPrivateKey.Public()	//todo: uncomment once smart contract is ready
 	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
 	if !ok {
 		log.Fatal("error casting public key to ECDSA")
@@ -59,19 +53,16 @@ func CreateVC(vc *models.VerifiableCredential) error {
 	auth.Value = big.NewInt(0)     // in wei
 	auth.GasLimit = uint64(300000) // in units
 	auth.GasPrice = gasPrice
-	vcByte := [32]byte{}
-	copy(vcByte[:], credentials.ConvertVCToBytes(*vc))
-	_, err = instance.UploadVC(auth, vcByte)
+	_, err = instance.UploadVC(auth, vcBytes)
 	if err != nil {
 		return err
-	}
+	}*/
 
 	return nil
 }
 
-func RenewVC(vc *models.VerifiableCredential) error {
-
-	publicKey := foundationPrivateKey.Public()
+func RenewVC(vcBytes [32]byte) error {
+	/*publicKey := foundationPrivateKey.Public()	//todo: uncomment once smart contract is ready
 	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
 	if !ok {
 		log.Fatal("error casting public key to ECDSA")
@@ -92,19 +83,16 @@ func RenewVC(vc *models.VerifiableCredential) error {
 	auth.Value = big.NewInt(0)     // in wei
 	auth.GasLimit = uint64(300000) // in units
 	auth.GasPrice = gasPrice
-	vcByte := [32]byte{}
-	copy(vcByte[:], credentials.ConvertVCToBytes(*vc))
-	_, err = instance.RenewVC(auth, vcByte)
+	_, err = instance.RenewVC(auth, vcBytes)
 	if err != nil {
 		return err
-	}
+	}*/
 
 	return nil
 }
 
-func RevokeVC(vc *models.VerifiableCredential) error {
-
-	publicKey := foundationPrivateKey.Public()
+func RevokeVC(vcBytes [32]byte) error {
+	/*publicKey := foundationPrivateKey.Public()	//todo: uncomment once smart contract is ready
 	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
 	if !ok {
 		log.Fatal("error casting public key to ECDSA")
@@ -125,20 +113,20 @@ func RevokeVC(vc *models.VerifiableCredential) error {
 	auth.Value = big.NewInt(0)     // in wei
 	auth.GasLimit = uint64(300000) // in units
 	auth.GasPrice = gasPrice
-	vcByte := [32]byte{}
-	copy(vcByte[:], credentials.ConvertVCToBytes(*vc))
-	_, err = instance.RevokeVC(auth, vcByte)
+	_, err = instance.RevokeVC(auth, vcBytes)
 	if err != nil {
 		return err
-	}
+	}*/
 
 	return nil
 }
 
-func GetDocument(targetDID string) ([32]byte, error) { //not sure what format we're using to store documents, so currently leaving it as bytes
-	documentData, err := instance.Documents(nil, targetDID)
-	if err != nil {
-		return [32]byte{}, err
-	}
-	return documentData, nil
+func UploadDocument(docBytes [32]byte) error { //todo: actual implementation
+	return nil
+}
+
+func GetDocument(targetDID string) (*models.DIDDocument, [32]byte, error) { //todo: actual implementation
+	placeholderDoc := models.GenerateTestDIDDocument()
+	placeholderHash := [32]byte{159, 210, 117, 26, 68, 195, 94, 82, 100, 225, 26, 113, 147, 246, 48, 225, 11, 103, 151, 249, 84, 104, 245, 122, 25, 36, 253, 166, 177, 201, 51, 0} //sha256.Sum256(ConvertDocToBytes(*placeholderDoc))
+	return placeholderDoc, placeholderHash, nil
 }

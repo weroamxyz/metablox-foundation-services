@@ -1,11 +1,13 @@
 package controllers
 
 import (
+	"crypto/ecdsa"
+	"errors"
 	"net/http"
 	"time"
 
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gin-gonic/gin"
+	"github.com/metabloxDID/contract"
 	"github.com/metabloxDID/credentials"
 	"github.com/metabloxDID/dao"
 	"github.com/metabloxDID/did"
@@ -17,31 +19,51 @@ import (
 
 var NonceLookup map[string]string
 var ValidIssuers []string
+var issuerPrivateKey *ecdsa.PrivateKey
 
-func Init() {
+func InitializeValues() error {
+	var err error
 	NonceLookup = make(map[string]string)
 	ValidIssuers = []string{"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo"}
-}
-
-//Compare the nonce a user has given with the one they are assigned. If user does not have an assigned nonce, give them one.
-func CheckNonce(ip, givenNonce string) (bool, string) {
-	assignedNonce, found := NonceLookup[ip]
-	if !found {
-		NonceLookup[ip] = time.Now().String()
-		return false, NonceLookup[ip]
+	issuerPrivateKey, err = key.GetIssuerPrivateKey()
+	if err != nil {
+		return err
 	}
-
-	if givenNonce == assignedNonce {
-		return true, ""
-	}
-
-	return false, assignedNonce
+	return nil
 }
 
 //If user provided correct nonce, then assign them a new one and return that value
-func UpdateNonce(ip string) string {
-	NonceLookup[ip] = time.Now().String()
+func CreateNonce(ip string) string {
+	NonceLookup[ip] = time.Now().Format("2006-01-02 15:04:05.999999999 -0700 MST")
 	return NonceLookup[ip]
+}
+
+//Compare the nonce a user has given with the one they are assigned. Current time must also be within 1 minute of the nonce's value
+func CheckNonce(ip, givenNonce string) (bool, error) {
+	assignedNonce, found := NonceLookup[ip]
+	if !found {
+		return false, errors.New("no nonce assigned to user")
+	}
+
+	nonceTime, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", assignedNonce)
+	if err != nil {
+		return false, err
+	}
+	if nonceTime.Add(time.Minute).Before(time.Now()) {
+		delete(NonceLookup, ip) //remove expired nonces
+		return false, errors.New("nonce has expired")
+	}
+
+	if assignedNonce != givenNonce {
+		return false, errors.New("provided nonce is incorrect")
+	}
+
+	return true, nil
+}
+
+//delete a nonce after it has been successfully used in an operation
+func DeleteNonce(ip string) {
+	delete(NonceLookup, ip)
 }
 
 func CheckIfValidIssuer(did string) bool {
@@ -59,40 +81,32 @@ func IssueWifiVCHandler(c *gin.Context) {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Provided did is not a valid issuer")
 		return
 	}
-	response := &ResponseData{}
-	if err := c.ShouldBindJSON(response); err != nil {
+
+	var input struct {
+		AuthenticationInfo *models.AuthenticationInfo
+		WifiAccessInfo     *models.WifiAccessInfo
+	}
+
+	if err := c.BindJSON(&input); err != nil {
 		ResponseErrorWithMsg(c, CodeError, err.Error())
 		return
 	}
-	authenticationData := response.Data.([]interface{})[0].(map[string]interface{})
-	authenticationInfo := models.CreateAuthenticationInfo()
 
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: authenticationInfo})
-	if err != nil {
-		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error creating decoder: "+err.Error())
-		return
-	}
-
-	err = decoder.Decode(authenticationData)
-	if err != nil {
-		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error reading authentication info: "+err.Error())
-		return
-	}
-
-	success, returnNonce := CheckNonce(c.ClientIP(), authenticationInfo.Nonce)
+	success, err := CheckNonce(c.ClientIP(), input.AuthenticationInfo.Nonce)
 	if !success {
-		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Incorrect nonce value, expected '"+returnNonce+"'")
+		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed to verify nonce: "+err.Error())
 		return
 	}
+	DeleteNonce(c.ClientIP())
 
 	opts := models.CreateResolutionOptions()
-	resolutionMeta, issuerDocument, _ := did.Resolve(didString, opts) //TODO: still needs proper implementation once smart contract is ready
+	resolutionMeta, issuerDocument, _ := did.Resolve(didString, opts)
 	if resolutionMeta.Error != "" {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed to resolve did '"+didString+"': "+resolutionMeta.Error)
 		return
 	}
 
-	success, err = did.AuthenticateDocumentHolder(issuerDocument, authenticationInfo.Signature, authenticationInfo.Nonce)
+	success, err = did.AuthenticateDocumentHolder(issuerDocument, input.AuthenticationInfo.Signature, input.AuthenticationInfo.Nonce)
 	if err != nil {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error authenticating signature: "+err.Error())
 		return
@@ -102,39 +116,21 @@ func IssueWifiVCHandler(c *gin.Context) {
 		return
 	}
 
-	subjectData := response.Data.([]interface{})[1].(map[string]interface{})
-	wifiAccessInfo := models.CreateWifiAccessInfo()
-
-	decoder, err = mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: wifiAccessInfo})
-	if err != nil {
-		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error creating decoder: "+err.Error())
-		return
-	}
-
-	err = decoder.Decode(subjectData)
-	if err != nil {
-		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error reading subject info: "+err.Error())
-		return
-	}
-
-	issuerPrivateKey, _ := crypto.GenerateKey() //TODO: modify to get actual issuer private key as opposed to arbitrary value
-
-	newVC, err := credentials.CreateWifiAccessVC(issuerDocument, wifiAccessInfo, issuerPrivateKey)
+	newVC, err := credentials.CreateWifiAccessVC(issuerDocument, input.WifiAccessInfo, issuerPrivateKey)
 	if err != nil {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error creating wifi access VC: "+err.Error())
 		return
 	}
 
-	//TODO: uncomment once smart contract is completed + deployed
-	/*err = contract.CreateVC(newVC)
+	vcBytes := [32]byte{}
+	copy(vcBytes[:], credentials.ConvertVCToBytes(*newVC))
+	err = contract.CreateVC(vcBytes)
 	if err != nil {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error registering wifi access VC: "+err.Error())
 		return
-	}*/
+	}
 
-	newNonce := UpdateNonce(c.ClientIP())
-
-	ResponseSuccessWithMsgAndData(c, "new nonce is: '"+newNonce+"'", newVC)
+	ResponseSuccess(c, newVC)
 }
 
 func IssueMiningVCHandler(c *gin.Context) {
@@ -143,40 +139,31 @@ func IssueMiningVCHandler(c *gin.Context) {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Provided did is not a valid issuer")
 		return
 	}
-	response := &ResponseData{}
-	if err := c.ShouldBindJSON(response); err != nil {
+	var input struct {
+		AuthenticationInfo *models.AuthenticationInfo
+		MiningLicenseInfo  *models.MiningLicenseInfo
+	}
+
+	if err := c.BindJSON(&input); err != nil {
 		ResponseErrorWithMsg(c, CodeError, err.Error())
 		return
 	}
-	authenticationData := response.Data.([]interface{})[0].(map[string]interface{})
-	authenticationInfo := models.CreateAuthenticationInfo()
 
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: authenticationInfo})
-	if err != nil {
-		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error creating decoder: "+err.Error())
-		return
-	}
-
-	err = decoder.Decode(authenticationData)
-	if err != nil {
-		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error reading authentication info: "+err.Error())
-		return
-	}
-
-	success, returnNonce := CheckNonce(c.ClientIP(), authenticationInfo.Nonce)
+	success, err := CheckNonce(c.ClientIP(), input.AuthenticationInfo.Nonce)
 	if !success {
-		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Incorrect nonce value, expected '"+returnNonce+"'")
+		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed to verify nonce: "+err.Error())
 		return
 	}
+	DeleteNonce(c.ClientIP())
 
 	opts := models.CreateResolutionOptions()
-	resolutionMeta, issuerDocument, _ := did.Resolve(didString, opts) //TODO: still needs proper implementation once smart contract is ready
+	resolutionMeta, issuerDocument, _ := did.Resolve(didString, opts)
 	if resolutionMeta.Error != "" {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed to resolve did '"+didString+"': "+resolutionMeta.Error)
 		return
 	}
 
-	success, err = did.AuthenticateDocumentHolder(issuerDocument, authenticationInfo.Signature, authenticationInfo.Nonce)
+	success, err = did.AuthenticateDocumentHolder(issuerDocument, input.AuthenticationInfo.Signature, input.AuthenticationInfo.Nonce)
 	if err != nil {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error authenticating signature: "+err.Error())
 		return
@@ -186,103 +173,62 @@ func IssueMiningVCHandler(c *gin.Context) {
 		return
 	}
 
-	subjectData := response.Data.([]interface{})[1].(map[string]interface{})
-	miningLicenseInfo := models.CreateMiningLicenseInfo()
-
-	decoder, err = mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: miningLicenseInfo})
-	if err != nil {
-		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error creating decoder: "+err.Error())
-		return
-	}
-
-	err = decoder.Decode(subjectData)
-	if err != nil {
-		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error reading subject info: "+err.Error())
-		return
-	}
-
-	issuerPrivateKey, _ := crypto.GenerateKey() //TODO: modify to get actual issuer private key as opposed to arbitrary value
-
-	newVC, err := credentials.CreateMiningLicenseVC(issuerDocument, miningLicenseInfo, issuerPrivateKey)
+	newVC, err := credentials.CreateMiningLicenseVC(issuerDocument, input.MiningLicenseInfo, issuerPrivateKey)
 	if err != nil {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error creating mining license VC: "+err.Error())
 		return
 	}
 
-	//TODO: uncomment once smart contract is completed + deployed
-	/*err = contract.CreateVC(newVC)
+	vcBytes := [32]byte{}
+	copy(vcBytes[:], credentials.ConvertVCToBytes(*newVC))
+	err = contract.CreateVC(vcBytes)
 	if err != nil {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error registering mining license VC: "+err.Error())
 		return
-	}*/
+	}
 
-	newNonce := UpdateNonce(c.ClientIP())
-
-	ResponseSuccessWithMsgAndData(c, "new nonce is: '"+newNonce+"'", newVC)
+	ResponseSuccess(c, newVC)
 }
 
 func RenewVCHandler(c *gin.Context) {
 	didString := "did:metablox:" + c.Param("did")
-	response := &ResponseData{}
-	if err := c.ShouldBindJSON(response); err != nil {
+
+	var input struct {
+		AuthenticationInfo *models.AuthenticationInfo
+		Presentation       *models.VerifiablePresentation
+	}
+
+	if err := c.BindJSON(&input); err != nil {
 		ResponseErrorWithMsg(c, CodeError, err.Error())
 		return
 	}
-	authenticationData := response.Data.([]interface{})[0].(map[string]interface{})
-	authenticationInfo := models.CreateAuthenticationInfo()
 
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: authenticationInfo})
-	if err != nil {
-		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error creating decoder: "+err.Error())
-		return
-	}
-
-	err = decoder.Decode(authenticationData)
-	if err != nil {
-		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error reading authentication info: "+err.Error())
-		return
-	}
-
-	success, returnNonce := CheckNonce(c.ClientIP(), authenticationInfo.Nonce)
+	success, err := CheckNonce(c.ClientIP(), input.AuthenticationInfo.Nonce)
 	if !success {
-		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Incorrect nonce value, expected '"+returnNonce+"'")
+		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed to verify nonce: "+err.Error())
 		return
 	}
+	defer DeleteNonce(c.ClientIP()) //we re-use the nonce for the presentation, so only delete the nonce after the controller is completely finished
 
-	vpData := response.Data.([]interface{})[1].(map[string]interface{})
-	vp := models.CreatePresentation()
-
-	decoder, err = mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: vp})
-	if err != nil {
-		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error creating decoder: "+err.Error())
-		return
-	}
-
-	err = decoder.Decode(vpData)
-	if err != nil {
-		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error reading presentation: "+err.Error())
-		return
-	}
-
-	success, returnNonce = CheckNonce(c.ClientIP(), vp.Proof.Nonce)
+	success, err = CheckNonce(c.ClientIP(), input.Presentation.Proof.Nonce)
 	if !success {
-		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Incorrect nonce value, expected '"+returnNonce+"'")
+		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed to verify presentation nonce: "+err.Error())
 		return
 	}
 
-	if vp.VerifiableCredential[0].Issuer != didString {
+	if input.Presentation.VerifiableCredential[0].Issuer != didString {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Provided did does not match issuer of credential")
 		return
 	}
 
 	opts := models.CreateResolutionOptions()
-	resolutionMeta, issuerDocument, _ := did.Resolve(didString, opts) //TODO: still needs proper implementation once smart contract is ready
+	resolutionMeta, issuerDocument, _ := did.Resolve(didString, opts)
 	if resolutionMeta.Error != "" {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed to resolve did '"+didString+"': "+resolutionMeta.Error)
 		return
 	}
 
-	success, err = did.AuthenticateDocumentHolder(issuerDocument, authenticationInfo.Signature, authenticationInfo.Nonce)
+	success, err = did.AuthenticateDocumentHolder(issuerDocument, input.AuthenticationInfo.Signature, input.AuthenticationInfo.Nonce)
 	if err != nil {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error authenticating signature: "+err.Error())
 		return
@@ -292,7 +238,7 @@ func RenewVCHandler(c *gin.Context) {
 		return
 	}
 
-	success, err = presentations.VerifyVP(vp)
+	success, err = presentations.VerifyVP(input.Presentation)
 	if err != nil {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error verifying presentation: "+err.Error())
 		return
@@ -303,84 +249,60 @@ func RenewVCHandler(c *gin.Context) {
 		return
 	}
 
-	err = credentials.RenewVC(&vp.VerifiableCredential[0])
+	err = credentials.RenewVC(&input.Presentation.VerifiableCredential[0])
 	if err != nil {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed to renew credential: "+err.Error())
 	}
 
-	//TODO: uncomment once smart contract is completed + deployed
-	/*err = contract.RenewVC(&wifiVP.VerifiableCredential[0])
+	vcBytes := [32]byte{}
+	copy(vcBytes[:], credentials.ConvertVCToBytes(input.Presentation.VerifiableCredential[0]))
+	err = contract.RenewVC(vcBytes)
 	if err != nil {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed to renew credential in registry: "+err.Error())
 		return
-	}*/
+	}
 
-	newNonce := UpdateNonce(c.ClientIP())
-	ResponseSuccessWithMsgAndData(c, "new nonce is: '"+newNonce+"'", vp.VerifiableCredential[0])
+	ResponseSuccess(c, input.Presentation.VerifiableCredential[0])
 }
 
 func RevokeVCHandler(c *gin.Context) {
 	didString := "did:metablox:" + c.Param("did")
-	response := &ResponseData{}
-	if err := c.ShouldBindJSON(response); err != nil {
+	var input struct {
+		AuthenticationInfo *models.AuthenticationInfo
+		Presentation       *models.VerifiablePresentation
+	}
+
+	if err := c.BindJSON(&input); err != nil {
 		ResponseErrorWithMsg(c, CodeError, err.Error())
 		return
 	}
-	authenticationData := response.Data.([]interface{})[0].(map[string]interface{})
-	authenticationInfo := models.CreateAuthenticationInfo()
 
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: authenticationInfo})
-	if err != nil {
-		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error creating decoder: "+err.Error())
-		return
-	}
-
-	err = decoder.Decode(authenticationData)
-	if err != nil {
-		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error reading authentication info: "+err.Error())
-		return
-	}
-
-	success, returnNonce := CheckNonce(c.ClientIP(), authenticationInfo.Nonce)
+	success, err := CheckNonce(c.ClientIP(), input.AuthenticationInfo.Nonce)
 	if !success {
-		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Incorrect nonce value, expected '"+returnNonce+"'")
+		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed to verify nonce: "+err.Error())
 		return
 	}
+	defer DeleteNonce(c.ClientIP()) //we re-use the nonce for the presentation, so only delete the nonce after the controller is finished
 
-	vpData := response.Data.([]interface{})[1].(map[string]interface{})
-	vp := models.CreatePresentation()
-
-	decoder, err = mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: vp})
-	if err != nil {
-		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error creating decoder: "+err.Error())
-		return
-	}
-
-	err = decoder.Decode(vpData)
-	if err != nil {
-		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error reading presentation: "+err.Error())
-		return
-	}
-
-	success, returnNonce = CheckNonce(c.ClientIP(), vp.Proof.Nonce)
+	success, err = CheckNonce(c.ClientIP(), input.Presentation.Proof.Nonce)
 	if !success {
-		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Incorrect nonce value, expected '"+returnNonce+"'")
+		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed to verify presentation nonce: "+err.Error())
 		return
 	}
 
-	if vp.VerifiableCredential[0].Issuer != didString {
+	if input.Presentation.VerifiableCredential[0].Issuer != didString {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Provided did does not match issuer of credential")
 		return
 	}
 
 	opts := models.CreateResolutionOptions()
-	resolutionMeta, issuerDocument, _ := did.Resolve(didString, opts) //TODO: still needs proper implementation once smart contract is ready
+	resolutionMeta, issuerDocument, _ := did.Resolve(didString, opts)
 	if resolutionMeta.Error != "" {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed to resolve did '"+didString+"': "+resolutionMeta.Error)
 		return
 	}
 
-	success, err = did.AuthenticateDocumentHolder(issuerDocument, authenticationInfo.Signature, authenticationInfo.Nonce)
+	success, err = did.AuthenticateDocumentHolder(issuerDocument, input.AuthenticationInfo.Signature, input.AuthenticationInfo.Nonce)
 	if err != nil {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error authenticating signature: "+err.Error())
 		return
@@ -390,7 +312,7 @@ func RevokeVCHandler(c *gin.Context) {
 		return
 	}
 
-	success, err = presentations.VerifyVP(vp)
+	success, err = presentations.VerifyVP(input.Presentation)
 	if err != nil {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error verifying presentation: "+err.Error())
 		return
@@ -401,20 +323,20 @@ func RevokeVCHandler(c *gin.Context) {
 		return
 	}
 
-	err = credentials.RevokeVC(&vp.VerifiableCredential[0])
+	err = credentials.RevokeVC(&input.Presentation.VerifiableCredential[0])
 	if err != nil {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed to revoke credential: "+err.Error())
 	}
 
-	//TODO: uncomment once smart contract is completed + deployed
-	/*err = contract.RevokeVC(&wifiVP.VerifiableCredential[0])
+	vcBytes := [32]byte{}
+	copy(vcBytes[:], credentials.ConvertVCToBytes(input.Presentation.VerifiableCredential[0]))
+	err = contract.RevokeVC(vcBytes)
 	if err != nil {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed to revoke credential in registry: "+err.Error())
 		return
-	}*/
+	}
 
-	newNonce := UpdateNonce(c.ClientIP())
-	ResponseSuccessWithMsgAndData(c, "new nonce is: '"+newNonce+"'", vp.VerifiableCredential[0])
+	ResponseSuccess(c, input.Presentation.VerifiableCredential[0])
 }
 
 func SendDocToRegistryHandler(c *gin.Context) {
@@ -443,34 +365,30 @@ func SendDocToRegistryHandler(c *gin.Context) {
 		return
 	}
 
-	//TODO: Upload did document to registry now that it has been reviewed
+	docBytes := [32]byte{}
+	copy(docBytes[:], did.ConvertDocToBytes(*document))
+	err = contract.UploadDocument(docBytes)
+	if err != nil {
+		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error registering document: "+err.Error())
+		return
+	}
+
 	ResponseSuccessWithMsg(c, "DID document has been successfully uploaded to registry")
 }
 
 func GetMinerListHandler(c *gin.Context) {
 	didString := "did:metablox:" + c.Param("did")
-	response := &ResponseData{}
-	if err := c.ShouldBindJSON(response); err != nil {
-		ResponseErrorWithMsg(c, CodeError, err.Error())
-		return
-	}
-
-	authenticationData := response.Data.([]interface{})[0].(map[string]interface{})
 	authenticationInfo := models.CreateAuthenticationInfo()
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: &authenticationInfo})
-	if err != nil {
-		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error creating decoder: "+err.Error())
-		return
-	}
-	err = decoder.Decode(authenticationData)
+	err := c.BindJSON(authenticationInfo)
+
 	if err != nil {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Error reading input: "+err.Error())
 		return
 	}
 
-	success, returnNonce := CheckNonce(c.ClientIP(), authenticationInfo.Nonce)
+	success, err := CheckNonce(c.ClientIP(), authenticationInfo.Nonce)
 	if !success {
-		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Incorrect nonce value, expected '"+returnNonce+"'")
+		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed to verify nonce: "+err.Error())
 		return
 	}
 
@@ -495,9 +413,12 @@ func GetMinerListHandler(c *gin.Context) {
 		return
 	}
 
-	newNonce := UpdateNonce(c.ClientIP())
+	ResponseSuccess(c, minerList)
+}
 
-	ResponseSuccessWithMsgAndData(c, "new nonce is: '"+newNonce+"'", minerList)
+func GenerateNonceHandler(c *gin.Context) {
+	nonce := CreateNonce(c.ClientIP())
+	ResponseSuccess(c, nonce)
 }
 
 //temporary testing function to generate signatures using the test private key

@@ -29,7 +29,12 @@ func main() {
 		return
 	}
 
-	controllers.Init()
+	err = controllers.InitializeValues()
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+
 	err = daily.StartDailyTimer()
 	if err != nil {
 		logger.Error(err)

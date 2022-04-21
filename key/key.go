@@ -3,41 +3,29 @@ package key
 import (
 	"bytes"
 	"crypto/ecdsa"
-	"errors"
 	"os"
-	"strconv"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/spf13/viper"
 	gojose "gopkg.in/square/go-jose.v2"
 )
 
-func GenerateNewPrivateKey() (*ecdsa.PrivateKey, string, error) {
+func GenerateNewPrivateKey(fileName string) (*ecdsa.PrivateKey, error) {
 	privKey, err := crypto.GenerateKey()
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
 	privData := crypto.FromECDSA(privKey)
 
 	saveLocation := viper.GetString("storage.key_saving")
-	fileNumber := 1
-
-	for {
-		if _, err := os.Stat(saveLocation + "privateKey" + strconv.Itoa(fileNumber)); errors.Is(err, os.ErrNotExist) {
-			break
-		}
-		fileNumber++
-	}
-
-	fileName := "privateKey" + strconv.Itoa(fileNumber)
 
 	err = os.WriteFile(saveLocation+fileName, privData, 0644)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
-	return privKey, fileName, nil
+	return privKey, nil
 }
 
 func LoadPrivateKey(keyFileName string) (*ecdsa.PrivateKey, error) {
@@ -53,6 +41,19 @@ func LoadPrivateKey(keyFileName string) (*ecdsa.PrivateKey, error) {
 	}
 
 	return privKey, nil
+}
+
+//load private key from file, or create it if it doesn't exist yet
+func GetIssuerPrivateKey() (*ecdsa.PrivateKey, error) {
+	fileName := viper.GetString("storage.issuer_key_file")
+	key, err := LoadPrivateKey(fileName)
+	if err != nil {
+		if err.Error() == "open ./wallet/issuer: no such file or directory" {
+			return GenerateNewPrivateKey(fileName)
+		}
+		return nil, err
+	}
+	return key, nil
 }
 
 func CreateJWSSignature(privKey *ecdsa.PrivateKey, message []byte) (string, error) {
