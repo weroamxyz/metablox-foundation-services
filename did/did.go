@@ -207,20 +207,6 @@ func AuthenticateDocumentSubject(document *models.DIDDocument, message, signatur
 	}
 }
 
-func AuthenticateDocumentHolder(doc *models.DIDDocument, signature, nonce string) (bool, error) {
-	authenticationMethod, err := doc.RetrieveVerificationMethod(doc.Authentication)
-	if err != nil {
-		return false, err
-	}
-
-	switch authenticationMethod.MethodType {
-	case models.Secp256k1Key:
-		return AuthenticateSecp256k1(signature, nonce, authenticationMethod)
-	default:
-		return false, errval.ErrUnknownProofType
-	}
-}
-
 func AuthenticateSecp256k1(signature, nonce string, vm models.VerificationMethod) (bool, error) {
 	_, pubData, err := multibase.Decode(vm.MultibaseKey)
 	if err != nil {

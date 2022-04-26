@@ -140,11 +140,6 @@ type MinerInfo struct {
 	CreateTime string `json:"createTime" db:"CreateTime"`
 }
 
-type AuthenticationInfo struct {
-	Signature string `json:"signature"`
-	Nonce     string `json:"nonce"`
-}
-
 func CreateDIDDocument() *DIDDocument {
 	return &DIDDocument{}
 }
@@ -212,10 +207,6 @@ func CreatePresentation() *VerifiablePresentation {
 
 func CreateMinerInfo() *MinerInfo {
 	return &MinerInfo{}
-}
-
-func CreateAuthenticationInfo() *AuthenticationInfo {
-	return &AuthenticationInfo{}
 }
 
 func NewPresentation(context, presentationType []string, credentials []VerifiableCredential, holder string, proof VPProof) *VerifiablePresentation {
@@ -318,13 +309,6 @@ func NewVPProof(proofType, created, vm, purpose, sig, nonce string) *VPProof {
 		ProofPurpose:       purpose,
 		JWSSignature:       sig,
 		Nonce:              nonce,
-	}
-}
-
-func NewAuthenticationInfo(signature, nonce string) *AuthenticationInfo {
-	return &AuthenticationInfo{
-		Signature: signature,
-		Nonce:     nonce,
 	}
 }
 
@@ -445,12 +429,5 @@ func GenerateTestWifiAccessPresentation() *VerifiablePresentation {
 		[]VerifiableCredential{*GenerateTestWifiAccessVC()},
 		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo",
 		*vpProof,
-	)
-}
-
-func GenerateTestAuthenticationInfo() *AuthenticationInfo {
-	return NewAuthenticationInfo(
-		"eyJhbGciOiJFUzI1NiJ9..liXdQpeQZOp6GP4xIjj0YxwIoJ-NeklgnondsexzHc4haChZlCQckwT5pnaFHhTYtaZf9V74EKfvl-CqQ85Elg",
-		"2022-04-19 13:56:52.926803645 -0700 PDT m=+37.117567171",
 	)
 }

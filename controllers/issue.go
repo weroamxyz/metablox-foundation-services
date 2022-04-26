@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"errors"
+
 	"github.com/gin-gonic/gin"
 	"github.com/metabloxDID/contract"
 	"github.com/metabloxDID/credentials"
@@ -23,36 +25,20 @@ func IssueWifiVC(c *gin.Context) (*models.VerifiableCredential, error) {
 	if !CheckIfValidIssuer(didString) {
 		return nil, errval.ErrInvalidIssuer
 	}
-	var input struct {
-		AuthenticationInfo *models.AuthenticationInfo
-		WifiAccessInfo     *models.WifiAccessInfo
-	}
 
-	if err := c.BindJSON(&input); err != nil {
+	wifiInfo := models.CreateWifiAccessInfo()
+
+	if err := c.BindJSON(&wifiInfo); err != nil {
 		return nil, err
 	}
-
-	err := CheckNonce(c.ClientIP(), input.AuthenticationInfo.Nonce)
-	if err != nil {
-		return nil, err
-	}
-	DeleteNonce(c.ClientIP())
 
 	opts := models.CreateResolutionOptions()
 	resolutionMeta, issuerDocument, _ := did.Resolve(didString, opts)
 	if resolutionMeta.Error != "" {
-		return nil, err
+		return nil, errors.New(resolutionMeta.Error)
 	}
 
-	success, err := did.AuthenticateDocumentHolder(issuerDocument, input.AuthenticationInfo.Signature, input.AuthenticationInfo.Nonce)
-	if err != nil {
-		return nil, err
-	}
-	if !success {
-		return nil, errval.ErrAuthFailed
-	}
-
-	newVC, err := credentials.CreateWifiAccessVC(issuerDocument, input.WifiAccessInfo, issuerPrivateKey)
+	newVC, err := credentials.CreateWifiAccessVC(issuerDocument, wifiInfo, issuerPrivateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -72,36 +58,20 @@ func IssueMiningVC(c *gin.Context) (*models.VerifiableCredential, error) {
 	if !CheckIfValidIssuer(didString) {
 		return nil, errval.ErrInvalidIssuer
 	}
-	var input struct {
-		AuthenticationInfo *models.AuthenticationInfo
-		MiningLicenseInfo  *models.MiningLicenseInfo
-	}
 
-	if err := c.BindJSON(&input); err != nil {
+	miningInfo := models.CreateMiningLicenseInfo()
+
+	if err := c.BindJSON(&miningInfo); err != nil {
 		return nil, err
 	}
-
-	err := CheckNonce(c.ClientIP(), input.AuthenticationInfo.Nonce)
-	if err != nil {
-		return nil, err
-	}
-	DeleteNonce(c.ClientIP())
 
 	opts := models.CreateResolutionOptions()
 	resolutionMeta, issuerDocument, _ := did.Resolve(didString, opts)
 	if resolutionMeta.Error != "" {
-		return nil, err
+		return nil, errors.New(resolutionMeta.Error)
 	}
 
-	success, err := did.AuthenticateDocumentHolder(issuerDocument, input.AuthenticationInfo.Signature, input.AuthenticationInfo.Nonce)
-	if err != nil {
-		return nil, err
-	}
-	if !success {
-		return nil, errval.ErrAuthFailed
-	}
-
-	newVC, err := credentials.CreateMiningLicenseVC(issuerDocument, input.MiningLicenseInfo, issuerPrivateKey)
+	newVC, err := credentials.CreateMiningLicenseVC(issuerDocument, miningInfo, issuerPrivateKey)
 	if err != nil {
 		return nil, err
 	}

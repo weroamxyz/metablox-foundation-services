@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"errors"
-
 	"github.com/gin-gonic/gin"
 	"github.com/metabloxDID/contract"
 	"github.com/metabloxDID/credentials"
@@ -14,45 +12,29 @@ import (
 
 func RevokeVC(c *gin.Context) (*models.VerifiableCredential, error) {
 	didString := "did:metablox:" + c.Param("did")
-	var input struct {
-		AuthenticationInfo *models.AuthenticationInfo
-		Presentation       *models.VerifiablePresentation
+	valid := did.IsDIDValid(did.SplitDIDString(didString))
+	if !valid {
+		return nil, errval.ErrDIDFormat
 	}
 
-	if err := c.BindJSON(&input); err != nil {
+	vp := models.CreatePresentation()
+
+	if err := c.BindJSON(&vp); err != nil {
 		return nil, err
 	}
 
-	err := CheckNonce(c.ClientIP(), input.AuthenticationInfo.Nonce)
-	if err != nil {
-		return nil, err
-	}
-	defer DeleteNonce(c.ClientIP()) //we re-use the nonce for the presentation, so only delete the nonce after the controller is finished
-
-	err = CheckNonce(c.ClientIP(), input.Presentation.Proof.Nonce)
+	err := CheckNonce(c.ClientIP(), vp.Proof.Nonce)
 	if err != nil {
 		return nil, err
 	}
 
-	if input.Presentation.VerifiableCredential[0].Issuer != didString {
+	DeleteNonce(c.ClientIP())
+
+	if vp.VerifiableCredential[0].Issuer != didString {
 		return nil, errval.ErrDIDNotIssuer
 	}
 
-	opts := models.CreateResolutionOptions()
-	resolutionMeta, issuerDocument, _ := did.Resolve(didString, opts)
-	if resolutionMeta.Error != "" {
-		return nil, errors.New(resolutionMeta.Error)
-	}
-
-	success, err := did.AuthenticateDocumentHolder(issuerDocument, input.AuthenticationInfo.Signature, input.AuthenticationInfo.Nonce)
-	if err != nil {
-		return nil, err
-	}
-	if !success {
-		return nil, errval.ErrAuthFailed
-	}
-
-	success, err = presentations.VerifyVP(input.Presentation)
+	success, err := presentations.VerifyVP(vp)
 	if err != nil {
 		return nil, err
 	}
@@ -61,17 +43,17 @@ func RevokeVC(c *gin.Context) (*models.VerifiableCredential, error) {
 		return nil, errval.ErrVerifyPresent
 	}
 
-	err = credentials.RevokeVC(&input.Presentation.VerifiableCredential[0])
+	err = credentials.RevokeVC(&vp.VerifiableCredential[0])
 	if err != nil {
 		return nil, err
 	}
 
 	vcBytes := [32]byte{}
-	copy(vcBytes[:], credentials.ConvertVCToBytes(input.Presentation.VerifiableCredential[0]))
+	copy(vcBytes[:], credentials.ConvertVCToBytes(vp.VerifiableCredential[0]))
 	err = contract.RevokeVC(vcBytes)
 	if err != nil {
 		return nil, err
 	}
 
-	return &input.Presentation.VerifiableCredential[0], nil
+	return &vp.VerifiableCredential[0], nil
 }

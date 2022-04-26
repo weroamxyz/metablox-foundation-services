@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"errors"
-
 	"github.com/gin-gonic/gin"
 	"github.com/metabloxDID/dao"
 	"github.com/metabloxDID/did"
@@ -12,30 +10,11 @@ import (
 
 func GetMinerList(c *gin.Context) ([]models.MinerInfo, error) {
 	didString := "did:metablox:" + c.Param("did")
-	authenticationInfo := models.CreateAuthenticationInfo()
-	err := c.BindJSON(authenticationInfo)
-
-	if err != nil {
-		return nil, err
+	valid := did.IsDIDValid(did.SplitDIDString(didString))
+	if !valid {
+		return nil, errval.ErrDIDFormat
 	}
 
-	err = CheckNonce(c.ClientIP(), authenticationInfo.Nonce)
-	if err != nil {
-		return nil, err
-	}
-
-	opts := models.CreateResolutionOptions()
-	resolutionMeta, doc, _ := did.Resolve(didString, opts)
-	if resolutionMeta.Error != "" {
-		return nil, errors.New(resolutionMeta.Error)
-	}
-	success, err := did.AuthenticateDocumentHolder(doc, authenticationInfo.Signature, authenticationInfo.Nonce)
-	if err != nil {
-		return nil, err
-	}
-	if !success {
-		return nil, errval.ErrAuthFailed
-	}
 	minerList, err := dao.GetMinerList()
 	if err != nil {
 		return nil, err

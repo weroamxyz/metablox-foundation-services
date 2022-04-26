@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/metabloxDID/errval"
 	"github.com/metabloxDID/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -93,41 +92,4 @@ func TestResolveDIDRepresentation(t *testing.T) {
 	assert.Equal(t, exampleDocument.VerificationMethod, document.VerificationMethod)
 	assert.Equal(t, exampleDocument.Authentication, document.Authentication)
 	assert.Nil(t, documentMeta)
-}
-
-func TestAuthenticateDocumentHolder(t *testing.T) {
-	doc := models.GenerateTestDIDDocument()
-	authenticationInfo := models.GenerateTestAuthenticationInfo()
-	success, err := AuthenticateDocumentHolder(doc, authenticationInfo.Signature, authenticationInfo.Nonce)
-	assert.Nil(t, err)
-	assert.True(t, success)
-
-	authenticationInfo.Nonce = "newValue"
-	success, err = AuthenticateDocumentHolder(doc, authenticationInfo.Signature, authenticationInfo.Nonce)
-	assert.Equal(t, errval.ErrJWSAuthentication, err)
-	assert.False(t, success)
-
-	authenticationInfo.Nonce = "2022-04-19 13:56:52.926803645 -0700 PDT m=+37.117567171"
-	authenticationInfo.Signature = "eyJhbGciOiJVUzI1NiJ9..liXdQpeQZOp6GP4xIjj0YxwIoJ-NeklgnondsexzHc4haChZlCQckwT5pnaFHhTYtaZf9V74EKfvl-CqQ85Elv"
-	success, err = AuthenticateDocumentHolder(doc, authenticationInfo.Signature, authenticationInfo.Nonce)
-	assert.Equal(t, errval.ErrJWSAuthentication, err)
-	assert.False(t, success)
-
-	authenticationInfo.Signature = "eyJhbGciOiJFUzI1NiJ9..liXdQpeQZOp6GP4xIjj0YxwIoJ-NeklgnondsexzHc4haChZlCQckwT5pnaFHhTYtaZf9V74EKfvl-CqQ85Elg"
-	doc.VerificationMethod[0].MultibaseKey = "zR4TQJaWaLA3vvYukULRJoxTsRmqCMsWuEJdDE8CJwRFCUijDGwCBP89xVcWdLRQaEM6b7wD294xCs8byy3CdDMYb"
-	success, err = AuthenticateDocumentHolder(doc, authenticationInfo.Signature, authenticationInfo.Nonce)
-	assert.Equal(t, errval.ErrInvalidSecp256k1PubKey, err)
-	assert.False(t, success)
-
-	doc.VerificationMethod[0].MultibaseKey = "zR4TQJaWaLA3vvYukULRJoxTsRmqCMsWuEJdDE8CJwRFCUijDGwCBP89xVcWdLRQaEM6b7wD294xCs8byy3CdDMYa"
-	doc.Authentication = "newValue"
-	success, err = AuthenticateDocumentHolder(doc, authenticationInfo.Signature, authenticationInfo.Nonce)
-	assert.Equal(t, errval.ErrMissingVM, err)
-	assert.False(t, success)
-
-	doc.Authentication = "did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo#verification"
-	doc.VerificationMethod[0].MethodType = "newValue"
-	success, err = AuthenticateDocumentHolder(doc, authenticationInfo.Signature, authenticationInfo.Nonce)
-	assert.Equal(t, errval.ErrUnknownProofType, err)
-	assert.False(t, success)
 }
