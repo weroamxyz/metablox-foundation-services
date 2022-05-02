@@ -81,7 +81,9 @@ func CreateTestMiningLicenseTable() error {
 	sqlStr := `CREATE TABLE MiningLicenseInfo (
 		CredentialID int NOT NULL,
 		ID varchar(100) NOT NULL,
-		PlaceholderParameter2 varchar(100) NOT NULL,
+		Name varchar(100) NOT NULL,
+		Model varchar(100) NOT NULL,
+		Serial varchar(100) NOT NULL,
 		PRIMARY KEY (CredentialID)
 	  )`
 
@@ -110,7 +112,7 @@ func CreateTestWifiAccessTable() error {
 	sqlStr := `CREATE TABLE WifiAccessInfo (
 		CredentialID int NOT NULL,
 		ID varchar(100) NOT NULL,
-		PlaceholderParameter varchar(100) NOT NULL,
+		Type enum('User','Validator') NOT NULL,
 		PRIMARY KEY (CredentialID)
 	  )`
 

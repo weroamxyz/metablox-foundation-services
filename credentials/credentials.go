@@ -246,10 +246,10 @@ func ConvertVCToBytes(vc models.VerifiableCredential) []byte {
 	switch vc.Type[1] {
 	case models.TypeWifi:
 		wifiAccessInfo := vc.CredentialSubject.(models.WifiAccessInfo)
-		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(wifiAccessInfo.ID), []byte(wifiAccessInfo.PlaceholderParameter)}, []byte{})
+		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(wifiAccessInfo.ID), []byte(wifiAccessInfo.Type)}, []byte{})
 	case models.TypeMining:
 		miningLicenseInfo := vc.CredentialSubject.(models.MiningLicenseInfo)
-		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(miningLicenseInfo.ID), []byte(miningLicenseInfo.PlaceholderParameter2)}, []byte{})
+		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(miningLicenseInfo.ID), []byte(miningLicenseInfo.Name), []byte(miningLicenseInfo.Model), []byte(miningLicenseInfo.Serial)}, []byte{})
 	}
 
 	convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(vc.Proof.Type), []byte(vc.Proof.Created), []byte(vc.Proof.VerificationMethod), []byte(vc.Proof.ProofPurpose), []byte(vc.Proof.JWSSignature)}, []byte{})

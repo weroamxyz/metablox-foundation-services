@@ -45,7 +45,7 @@ func IssueWifiVC(c *gin.Context) (*models.VerifiableCredential, error) {
 
 	vcBytes := [32]byte{}
 	copy(vcBytes[:], credentials.ConvertVCToBytes(*newVC))
-	err = contract.CreateVC(vcBytes)
+	err = contract.RegisterVC(vcBytes)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +78,7 @@ func IssueMiningVC(c *gin.Context) (*models.VerifiableCredential, error) {
 
 	vcBytes := [32]byte{}
 	copy(vcBytes[:], credentials.ConvertVCToBytes(*newVC))
-	err = contract.CreateVC(vcBytes)
+	err = contract.RegisterVC(vcBytes)
 	if err != nil {
 		return nil, err
 	}

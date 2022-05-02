@@ -40,6 +40,12 @@ func TestCreateMiningLicenseVC(t *testing.T) {
 	assert.Equal(t, sampleVC.Proof.VerificationMethod, vc.Proof.VerificationMethod)
 	_, err = CreateMiningLicenseVC(issuerDocument, miningLicenseInfo, issuerPrivKey)
 	assert.Equal(t, errval.ErrMiningExists, err)
+	createdSubjectInfo := vc.CredentialSubject.(models.MiningLicenseInfo)
+	assert.Equal(t, miningLicenseInfo.ID, createdSubjectInfo.ID)
+	assert.Equal(t, miningLicenseInfo.CredentialID, createdSubjectInfo.CredentialID)
+	assert.Equal(t, miningLicenseInfo.Name, createdSubjectInfo.Name)
+	assert.Equal(t, miningLicenseInfo.Model, createdSubjectInfo.Model)
+	assert.Equal(t, miningLicenseInfo.Serial, createdSubjectInfo.Serial)
 }
 
 func TestCreateWifiAccessVC(t *testing.T) {
@@ -70,6 +76,10 @@ func TestCreateWifiAccessVC(t *testing.T) {
 	assert.Equal(t, sampleVC.Proof.Type, vc.Proof.Type)
 	assert.Equal(t, sampleVC.Proof.ProofPurpose, vc.Proof.ProofPurpose)
 	assert.Equal(t, sampleVC.Proof.VerificationMethod, vc.Proof.VerificationMethod)
+	createdSubjectInfo := vc.CredentialSubject.(models.WifiAccessInfo)
+	assert.Equal(t, wifiAccessInfo.ID, createdSubjectInfo.ID)
+	assert.Equal(t, wifiAccessInfo.CredentialID, createdSubjectInfo.CredentialID)
+	assert.Equal(t, wifiAccessInfo.Type, createdSubjectInfo.Type)
 }
 
 func TestRenewVC(t *testing.T) {

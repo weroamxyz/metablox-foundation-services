@@ -31,92 +31,74 @@ func Init() error {
 	return nil
 }
 
-func CreateVC(vcBytes [32]byte) error {
-	/*publicKey := foundationPrivateKey.Public()	//todo: uncomment once smart contract is ready
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		log.Fatal("error casting public key to ECDSA")
-	}
+func RegisterVC(vcBytes [32]byte) error {
+	/*	fromAddress := crypto.PubkeyToAddress(foundationPrivateKey.PublicKey)	//todo: uncomment once smart contract is ready
+		nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
-	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	gasPrice, err := client.SuggestGasPrice(context.Background())
-	if err != nil {
-		log.Fatal(err)
-	}
-	auth := bind.NewKeyedTransactor(foundationPrivateKey)
-	auth.Nonce = big.NewInt(int64(nonce))
-	auth.Value = big.NewInt(0)     // in wei
-	auth.GasLimit = uint64(300000) // in units
-	auth.GasPrice = gasPrice
-	_, err = instance.UploadVC(auth, vcBytes)
-	if err != nil {
-		return err
-	}*/
+		gasPrice, err := client.SuggestGasPrice(context.Background())
+		if err != nil {
+			log.Fatal(err)
+		}
+		auth := bind.NewKeyedTransactor(foundationPrivateKey)
+		auth.Nonce = big.NewInt(int64(nonce))
+		auth.Value = big.NewInt(0)     // in wei
+		auth.GasLimit = uint64(300000) // in units
+		auth.GasPrice = gasPrice
+		_, err = instance.UploadVC(auth, vcBytes)
+		if err != nil {
+			return err
+		}*/
 
 	return nil
 }
 
 func RenewVC(vcBytes [32]byte) error {
-	/*publicKey := foundationPrivateKey.Public()	//todo: uncomment once smart contract is ready
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		log.Fatal("error casting public key to ECDSA")
-	}
+	/*	fromAddress := crypto.PubkeyToAddress(foundationPrivateKey.PublicKey)	//todo: uncomment once smart contract is ready
+		nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
-	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	gasPrice, err := client.SuggestGasPrice(context.Background())
-	if err != nil {
-		log.Fatal(err)
-	}
-	auth := bind.NewKeyedTransactor(foundationPrivateKey)
-	auth.Nonce = big.NewInt(int64(nonce))
-	auth.Value = big.NewInt(0)     // in wei
-	auth.GasLimit = uint64(300000) // in units
-	auth.GasPrice = gasPrice
-	_, err = instance.RenewVC(auth, vcBytes)
-	if err != nil {
-		return err
-	}*/
+		gasPrice, err := client.SuggestGasPrice(context.Background())
+		if err != nil {
+			log.Fatal(err)
+		}
+		auth := bind.NewKeyedTransactor(foundationPrivateKey)
+		auth.Nonce = big.NewInt(int64(nonce))
+		auth.Value = big.NewInt(0)     // in wei
+		auth.GasLimit = uint64(300000) // in units
+		auth.GasPrice = gasPrice
+		_, err = instance.RenewVC(auth, vcBytes)
+		if err != nil {
+			return err
+		}*/
 
 	return nil
 }
 
 func RevokeVC(vcBytes [32]byte) error {
-	/*publicKey := foundationPrivateKey.Public()	//todo: uncomment once smart contract is ready
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		log.Fatal("error casting public key to ECDSA")
-	}
+	/*	fromAddress := crypto.PubkeyToAddress(foundationPrivateKey.PublicKey)	//todo: uncomment once smart contract is ready
+		nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
-	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	gasPrice, err := client.SuggestGasPrice(context.Background())
-	if err != nil {
-		log.Fatal(err)
-	}
-	auth := bind.NewKeyedTransactor(foundationPrivateKey)
-	auth.Nonce = big.NewInt(int64(nonce))
-	auth.Value = big.NewInt(0)     // in wei
-	auth.GasLimit = uint64(300000) // in units
-	auth.GasPrice = gasPrice
-	_, err = instance.RevokeVC(auth, vcBytes)
-	if err != nil {
-		return err
-	}*/
+		gasPrice, err := client.SuggestGasPrice(context.Background())
+		if err != nil {
+			log.Fatal(err)
+		}
+		auth := bind.NewKeyedTransactor(foundationPrivateKey)
+		auth.Nonce = big.NewInt(int64(nonce))
+		auth.Value = big.NewInt(0)     // in wei
+		auth.GasLimit = uint64(300000) // in units
+		auth.GasPrice = gasPrice
+		_, err = instance.RevokeVC(auth, vcBytes)
+		if err != nil {
+			return err
+		}*/
 
 	return nil
 }

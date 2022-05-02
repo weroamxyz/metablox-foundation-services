@@ -64,9 +64,9 @@ func UploadWifiAccessVC(vc models.VerifiableCredential) (int, error) {
 		return 0, err
 	}
 	newID, _ := result.LastInsertId()
-	sqlStr = "insert into WifiAccessInfo (CredentialID, ID, PlaceholderParameter) values (?,?,?)"
+	sqlStr = "insert into WifiAccessInfo (CredentialID, ID, Type) values (?,?,?)"
 	wifiAccessInfo := vc.CredentialSubject.(models.WifiAccessInfo)
-	_, err = tx.Exec(sqlStr, newID, wifiAccessInfo.ID, wifiAccessInfo.PlaceholderParameter)
+	_, err = tx.Exec(sqlStr, newID, wifiAccessInfo.ID, wifiAccessInfo.Type)
 	if err != nil {
 		tx.Rollback()
 		return 0, err
@@ -91,9 +91,9 @@ func UploadMiningLicenseVC(vc models.VerifiableCredential) (int, error) {
 		return 0, err
 	}
 	newID, _ := result.LastInsertId()
-	sqlStr = "insert into MiningLicenseInfo (CredentialID, ID, PlaceholderParameter2) values (?,?,?)"
+	sqlStr = "insert into MiningLicenseInfo (CredentialID, ID, Name, Model, Serial) values (?,?,?,?,?)"
 	miningLicenseInfo := vc.CredentialSubject.(models.MiningLicenseInfo)
-	_, err = tx.Exec(sqlStr, newID, miningLicenseInfo.ID, miningLicenseInfo.PlaceholderParameter2)
+	_, err = tx.Exec(sqlStr, newID, miningLicenseInfo.ID, miningLicenseInfo.Name, miningLicenseInfo.Model, miningLicenseInfo.Serial)
 	if err != nil {
 		tx.Rollback()
 		return 0, err

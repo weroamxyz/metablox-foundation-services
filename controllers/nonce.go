@@ -1,14 +1,18 @@
 package controllers
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/metabloxDID/errval"
 )
 
+const nanoMinute = 60000000000 //number of nanoseconds in 1 minute
+
 //If user provided correct nonce, then assign them a new one and return that value
 func CreateNonce(ip string) string {
-	NonceLookup[ip] = time.Now().Format("2006-01-02 15:04:05.999999999 -0700 MST")
+	time.Now().UnixNano()
+	NonceLookup[ip] = strconv.Itoa(int(time.Now().UnixNano()))
 	return NonceLookup[ip]
 }
 
@@ -19,11 +23,9 @@ func CheckNonce(ip, givenNonce string) error {
 		return errval.ErrNoNonce
 	}
 
-	nonceTime, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", assignedNonce)
-	if err != nil {
-		return err
-	}
-	if nonceTime.Add(time.Minute).Before(time.Now()) {
+	nanoTimestamp, _ := strconv.Atoi(assignedNonce)
+
+	if int64(nanoTimestamp+nanoMinute) < time.Now().UnixNano() {
 		delete(NonceLookup, ip) //remove expired nonces
 		return errval.ErrExpiredNonce
 	}

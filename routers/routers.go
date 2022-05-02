@@ -10,13 +10,13 @@ func Setup() {
 
 	r.POST("/registry/storedoc", controllers.SendDocToRegistryHandler)
 
-	r.POST("/vc/issue/wifi/:did", controllers.IssueWifiVCHandler)
-	r.POST("/vc/renew/wifi/:did", controllers.RenewVCHandler)
-	r.POST("/vc/revoke/wifi/:did", controllers.RevokeVCHandler)
+	r.POST("/vc/wifi/issue/:did", controllers.IssueWifiVCHandler)
+	r.POST("/vc/wifi/renew/:did", controllers.RenewVCHandler)
+	r.POST("/vc/wifi/revoke/:did", controllers.RevokeVCHandler)
 
-	r.POST("/vc/issue/mining/:did", controllers.IssueMiningVCHandler)
-	r.POST("/vc/renew/mining/:did", controllers.RenewVCHandler)
-	r.POST("/vc/revoke/mining/:did", controllers.RevokeVCHandler)
+	r.POST("/vc/mining/issue/:did", controllers.IssueMiningVCHandler)
+	r.POST("/vc/mining/renew/:did", controllers.RenewVCHandler)
+	r.POST("/vc/mining/revoke/:did", controllers.RevokeVCHandler)
 
 	r.GET("/minerlist/:did", controllers.GetMinerListHandler)
 
