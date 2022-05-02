@@ -2,12 +2,9 @@ package controllers
 
 import (
 	"crypto/ecdsa"
-	"fmt"
 	"net/http"
 
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gin-gonic/gin"
-	"github.com/metabloxDID/contract"
 	"github.com/metabloxDID/key"
 	"github.com/metabloxDID/models"
 )
@@ -23,11 +20,6 @@ func InitializeValues() error {
 	issuerPrivateKey, err = key.GetIssuerPrivateKey()
 	if err != nil {
 		return err
-	}
-	testKey, _ := crypto.HexToECDSA("fdebd2c79a17bbea3f69b6ec146bc49b968a63bd24ec342e1bd22830d13f2687")
-	err = contract.TestSignatures(testKey, "secret message")
-	if err != nil {
-		fmt.Println(err)
 	}
 	return nil
 }
