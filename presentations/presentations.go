@@ -114,14 +114,14 @@ func ConvertVPToBytes(vp models.VerifiablePresentation) []byte {
 		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(item)}, []byte{})
 	}
 
-	sort.SliceStable(vp.Context, func(i, j int) bool {
+	sort.SliceStable(vp.Type, func(i, j int) bool {
 		return vp.Type[i] < vp.Type[j]
 	})
 	for _, item := range vp.Type {
 		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(item)}, []byte{})
 	}
 
-	sort.SliceStable(vp.Context, func(i, j int) bool { //sort the credentials by ID
+	sort.SliceStable(vp.VerifiableCredential, func(i, j int) bool { //sort the credentials by ID
 		return vp.VerifiableCredential[i].ID < vp.VerifiableCredential[j].ID
 	})
 	for _, item := range vp.VerifiableCredential {
