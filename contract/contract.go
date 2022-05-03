@@ -109,6 +109,6 @@ func UploadDocument(docBytes [32]byte) error { //todo: actual implementation
 
 func GetDocument(targetDID string) (*models.DIDDocument, [32]byte, error) { //todo: actual implementation
 	placeholderDoc := models.GenerateTestDIDDocument()
-	placeholderHash := [32]byte{159, 210, 117, 26, 68, 195, 94, 82, 100, 225, 26, 113, 147, 246, 48, 225, 11, 103, 151, 249, 84, 104, 245, 122, 25, 36, 253, 166, 177, 201, 51, 0} //sha256.Sum256(ConvertDocToBytes(*placeholderDoc))
+	placeholderHash := [32]byte{92, 67, 129, 94, 156, 179, 0, 112, 161, 221, 33, 243, 227, 229, 88, 215, 116, 209, 46, 122, 193, 9, 107, 28, 173, 20, 8, 175, 147, 109, 184, 210} //sha256.Sum256(ConvertDocToBytes(*placeholderDoc))
 	return placeholderDoc, placeholderHash, nil
 }

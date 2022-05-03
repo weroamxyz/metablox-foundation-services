@@ -228,8 +228,8 @@ func GenerateTestPrivKey() *ecdsa.PrivateKey {
 
 func GenerateTestDIDDocument() *DIDDocument {
 	document := CreateDIDDocument()
-	document.Context = append(document.Context, ContextDID)
 	document.Context = append(document.Context, ContextSecp256k1)
+	document.Context = append(document.Context, ContextDID)
 	document.ID = "did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo"
 	document.Created = "2022-03-31T12:53:19-07:00"
 	document.Updated = "2022-03-31T12:53:19-07:00"
@@ -324,7 +324,7 @@ func GenerateTestVC() *VerifiableCredential {
 		"2022-03-31T12:53:19-07:00",
 		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo#verification",
 		PurposeAuth,
-		"eyJhbGciOiJFUzI1NiJ9..lvLWxsW_5GIZGCztNs_ioBHHyC4PZ1JP9CQL0NgdTwjf7EHMDgCViLzLwv_FFJtYSEUh7Y67VbIFhM50B5cnxg",
+		"eyJhbGciOiJFUzI1NiJ9..H3qSrRg0jKgLBkjcTvCcT5A2iX6vVGSFnwpaoPR_Ugv4aa1OgRMUo6GC043TaeS2StqjyeZlpcuZJN0koWis-A",
 	)
 
 	subjectInfo := GenerateTestSubjectInfo()
@@ -356,7 +356,7 @@ func GenerateTestWifiAccessVC() *VerifiableCredential {
 	wifiAccessInfo := GenerateTestWifiAccessInfo()
 
 	return NewVerifiableCredential(
-		[]string{ContextCredential, ContextSecp256k1},
+		[]string{ContextSecp256k1, ContextCredential},
 		"http://metablox.com/credentials/1",
 		[]string{TypeCredential, TypeWifi},
 		TypeWifi,
@@ -382,9 +382,9 @@ func GenerateTestMiningLicenseVC() *VerifiableCredential {
 	miningLicenseInfo := GenerateTestMiningLicenseInfo()
 
 	return NewVerifiableCredential(
-		[]string{ContextCredential, ContextSecp256k1},
+		[]string{ContextSecp256k1, ContextCredential},
 		"http://metablox.com/credentials/1",
-		[]string{TypeCredential, TypeMining},
+		[]string{TypeMining, TypeCredential},
 		TypeMining,
 		"did:metablox:sampleIssuer",
 		"2022-03-31T12:53:19-07:00",

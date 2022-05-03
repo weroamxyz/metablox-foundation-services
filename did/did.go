@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -41,8 +42,8 @@ func CreateDID(privKey *ecdsa.PrivateKey) (*models.DIDDocument, error) {
 		return nil, err
 	}
 	document.Context = make([]string, 0)
-	document.Context = append(document.Context, models.ContextDID)
 	document.Context = append(document.Context, models.ContextSecp256k1)
+	document.Context = append(document.Context, models.ContextDID)
 	document.Created = time.Now().Format(time.RFC3339)
 	document.Updated = document.Created
 	document.Version = 1
@@ -222,17 +223,28 @@ func AuthenticateSecp256k1(signature, nonce string, vm models.VerificationMethod
 
 func ConvertDocToBytes(doc models.DIDDocument) []byte {
 	var convertedBytes []byte
+
+	sort.SliceStable(doc.Context, func(i, j int) bool { //have to sort arrays alphabetically before iterating over them to ensure a consistent ordering
+		return doc.Context[i] < doc.Context[j]
+	})
 	for _, item := range doc.Context {
 		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(item)}, []byte{})
 	}
 
 	convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(doc.ID), []byte(doc.Created), []byte(doc.Updated), []byte(strconv.Itoa(doc.Version))}, []byte{})
+
+	sort.SliceStable(doc.VerificationMethod, func(i, j int) bool {
+		return doc.VerificationMethod[i].ID < doc.VerificationMethod[j].ID
+	})
 	for _, item := range doc.VerificationMethod {
 		convertedBytes = bytes.Join([][]byte{convertedBytes, ConvertVMToBytes(item)}, []byte{})
 	}
 
 	convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(doc.Authentication)}, []byte{})
 
+	sort.SliceStable(doc.Service, func(i, j int) bool {
+		return doc.Service[i].ID < doc.Service[j].ID
+	})
 	for _, item := range doc.Service {
 		convertedBytes = bytes.Join([][]byte{convertedBytes, ConvertServiceToBytes(item)}, []byte{})
 	}
