@@ -1,8 +1,14 @@
 package contract
 
 import (
+	"bytes"
+	"context"
 	"crypto/ecdsa"
+	"crypto/sha256"
+	"fmt"
+	"math/big"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -13,21 +19,24 @@ import (
 var client *ethclient.Client
 var instance *registry.Registry
 var foundationPrivateKey *ecdsa.PrivateKey
+var Address common.Address
 
 func Init() error {
-	client, err := ethclient.Dial("https://mainnet.infura.io")
+	var err error
+	client, err = ethclient.Dial("https://api.s0.b.hmny.io")
 	if err != nil {
 		return err
 	}
-	foundationPrivateKey, err = crypto.HexToECDSA("fad9c8855b740a0b7ed4c221dbad0f33a83a49cad6b3fe8d5817ac83d38b6a19")
+	foundationPrivateKey, err = crypto.HexToECDSA("fdebd2c79a17bbea3f69b6ec146bc49b968a63bd24ec342e1bd22830d13f2687")
 	if err != nil {
 		return err
 	}
-	address := common.HexToAddress("0x147B8eb97fD247D06C4006D269c90C1908Fb5D54")
-	instance, err = registry.NewRegistry(address, client)
+	Address = common.HexToAddress("0x8CeDd60c472164ab3aae55E69D9B7E514AB972d8")
+	instance, err = registry.NewRegistry(Address, client)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -103,7 +112,58 @@ func RevokeVC(vcBytes [32]byte) error {
 	return nil
 }
 
-func UploadDocument(docBytes [32]byte) error { //todo: actual implementation
+func UploadDocument(document *models.DIDDocument, privateKey *ecdsa.PrivateKey) error { //todo: actual implementation
+	//signer := common.HexToAddress("0xB1453Ab8a8BBeB66098023138e070fBEa1624184")
+	//pubBytes := crypto.CompressPubkey(&privateKey.PublicKey)
+	pubAddress := crypto.PubkeyToAddress(privateKey.PublicKey)
+
+	//pubAddress := common.BytesToAddress(pubBytes)
+	nonce, err := instance.Nonce(nil, pubAddress)
+	if err != nil {
+		return err
+	}
+	var messageBytes []byte
+	var nonceBytes [32]byte
+
+	copy(nonceBytes[:], nonce.Bytes())
+	messageBytes = bytes.Join([][]byte{messageBytes, []byte(document.ID), pubAddress.Bytes(), nonceBytes[:], []byte("registerOrUpdate")}, nil)
+	messageHash := sha256.Sum256(messageBytes)
+	signature, err := crypto.Sign(messageHash[:], privateKey)
+	if err != nil {
+		return err
+	}
+	var r [32]byte
+	var s [32]byte
+	var v uint8
+
+	copy(r[:], signature[:32])
+	copy(s[:], signature[32:64])
+	v = signature[64] + 27 //have to increment this manually as the smart contract expects v to be 27 or 28, while the crypto package generates it as 0 or 1
+
+	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1666700000))
+	if err != nil {
+		return err
+	}
+	authNonce, err := client.PendingNonceAt(context.Background(), pubAddress)
+	if err != nil {
+		return err
+	}
+
+	gasPrice, err := client.SuggestGasPrice(context.Background())
+	if err != nil {
+		return err
+	}
+	auth.Nonce = big.NewInt(int64(authNonce))
+	auth.Value = big.NewInt(0)
+	auth.GasLimit = uint64(300000)
+	auth.GasPrice = gasPrice
+
+	tx, err := instance.RegisterDid(auth, document.ID, pubAddress, v, r, s)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("transaction address: ", tx.Hash().Hex())
 	return nil
 }
 
