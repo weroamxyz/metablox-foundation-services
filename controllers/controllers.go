@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/metabloxDID/contract"
 	"github.com/metabloxDID/key"
 	"github.com/metabloxDID/models"
 )
@@ -100,4 +101,64 @@ func GenerateTestSignatures(c *gin.Context) {
 	}
 
 	ResponseSuccessWithMsg(c, "Generated signature '"+signature+"'")
+}
+
+func AssignIssuer(c *gin.Context) {
+	var inputs struct {
+		CredentialKey string
+		Did           string
+	}
+
+	if err := c.BindJSON(&inputs); err != nil {
+		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed: "+err.Error())
+		return
+	}
+
+	err := contract.RegisterVCIssuer(inputs.CredentialKey, inputs.Did, issuerPrivateKey)
+	if err != nil {
+		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed: "+err.Error())
+		return
+	}
+
+	ResponseSuccessWithMsg(c, "Success")
+}
+
+func SetVCAttribute(c *gin.Context) {
+	var inputs struct {
+		CredentialKey string
+		FieldName     string
+		NewValue      string
+	}
+
+	if err := c.BindJSON(&inputs); err != nil {
+		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed: "+err.Error())
+		return
+	}
+
+	err := contract.UpdateVCValue(inputs.CredentialKey, inputs.FieldName, inputs.NewValue, issuerPrivateKey)
+	if err != nil {
+		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed: "+err.Error())
+		return
+	}
+
+	ResponseSuccessWithMsg(c, "Success")
+}
+
+func ReadVCChangedEvents(c *gin.Context) {
+	var inputs struct {
+		CredentialKey string
+	}
+
+	if err := c.BindJSON(&inputs); err != nil {
+		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed: "+err.Error())
+		return
+	}
+
+	err := contract.ReadVCChangedEvents(inputs.CredentialKey)
+	if err != nil {
+		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed: "+err.Error())
+		return
+	}
+
+	ResponseSuccessWithMsg(c, "Success")
 }

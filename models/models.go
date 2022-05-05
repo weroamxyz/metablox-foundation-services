@@ -28,6 +28,7 @@ type DIDDocument struct {
 	VerificationMethod []VerificationMethod `json:"verificationMethod"`
 	Authentication     string               `json:"authentication"`
 	Service            []Service            `json:"service"`
+	Address            string               `json:"-"` //used to associate dids with public key addresses
 }
 
 type VerificationMethod struct {
@@ -140,6 +141,12 @@ type MinerInfo struct {
 	Name       string `json:"name" db:"Name"`
 	MAC        string `json:"mac" db:"MAC"`
 	CreateTime string `json:"createTime" db:"CreateTime"`
+}
+
+type VCSchemaChanged struct {
+	VcName string
+	Name   [32]byte
+	Value  []byte
 }
 
 func CreateDIDDocument() *DIDDocument {
