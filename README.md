@@ -120,7 +120,7 @@ There are a number of different data structures used by the foundation service, 
             "id": "did:metablox:mnmbxakwgkwhj#verification",
             "type": "EcdsaSecp256k1VerificationKey2019",
             "controller": "did:metablox:mnmbxakwgkwhj",
-            "publicKeyHex": "0420789feec328a538c3bf0f35ec13c8928376189428b281d767cae9097f583ba8745194561810e98be3bc5bbb577623c7f3de82426b0bb66a8a279e6332c54915"
+            "publicKeyMultibase": "zR4TQJaWaLA3vvYukULRJoxTsRmqCMsWuEJdDE8CJwRFCUijDGwCBP89xVcWdLRQaEM6b7wD294xCs8byy3CdDMYa"
         }
     ],
     "authentication": "did:metablox:mnmbxakwgkwhj#verification"
@@ -315,8 +315,37 @@ There are a number of different data structures used by the foundation service, 
 
 
 
+## Uploading a DID Document
+The POST API '/registry/storedoc' is used to upload a DID document to the Metablox smart contract. To use it, send a request to the url with the document you want to upload in the body of the request.
+
+Example of uploading a document to a foundation service running on localhost (port 8888):
+url: localhost:8888/registry/storedoc
+body:
+```
+{
+    "@context": [
+        "https://w3id.org/did/v1",
+        "https://ns.did.ai/suites/secp256k1-2019/v1/"
+    ],
+    "id": "HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo",
+    "created": "2022-03-29T15:35:45-07:00",
+    "updated": "2022-03-29T15:35:45-07:00",
+    "version": 1,
+    "verificationMethod": [
+        {
+            "id": "did:metablox:mnmbxakwgkwhj#verification",
+            "type": "EcdsaSecp256k1VerificationKey2019",
+            "controller": "did:metablox:mnmbxakwgkwhj",
+            "publicKeyMultibase": "zR4TQJaWaLA3vvYukULRJoxTsRmqCMsWuEJdDE8CJwRFCUijDGwCBP89xVcWdLRQaEM6b7wD294xCs8byy3CdDMYa"
+        }
+    ],
+    "authentication": "did:metablox:mnmbxakwgkwhj#verification"
+}
+```
+If successful, the output will be a success message. The smart contract should be updated within a short time with the new DID.
+
 ## Issuing a Credential
-The APIs '/vc/wifi/issue/*:did*' and '/vc/mining/issue/*:did*' are used to issue new credentials to DID holders. To use them, simply replace *:did* in the url with the identifier (the section after "did:metablox:") of the did issuing the credential, and include a json object with information about the credential subject in the body of the request (see "Credential Subject (Wifi Access)" and "Credential Subject (Mining License)" in the "Data Structures" sections for the correct formats to use).
+The POST APIs '/vc/wifi/issue/*:did*' and '/vc/mining/issue/*:did*' are used to issue new credentials to DID holders. To use them, simply replace *:did* in the url with the identifier (the section after "did:metablox:") of the did issuing the credential, and include a json object with information about the credential subject in the body of the request (see "Credential Subject (Wifi Access)" and "Credential Subject (Mining License)" in the "Data Structures" sections for the correct formats to use).
 
 Example of issuing a wifi access credential to the DID "did:metablox:test" from a foundation service running on localhost (port 8888), assuming that "did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo' is a valid issuer:
 url: localhost:8888/vc/wifi/issue/HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo
@@ -330,9 +359,16 @@ body:
 If successful, the output will be a verifiable credential created with the provided information.
 
 ## Renewing/Revoking Credentials
-The APIs '/vc/wifi/renew/*:did*' and '/vc/mining/renew/*:did*' are both used to renew a credential. Meanwhile, the APIs '/vc/wifi/revoke/*:did*' and '/vc/mining/revoke/*:did*' are used to revoke a credential.
-Both of these APIs are similar to use. They require a valid DID to be provided in the url (replacing the '*:did*' portion), and a valid verifiable presentation in the body of the request. 
+The POST APIs '/vc/wifi/renew/*:did*' and '/vc/mining/renew/*:did*' are both used to renew a credential. Meanwhile, the POST APIs '/vc/wifi/revoke/*:did*' and '/vc/mining/revoke/*:did*' are used to revoke a credential.
+Both of these APIs are similar to use. They require a valid DID identifier to be provided in the url (replacing the '*:did*' portion), and a valid verifiable presentation in the body of the request. 
 This presentation should include the credential being renewed/revoked as the first in the 'verifiableCredential' field; any additional credentials provided will be ignored. To avoid ambiguity, try to avoid including more than one credential here.
+
+To make the presentation valid, it must include a valid nonce in its presentation proof. A nonce can be gotten by using the GET API '/nonce'; this will assign a nonce to the user's IP address for a short time and return it. This nonce can then be included in the user's presentation. Remember that each nonce is only valid for a single operation, so a new one will be needed if another operation is performed later. 
+
+Example of getting a nonce from a foundation service running on localhost (port 8888):
+url: localhost:8888/nonce
+
+If successful, the output will be a nonce. This nonce will be stored internally, causing any other nonces to be treated as invalid for that IP address.
 
 Example of renewing a wifi access credential with a foundation service running on localhost (port 8888):
 url: localhost:8888/vc/wifi/renew/HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo
@@ -386,7 +422,7 @@ body:
         }
 }
 ```
-If successful, the output will be a new copy of the credential with an updated expiration date.
+If successful, the output will be a new copy of the credential with an updated expiration date. This change will be reflected in the database.
 
-If the url 'localhost:8888/vc/wifi/revoke/HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo' is used with the same input, the credential will be revoked instead of renewed. The output in that case will be a copy of the credential that has had its 'revoked' field set to false.
+If the url 'localhost:8888/vc/wifi/revoke/HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo' is used with the same input, the credential will be revoked instead of renewed. The output in that case will be a copy of the credential that has had its 'revoked' field set to false. This change will be reflected in the database and smart contract.
 
