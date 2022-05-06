@@ -20,7 +20,7 @@ const TypeWifi = "WifiAccess"
 const TypeMining = "MiningLicense"
 
 type DIDDocument struct {
-	Context            []string             `json:"@context"`
+	Context            []string             `json:"@context" mapstructure:"@context"`
 	ID                 string               `json:"id"`
 	Created            string               `json:"created"`
 	Updated            string               `json:"updated"`
@@ -67,7 +67,7 @@ type DocumentMetadata struct {
 }
 
 type VerifiableCredential struct {
-	Context           []string    `json:"@context"`
+	Context           []string    `json:"@context" mapstructure:"@context"`
 	ID                string      `json:"id" db:"ID"`
 	Type              []string    `json:"type"`
 	SubType           string      `json:"-" db:"Type"` //used in place of Type for database operations, as using an array causes issues
@@ -109,7 +109,7 @@ type VPProof struct {
 }
 
 type VerifiablePresentation struct {
-	Context              []string               `json:"@context"`
+	Context              []string               `json:"@context" mapstructure:"@context"`
 	Type                 []string               `json:"type"`
 	VerifiableCredential []VerifiableCredential `json:"verifiableCredential"`
 	Holder               string                 `json:"holder"`
