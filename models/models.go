@@ -123,17 +123,17 @@ type Service struct {
 }
 
 type WifiAccessInfo struct {
-	CredentialID string `json:"-"`
-	ID           string `json:"id"`   //id of the user the credential is assigned to
-	Type         string `json:"type"` //user or validator
+	CredentialID string `json:"-" db:"CredentialID"`
+	ID           string `json:"id" db:"ID"`     //id of the user the credential is assigned to
+	Type         string `json:"type" db:"Type"` //user or validator
 }
 
 type MiningLicenseInfo struct {
-	CredentialID string `json:"-"`
-	ID           string `json:"id"`   //id of the user the credential is assigned to
-	Name         string `json:"name"` //manufacturer name
-	Model        string `json:"model"`
-	Serial       string `json:"serial"` //serial number
+	CredentialID string `json:"-" db:"CredentialID"`
+	ID           string `json:"id" db:"ID"`     //id of the user the credential is assigned to
+	Name         string `json:"name" db:"Name"` //manufacturer name
+	Model        string `json:"model" db:"Model"`
+	Serial       string `json:"serial" db:"Serial"` //serial number
 }
 
 type MinerInfo struct {
@@ -296,7 +296,7 @@ func NewMiningLicenseInfo(credentialID, id, name, model, serial string) *MiningL
 
 func GenerateTestMiningLicenseInfo() *MiningLicenseInfo {
 	return NewMiningLicenseInfo(
-		"sampleID2",
+		"1",
 		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo",
 		"TestName",
 		"TestModel",

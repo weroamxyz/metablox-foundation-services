@@ -11,13 +11,12 @@ import (
 )
 
 var NonceLookup map[string]string
-var ValidIssuers []string
+
 var issuerPrivateKey *ecdsa.PrivateKey
 
 func InitializeValues() error {
 	var err error
 	NonceLookup = make(map[string]string)
-	ValidIssuers = []string{"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo"}
 	issuerPrivateKey, err = key.GetIssuerPrivateKey()
 	if err != nil {
 		return err
