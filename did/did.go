@@ -21,12 +21,10 @@ import (
 )
 
 func GenerateDIDString(privKey *ecdsa.PrivateKey) string {
-	privData := crypto.FromECDSA(privKey)
+	pubData := crypto.FromECDSAPub(&privKey.PublicKey)
 
-	hash := sha256.New()
-	hash.Write(privData)
-	hashData := hash.Sum(nil)
-	didString := base58.Encode(hashData)
+	hash := crypto.Keccak256(pubData)
+	didString := base58.Encode(hash)
 	returnString := "did:metablox:" + didString
 	return returnString
 }

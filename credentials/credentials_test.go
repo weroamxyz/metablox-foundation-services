@@ -134,6 +134,8 @@ func TestRevokeVC(t *testing.T) {
 func TestVerifyVC(t *testing.T) {
 	vc := models.GenerateTestVC()
 	issuerDocument := models.GenerateTestDIDDocument()
+
+	vc.Proof.JWSSignature = "eyJhbGciOiJFUzI1NiJ9..SwOXSABsHjU_f2Qk8aKktOiGc79li6rUK7tcNL6lbwP5wyzdAQWMM-uzs6__nJdCnetcdSPRRDxkwcHv2fVPIA"
 	success, err := VerifyVCSecp256k1(vc, issuerDocument.VerificationMethod[0])
 	assert.Nil(t, err)
 	assert.True(t, success)

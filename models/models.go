@@ -237,12 +237,12 @@ func GenerateTestDIDDocument() *DIDDocument {
 	document := CreateDIDDocument()
 	document.Context = append(document.Context, ContextDID)
 	document.Context = append(document.Context, ContextSecp256k1)
-	document.ID = "did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo"
+	document.ID = "did:metablox:7stFrFePkKS72aenLbTLreLVQW3z3vrdNEyeN1tYhJxH"
 	document.Created = "2022-03-31T12:53:19-07:00"
 	document.Updated = "2022-03-31T12:53:19-07:00"
 	document.Version = 1
-	document.VerificationMethod = append(document.VerificationMethod, VerificationMethod{ID: "did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo#verification", MethodType: "EcdsaSecp256k1VerificationKey2019", Controller: "did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo", MultibaseKey: "zR4TQJaWaLA3vvYukULRJoxTsRmqCMsWuEJdDE8CJwRFCUijDGwCBP89xVcWdLRQaEM6b7wD294xCs8byy3CdDMYa"})
-	document.Authentication = "did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo#verification"
+	document.VerificationMethod = append(document.VerificationMethod, VerificationMethod{ID: "did:metablox:7stFrFePkKS72aenLbTLreLVQW3z3vrdNEyeN1tYhJxH#verification", MethodType: "EcdsaSecp256k1VerificationKey2019", Controller: "did:metablox:7stFrFePkKS72aenLbTLreLVQW3z3vrdNEyeN1tYhJxH", MultibaseKey: "zR4TQJaWaLA3vvYukULRJoxTsRmqCMsWuEJdDE8CJwRFCUijDGwCBP89xVcWdLRQaEM6b7wD294xCs8byy3CdDMYa"})
+	document.Authentication = "did:metablox:7stFrFePkKS72aenLbTLreLVQW3z3vrdNEyeN1tYhJxH#verification"
 	return document
 }
 
@@ -259,7 +259,7 @@ func NewSubjectInfo(id string, givenName, familyName, gender, birthCountry, birt
 
 func GenerateTestSubjectInfo() *SubjectInfo {
 	return NewSubjectInfo(
-		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo",
+		"did:metablox:7stFrFePkKS72aenLbTLreLVQW3z3vrdNEyeN1tYhJxH",
 		"John",
 		"Jacobs",
 		"Male",
@@ -279,7 +279,7 @@ func NewWifiAccessInfo(credentialID, id, userType string) *WifiAccessInfo {
 func GenerateTestWifiAccessInfo() *WifiAccessInfo {
 	return NewWifiAccessInfo(
 		"sampleID",
-		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo",
+		"did:metablox:7stFrFePkKS72aenLbTLreLVQW3z3vrdNEyeN1tYhJxH",
 		"User",
 	)
 }
@@ -297,7 +297,7 @@ func NewMiningLicenseInfo(credentialID, id, name, model, serial string) *MiningL
 func GenerateTestMiningLicenseInfo() *MiningLicenseInfo {
 	return NewMiningLicenseInfo(
 		"sampleID2",
-		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo",
+		"did:metablox:7stFrFePkKS72aenLbTLreLVQW3z3vrdNEyeN1tYhJxH",
 		"TestName",
 		"TestModel",
 		"TestSerial",
@@ -329,9 +329,9 @@ func GenerateTestVC() *VerifiableCredential {
 	vcProof := NewVCProof(
 		Secp256k1Sig,
 		"2022-03-31T12:53:19-07:00",
-		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo#verification",
+		"did:metablox:7stFrFePkKS72aenLbTLreLVQW3z3vrdNEyeN1tYhJxH#verification",
 		PurposeAuth,
-		"eyJhbGciOiJFUzI1NiJ9..lvLWxsW_5GIZGCztNs_ioBHHyC4PZ1JP9CQL0NgdTwjf7EHMDgCViLzLwv_FFJtYSEUh7Y67VbIFhM50B5cnxg",
+		"eyJhbGciOiJFUzI1NiJ9..SwOXSABsHjU_f2Qk8aKktOiGc79li6rUK7tcNL6lbwP5wyzdAQWMM-uzs6__nJdCnetcdSPRRDxkwcHv2fVPIA",
 	)
 
 	subjectInfo := GenerateTestSubjectInfo()
@@ -355,7 +355,7 @@ func GenerateTestWifiAccessVC() *VerifiableCredential {
 	vcProof := NewVCProof(
 		Secp256k1Sig,
 		"2022-03-31T12:53:19-07:00",
-		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo#verification",
+		"did:metablox:7stFrFePkKS72aenLbTLreLVQW3z3vrdNEyeN1tYhJxH#verification",
 		PurposeAuth,
 		"eyJhbGciOiJFUzI1NiJ9..zYvdJMDdwS8IBuXMYCzLSdU_VBn5iG6bYzSIKz366O_KkP0bJ2fV3sUmzzQM7CBBuRSOPH08CAeFzoNXIl0LdA",
 	)
@@ -381,7 +381,7 @@ func GenerateTestMiningLicenseVC() *VerifiableCredential {
 	vcProof := NewVCProof(
 		Secp256k1Sig,
 		"2022-03-31T12:53:19-07:00",
-		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo#verification",
+		"did:metablox:7stFrFePkKS72aenLbTLreLVQW3z3vrdNEyeN1tYhJxH#verification",
 		PurposeAuth,
 		"eyJhbGciOiJFUzI1NiJ9..zYvdJMDdwS8IBuXMYCzLSdU_VBn5iG6bYzSIKz366O_KkP0bJ2fV3sUmzzQM7CBBuRSOPH08CAeFzoNXIl0LdA",
 	)
@@ -411,7 +411,7 @@ func GenerateTestPresentation() *VerifiablePresentation {
 	vpProof := NewVPProof(
 		Secp256k1Sig,
 		"2022-03-31T12:53:19-07:00",
-		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo#verification",
+		"did:metablox:7stFrFePkKS72aenLbTLreLVQW3z3vrdNEyeN1tYhJxH#verification",
 		PurposeAuth,
 		"eyJhbGciOiJFUzI1NiJ9..bmj6KhHcBkLOHgAZrLqgweE-StyBXvvj6bmZqC6TqiYVtC_tXf076xDAAXzmx160dAqivTzgX-943ZU-VWXDqw",
 		"123456",
@@ -421,7 +421,7 @@ func GenerateTestPresentation() *VerifiablePresentation {
 		[]string{ContextCredential, ContextSecp256k1},
 		[]string{"VerifiablePresentation"},
 		[]VerifiableCredential{*GenerateTestVC()},
-		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo",
+		"did:metablox:7stFrFePkKS72aenLbTLreLVQW3z3vrdNEyeN1tYhJxH",
 		*vpProof,
 	)
 }
@@ -430,7 +430,7 @@ func GenerateTestWifiAccessPresentation() *VerifiablePresentation {
 	vpProof := NewVPProof(
 		Secp256k1Sig,
 		"2022-03-31T12:53:19-07:00",
-		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo#verification",
+		"did:metablox:7stFrFePkKS72aenLbTLreLVQW3z3vrdNEyeN1tYhJxH#verification",
 		PurposeAuth,
 		"eyJhbGciOiJFUzI1NiJ9..bmj6KhHcBkLOHgAZrLqgweE-StyBXvvj6bmZqC6TqiYVtC_tXf076xDAAXzmx160dAqivTzgX-943ZU-VWXDqw",
 		"123456",
@@ -440,7 +440,7 @@ func GenerateTestWifiAccessPresentation() *VerifiablePresentation {
 		[]string{ContextCredential, ContextSecp256k1},
 		[]string{"VerifiablePresentation"},
 		[]VerifiableCredential{*GenerateTestWifiAccessVC()},
-		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo",
+		"did:metablox:7stFrFePkKS72aenLbTLreLVQW3z3vrdNEyeN1tYhJxH",
 		*vpProof,
 	)
 }
