@@ -93,14 +93,19 @@ func TestRenewVC(t *testing.T) {
 	err = dao.CreateTestCredentialsTable()
 	assert.Nil(t, err)
 
-	vc := models.GenerateTestWifiAccessVC()
+	vc := models.GenerateTestVC()
 	vc.ExpirationDate = "2022-03-31T12:53:19-07:00"
 	err = dao.InsertSampleIntoCredentials(vc)
 	assert.Nil(t, err)
+	issuerPrivKey := models.GenerateTestPrivKey()
 
-	err = RenewVC(vc)
+	err = RenewVC(vc, issuerPrivKey)
 	assert.Nil(t, err)
 	assert.Equal(t, "2023-03-31T12:53:19-07:00", vc.ExpirationDate)
+
+	success, err := VerifyVCSecp256k1(vc, models.GenerateTestDIDDocument().VerificationMethod[0])
+	assert.Nil(t, err)
+	assert.True(t, success)
 
 	dbVC, err := dao.RetrieveSampleFromCredentials("1")
 	assert.Nil(t, err)
