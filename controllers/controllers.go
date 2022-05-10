@@ -6,6 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/metabloxDID/contract"
+	"github.com/metabloxDID/credentials"
+	"github.com/metabloxDID/did"
 	"github.com/metabloxDID/key"
 	"github.com/metabloxDID/models"
 )
@@ -21,6 +23,7 @@ func InitializeValues() error {
 	if err != nil {
 		return err
 	}
+	credentials.IssuerDID = did.GenerateDIDString(issuerPrivateKey)
 	return nil
 }
 

@@ -19,7 +19,7 @@ import (
 	"github.com/multiformats/go-multibase"
 )
 
-const IssuerDID = "did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo"
+var IssuerDID string
 
 const baseIDString = "http://metablox.com/credentials/"
 

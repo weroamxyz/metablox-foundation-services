@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const exampleDIDDocString = `{"@context":["https://w3id.org/did/v1","https://ns.did.ai/suites/secp256k1-2019/v1/"],"id":"did:metablox:7stFrFePkKS72aenLbTLreLVQW3z3vrdNEyeN1tYhJxH","created":"2022-03-31T12:53:19-07:00","updated":"2022-03-31T12:53:19-07:00","version":1,"verificationMethod":[{"id":"did:metablox:7stFrFePkKS72aenLbTLreLVQW3z3vrdNEyeN1tYhJxH#verification","type":"EcdsaSecp256k1VerificationKey2019","controller":"did:metablox:7stFrFePkKS72aenLbTLreLVQW3z3vrdNEyeN1tYhJxH","publicKeyMultibase":"zR4TQJaWaLA3vvYukULRJoxTsRmqCMsWuEJdDE8CJwRFCUijDGwCBP89xVcWdLRQaEM6b7wD294xCs8byy3CdDMYa"}],"authentication":"did:metablox:7stFrFePkKS72aenLbTLreLVQW3z3vrdNEyeN1tYhJxH#verification","service":null}`
+const exampleDIDDocString = `{"@context":["https://w3id.org/did/v1","https://ns.did.ai/suites/secp256k1-2019/v1/"],"id":"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX","created":"2022-03-31T12:53:19-07:00","updated":"2022-03-31T12:53:19-07:00","version":1,"verificationMethod":[{"id":"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification","type":"EcdsaSecp256k1VerificationKey2019","controller":"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX","publicKeyMultibase":"zPYHK5ZNAzqo2PQ11r54Ku8p2qrwn42ebt7qM4827vAvGuMUV65EKFR7CqmKuvkKJuXPyNrZd8WG3jiqcSzLzpdg9"}],"authentication":"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification","service":null}`
 
 var invalidDIDMetadata = &models.ResolutionMetadata{Error: "invalid Did"}
 var emptyResolutionMetadata = &models.ResolutionMetadata{}
@@ -78,7 +78,7 @@ func TestResolveDID(t *testing.T) {
 func TestResolveDIDRepresentation(t *testing.T) {
 	options := &models.RepresentationResolutionOptions{Accept: "application/did+json"}
 
-	resolutionMeta, byteStream, documentMeta := ResolveRepresentation("did:metablox:7stFrFePkKS72aenLbTLreLVQW3z3vrdNEyeN1tYhJxH", options) //resolvable did
+	resolutionMeta, byteStream, documentMeta := ResolveRepresentation("did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX", options) //resolvable did
 	assert.Equal(t, emptyJSONRepresentationResolutionMetadata, resolutionMeta)
 	exampleDocument := models.GenerateTestDIDDocument()
 	document := models.CreateDIDDocument()
