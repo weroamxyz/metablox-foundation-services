@@ -2,6 +2,9 @@ package did
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"testing"
 
 	"github.com/metabloxDID/models"
@@ -14,6 +17,13 @@ var invalidDIDMetadata = &models.ResolutionMetadata{Error: "invalid Did"}
 var emptyResolutionMetadata = &models.ResolutionMetadata{}
 var emptyJSONRepresentationResolutionMetadata = &models.RepresentationResolutionMetadata{ContentType: "application/did+json"}
 var emptyDocumentMetadata = &models.DocumentMetadata{}
+
+func TestGenerateDIDString(t *testing.T) {
+	privKey, _ := crypto.ToECDSA(common.Hex2Bytes("2e6ad25111f09beb080d556b4ebb824bace0e16c84336c8addb0655cdbaade09"))
+	didStr := GenerateDIDString(privKey)
+	fmt.Println(didStr)
+	assert.Equal(t, didStr, "did:metablox:Fdq53BKE7V7Dzt8mky2EGgxVsSA8rzQgJUxzgt3pUhmA")
+}
 
 func TestCreateDID(t *testing.T) {
 	privKey := models.GenerateTestPrivKey()
