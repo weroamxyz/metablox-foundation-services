@@ -72,7 +72,7 @@ func TestResolveDID(t *testing.T) {
 	assert.Nil(t, document)
 	assert.Equal(t, emptyDocumentMetadata, documentMeta)
 
-	resolutionMeta, document, documentMeta = Resolve("did:metablox:", options) //resolvable did
+	resolutionMeta, document, documentMeta = Resolve("did:metablox:valid", options) //resolvable did
 	assert.Equal(t, emptyResolutionMetadata, resolutionMeta)
 	exampleDocument := models.GenerateTestDIDDocument()
 	assert.Equal(t, exampleDocument.Context, document.Context)
