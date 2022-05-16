@@ -2,16 +2,16 @@ package did
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
+
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
+	"github.com/stretchr/testify/assert"
 )
 
-const exampleDIDDocString = `{"@context":["https://w3id.org/did/v1","https://ns.did.ai/suites/secp256k1-2019/v1/"],"id":"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX","created":"2022-03-31T12:53:19-07:00","updated":"2022-03-31T12:53:19-07:00","version":1,"verificationMethod":[{"id":"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification","type":"EcdsaSecp256k1VerificationKey2019","controller":"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX","publicKeyMultibase":"zPYHK5ZNAzqo2PQ11r54Ku8p2qrwn42ebt7qM4827vAvGuMUV65EKFR7CqmKuvkKJuXPyNrZd8WG3jiqcSzLzpdg9"}],"authentication":"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification","service":null}`
+const exampleDIDDocString = `{"@context":["https://ns.did.ai/suites/secp256k1-2019/v1/","https://w3id.org/did/v1"],"id":"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX","created":"2022-03-31T12:53:19-07:00","updated":"2022-03-31T12:53:19-07:00","version":1,"verificationMethod":[{"id":"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification","type":"EcdsaSecp256k1VerificationKey2019","controller":"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX","publicKeyMultibase":"zPYHK5ZNAzqo2PQ11r54Ku8p2qrwn42ebt7qM4827vAvGuMUV65EKFR7CqmKuvkKJuXPyNrZd8WG3jiqcSzLzpdg9"}],"authentication":"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification","service":null}`
 
 var invalidDIDMetadata = &models.ResolutionMetadata{Error: "invalid Did"}
 var emptyResolutionMetadata = &models.ResolutionMetadata{}
@@ -21,7 +21,6 @@ var emptyDocumentMetadata = &models.DocumentMetadata{}
 func TestGenerateDIDString(t *testing.T) {
 	privKey, _ := crypto.ToECDSA(common.Hex2Bytes("2e6ad25111f09beb080d556b4ebb824bace0e16c84336c8addb0655cdbaade09"))
 	didStr := GenerateDIDString(privKey)
-	fmt.Println(didStr)
 	assert.Equal(t, didStr, "did:metablox:Fdq53BKE7V7Dzt8mky2EGgxVsSA8rzQgJUxzgt3pUhmA")
 }
 

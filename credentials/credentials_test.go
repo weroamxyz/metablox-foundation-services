@@ -3,11 +3,11 @@ package credentials
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/MetaBloxIO/metablox-foundation-services/dao"
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/MetaBloxIO/metablox-foundation-services/settings"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateMiningLicenseVC(t *testing.T) {
@@ -148,7 +148,6 @@ func TestVerifyVC(t *testing.T) {
 	vc := models.GenerateTestVC()
 	issuerDocument := models.GenerateTestDIDDocument()
 
-	vc.Proof.JWSSignature = "eyJhbGciOiJFUzI1NiJ9..SwOXSABsHjU_f2Qk8aKktOiGc79li6rUK7tcNL6lbwP5wyzdAQWMM-uzs6__nJdCnetcdSPRRDxkwcHv2fVPIA"
 	success, err := VerifyVCSecp256k1(vc, issuerDocument.VerificationMethod[0])
 	assert.Nil(t, err)
 	assert.True(t, success)

@@ -1,12 +1,12 @@
 package main
 
 import (
-	logger "github.com/sirupsen/logrus"
 	"github.com/MetaBloxIO/metablox-foundation-services/contract"
 	"github.com/MetaBloxIO/metablox-foundation-services/controllers"
 	"github.com/MetaBloxIO/metablox-foundation-services/dao"
 	"github.com/MetaBloxIO/metablox-foundation-services/routers"
 	"github.com/MetaBloxIO/metablox-foundation-services/settings"
+	logger "github.com/sirupsen/logrus"
 )
 
 func main() {

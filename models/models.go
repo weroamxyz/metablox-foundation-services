@@ -3,9 +3,9 @@ package models
 import (
 	"crypto/ecdsa"
 
+	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 )
 
 const Secp256k1Sig = "EcdsaSecp256k1Signature2019"
@@ -236,8 +236,8 @@ func GenerateTestPrivKey() *ecdsa.PrivateKey {
 
 func GenerateTestDIDDocument() *DIDDocument {
 	document := CreateDIDDocument()
-	document.Context = append(document.Context, ContextDID)
 	document.Context = append(document.Context, ContextSecp256k1)
+	document.Context = append(document.Context, ContextDID)
 	document.ID = "did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX"
 	document.Created = "2022-03-31T12:53:19-07:00"
 	document.Updated = "2022-03-31T12:53:19-07:00"
@@ -332,7 +332,7 @@ func GenerateTestVC() *VerifiableCredential {
 		"2022-03-31T12:53:19-07:00",
 		"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification",
 		PurposeAuth,
-		"eyJhbGciOiJFUzI1NiJ9..SwOXSABsHjU_f2Qk8aKktOiGc79li6rUK7tcNL6lbwP5wyzdAQWMM-uzs6__nJdCnetcdSPRRDxkwcHv2fVPIA",
+		"eyJhbGciOiJFUzI1NiJ9..SnGaW3ya8MM-DXbRSFXWHM_R7Vg_3u_u1OxEfxvwXzQWNRmmC5noWvleSEM3iQdofm7towbpJ6nABQs9e1-OvA",
 	)
 
 	subjectInfo := GenerateTestSubjectInfo()
@@ -358,13 +358,13 @@ func GenerateTestWifiAccessVC() *VerifiableCredential {
 		"2022-03-31T12:53:19-07:00",
 		"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification",
 		PurposeAuth,
-		"eyJhbGciOiJFUzI1NiJ9..zYvdJMDdwS8IBuXMYCzLSdU_VBn5iG6bYzSIKz366O_KkP0bJ2fV3sUmzzQM7CBBuRSOPH08CAeFzoNXIl0LdA",
+		"eyJhbGciOiJFUzI1NiJ9..SnGaW3ya8MM-DXbRSFXWHM_R7Vg_3u_u1OxEfxvwXzQWNRmmC5noWvleSEM3iQdofm7towbpJ6nABQs9e1-OvA",
 	)
 
 	wifiAccessInfo := GenerateTestWifiAccessInfo()
 
 	return NewVerifiableCredential(
-		[]string{ContextCredential, ContextSecp256k1},
+		[]string{ContextSecp256k1, ContextCredential},
 		"http://metablox.com/credentials/1",
 		[]string{TypeCredential, TypeWifi},
 		TypeWifi,
@@ -384,15 +384,15 @@ func GenerateTestMiningLicenseVC() *VerifiableCredential {
 		"2022-03-31T12:53:19-07:00",
 		"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification",
 		PurposeAuth,
-		"eyJhbGciOiJFUzI1NiJ9..zYvdJMDdwS8IBuXMYCzLSdU_VBn5iG6bYzSIKz366O_KkP0bJ2fV3sUmzzQM7CBBuRSOPH08CAeFzoNXIl0LdA",
+		"eyJhbGciOiJFUzI1NiJ9..SnGaW3ya8MM-DXbRSFXWHM_R7Vg_3u_u1OxEfxvwXzQWNRmmC5noWvleSEM3iQdofm7towbpJ6nABQs9e1-OvA",
 	)
 
 	miningLicenseInfo := GenerateTestMiningLicenseInfo()
 
 	return NewVerifiableCredential(
-		[]string{ContextCredential, ContextSecp256k1},
+		[]string{ContextSecp256k1, ContextCredential},
 		"http://metablox.com/credentials/1",
-		[]string{TypeCredential, TypeMining},
+		[]string{TypeMining, TypeCredential},
 		TypeMining,
 		"did:metablox:sampleIssuer",
 		"2022-03-31T12:53:19-07:00",
