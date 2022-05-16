@@ -3,8 +3,9 @@ package models
 import (
 	"crypto/ecdsa"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/metabloxDID/errval"
+	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 )
 
 const Secp256k1Sig = "EcdsaSecp256k1Signature2019"
@@ -229,7 +230,7 @@ func NewPresentation(context, presentationType []string, credentials []Verifiabl
 }
 
 func GenerateTestPrivKey() *ecdsa.PrivateKey {
-	privKey, _ := crypto.ToECDSA([]byte{165, 190, 153, 12, 246, 178, 211, 170, 147, 144, 51, 73, 48, 27, 20, 79, 61, 110, 201, 118, 99, 219, 50, 252, 135, 12, 107, 237, 245, 95, 170, 17})
+	privKey, _ := crypto.ToECDSA(common.Hex2Bytes("dbbd9634560466ac9713e0cf10a575456c8b55388bce0c044f33fc6074dc5ae6"))
 	return privKey
 }
 
@@ -237,12 +238,12 @@ func GenerateTestDIDDocument() *DIDDocument {
 	document := CreateDIDDocument()
 	document.Context = append(document.Context, ContextDID)
 	document.Context = append(document.Context, ContextSecp256k1)
-	document.ID = "did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo"
+	document.ID = "did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX"
 	document.Created = "2022-03-31T12:53:19-07:00"
 	document.Updated = "2022-03-31T12:53:19-07:00"
 	document.Version = 1
-	document.VerificationMethod = append(document.VerificationMethod, VerificationMethod{ID: "did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo#verification", MethodType: "EcdsaSecp256k1VerificationKey2019", Controller: "did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo", MultibaseKey: "zR4TQJaWaLA3vvYukULRJoxTsRmqCMsWuEJdDE8CJwRFCUijDGwCBP89xVcWdLRQaEM6b7wD294xCs8byy3CdDMYa"})
-	document.Authentication = "did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo#verification"
+	document.VerificationMethod = append(document.VerificationMethod, VerificationMethod{ID: "did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification", MethodType: "EcdsaSecp256k1VerificationKey2019", Controller: "did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX", MultibaseKey: "zPYHK5ZNAzqo2PQ11r54Ku8p2qrwn42ebt7qM4827vAvGuMUV65EKFR7CqmKuvkKJuXPyNrZd8WG3jiqcSzLzpdg9"})
+	document.Authentication = "did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification"
 	return document
 }
 
@@ -259,7 +260,7 @@ func NewSubjectInfo(id string, givenName, familyName, gender, birthCountry, birt
 
 func GenerateTestSubjectInfo() *SubjectInfo {
 	return NewSubjectInfo(
-		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo",
+		"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX",
 		"John",
 		"Jacobs",
 		"Male",
@@ -279,7 +280,7 @@ func NewWifiAccessInfo(credentialID, id, userType string) *WifiAccessInfo {
 func GenerateTestWifiAccessInfo() *WifiAccessInfo {
 	return NewWifiAccessInfo(
 		"sampleID",
-		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo",
+		"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX",
 		"User",
 	)
 }
@@ -297,7 +298,7 @@ func NewMiningLicenseInfo(credentialID, id, name, model, serial string) *MiningL
 func GenerateTestMiningLicenseInfo() *MiningLicenseInfo {
 	return NewMiningLicenseInfo(
 		"1",
-		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo",
+		"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX",
 		"TestName",
 		"TestModel",
 		"TestSerial",
@@ -329,9 +330,9 @@ func GenerateTestVC() *VerifiableCredential {
 	vcProof := NewVCProof(
 		Secp256k1Sig,
 		"2022-03-31T12:53:19-07:00",
-		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo#verification",
+		"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification",
 		PurposeAuth,
-		"eyJhbGciOiJFUzI1NiJ9..lvLWxsW_5GIZGCztNs_ioBHHyC4PZ1JP9CQL0NgdTwjf7EHMDgCViLzLwv_FFJtYSEUh7Y67VbIFhM50B5cnxg",
+		"eyJhbGciOiJFUzI1NiJ9..SwOXSABsHjU_f2Qk8aKktOiGc79li6rUK7tcNL6lbwP5wyzdAQWMM-uzs6__nJdCnetcdSPRRDxkwcHv2fVPIA",
 	)
 
 	subjectInfo := GenerateTestSubjectInfo()
@@ -355,7 +356,7 @@ func GenerateTestWifiAccessVC() *VerifiableCredential {
 	vcProof := NewVCProof(
 		Secp256k1Sig,
 		"2022-03-31T12:53:19-07:00",
-		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo#verification",
+		"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification",
 		PurposeAuth,
 		"eyJhbGciOiJFUzI1NiJ9..zYvdJMDdwS8IBuXMYCzLSdU_VBn5iG6bYzSIKz366O_KkP0bJ2fV3sUmzzQM7CBBuRSOPH08CAeFzoNXIl0LdA",
 	)
@@ -381,7 +382,7 @@ func GenerateTestMiningLicenseVC() *VerifiableCredential {
 	vcProof := NewVCProof(
 		Secp256k1Sig,
 		"2022-03-31T12:53:19-07:00",
-		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo#verification",
+		"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification",
 		PurposeAuth,
 		"eyJhbGciOiJFUzI1NiJ9..zYvdJMDdwS8IBuXMYCzLSdU_VBn5iG6bYzSIKz366O_KkP0bJ2fV3sUmzzQM7CBBuRSOPH08CAeFzoNXIl0LdA",
 	)
@@ -411,7 +412,7 @@ func GenerateTestPresentation() *VerifiablePresentation {
 	vpProof := NewVPProof(
 		Secp256k1Sig,
 		"2022-03-31T12:53:19-07:00",
-		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo#verification",
+		"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification",
 		PurposeAuth,
 		"eyJhbGciOiJFUzI1NiJ9..bmj6KhHcBkLOHgAZrLqgweE-StyBXvvj6bmZqC6TqiYVtC_tXf076xDAAXzmx160dAqivTzgX-943ZU-VWXDqw",
 		"123456",
@@ -421,7 +422,7 @@ func GenerateTestPresentation() *VerifiablePresentation {
 		[]string{ContextCredential, ContextSecp256k1},
 		[]string{"VerifiablePresentation"},
 		[]VerifiableCredential{*GenerateTestVC()},
-		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo",
+		"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX",
 		*vpProof,
 	)
 }
@@ -430,7 +431,7 @@ func GenerateTestWifiAccessPresentation() *VerifiablePresentation {
 	vpProof := NewVPProof(
 		Secp256k1Sig,
 		"2022-03-31T12:53:19-07:00",
-		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo#verification",
+		"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification",
 		PurposeAuth,
 		"eyJhbGciOiJFUzI1NiJ9..bmj6KhHcBkLOHgAZrLqgweE-StyBXvvj6bmZqC6TqiYVtC_tXf076xDAAXzmx160dAqivTzgX-943ZU-VWXDqw",
 		"123456",
@@ -440,7 +441,7 @@ func GenerateTestWifiAccessPresentation() *VerifiablePresentation {
 		[]string{ContextCredential, ContextSecp256k1},
 		[]string{"VerifiablePresentation"},
 		[]VerifiableCredential{*GenerateTestWifiAccessVC()},
-		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo",
+		"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX",
 		*vpProof,
 	)
 }

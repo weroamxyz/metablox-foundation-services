@@ -2,10 +2,10 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/metabloxDID/contract"
-	"github.com/metabloxDID/did"
-	"github.com/metabloxDID/errval"
-	"github.com/metabloxDID/models"
+	"github.com/MetaBloxIO/metablox-foundation-services/contract"
+	"github.com/MetaBloxIO/metablox-foundation-services/did"
+	"github.com/MetaBloxIO/metablox-foundation-services/errval"
+	"github.com/MetaBloxIO/metablox-foundation-services/models"
 )
 
 func SendDocToRegistry(c *gin.Context) error {

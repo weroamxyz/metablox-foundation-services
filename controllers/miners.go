@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/metabloxDID/dao"
-	"github.com/metabloxDID/models"
+	"github.com/MetaBloxIO/metablox-foundation-services/dao"
+	"github.com/MetaBloxIO/metablox-foundation-services/models"
 )
 
 func GetMinerList(c *gin.Context) ([]models.MinerInfo, error) {

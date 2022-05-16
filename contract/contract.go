@@ -11,8 +11,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/metabloxDID/models"
-	"github.com/metabloxDID/registry"
+	"github.com/MetaBloxIO/metablox-foundation-services/models"
+	"github.com/MetaBloxIO/metablox-foundation-services/registry"
 )
 
 const deployedContract = "0xf880b97Be7c402Cc441895bF397c3f865BfE1Cb2"

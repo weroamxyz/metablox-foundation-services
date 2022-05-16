@@ -2,7 +2,7 @@ package routers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/metabloxDID/controllers"
+	"github.com/MetaBloxIO/metablox-foundation-services/controllers"
 )
 
 func Setup() {
