@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/metabloxDID/models"
-	"github.com/metabloxDID/settings"
+	"github.com/MetaBloxIO/metablox-foundation-services/models"
+	"github.com/MetaBloxIO/metablox-foundation-services/settings"
 	"github.com/spf13/viper"
 )
 

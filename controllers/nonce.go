@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/metabloxDID/errval"
+	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 )
 
 const nanoMinute = 60000000000 //number of nanoseconds in 1 minute

@@ -26,7 +26,7 @@ make build
 ## Running the Service
 The executable, ```metabloxDID```, is located in the top-level directory. Run the following command in the top level of the repository to start running the backend.
 ``` bash
-./metabloxDID
+.MetaBloxIO/metablox-foundation-services
 ```
 This should begin running the foundation service on port **8888**.
 

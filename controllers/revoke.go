@@ -2,11 +2,11 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/metabloxDID/contract"
-	"github.com/metabloxDID/credentials"
-	"github.com/metabloxDID/errval"
-	"github.com/metabloxDID/models"
-	"github.com/metabloxDID/presentations"
+	"github.com/MetaBloxIO/metablox-foundation-services/contract"
+	"github.com/MetaBloxIO/metablox-foundation-services/credentials"
+	"github.com/MetaBloxIO/metablox-foundation-services/errval"
+	"github.com/MetaBloxIO/metablox-foundation-services/models"
+	"github.com/MetaBloxIO/metablox-foundation-services/presentations"
 )
 
 func RevokeVC(c *gin.Context) (*models.VerifiableCredential, error) {

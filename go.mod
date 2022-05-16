@@ -1,4 +1,4 @@
-module github.com/metabloxDID
+module github.com/MetaBloxIO/metablox-foundation-services
 
 go 1.16
 

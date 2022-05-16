@@ -3,12 +3,12 @@ package presentations
 import (
 	"testing"
 
-	"github.com/metabloxDID/credentials"
-	"github.com/metabloxDID/dao"
-	"github.com/metabloxDID/errval"
-	"github.com/metabloxDID/models"
-	"github.com/metabloxDID/settings"
 	"github.com/stretchr/testify/assert"
+	"github.com/MetaBloxIO/metablox-foundation-services/credentials"
+	"github.com/MetaBloxIO/metablox-foundation-services/dao"
+	"github.com/MetaBloxIO/metablox-foundation-services/errval"
+	"github.com/MetaBloxIO/metablox-foundation-services/models"
+	"github.com/MetaBloxIO/metablox-foundation-services/settings"
 )
 
 func TestCreateVP(t *testing.T) {

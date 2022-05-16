@@ -11,11 +11,11 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/metabloxDID/dao"
-	"github.com/metabloxDID/did"
-	"github.com/metabloxDID/errval"
-	"github.com/metabloxDID/key"
-	"github.com/metabloxDID/models"
+	"github.com/MetaBloxIO/metablox-foundation-services/dao"
+	"github.com/MetaBloxIO/metablox-foundation-services/did"
+	"github.com/MetaBloxIO/metablox-foundation-services/errval"
+	"github.com/MetaBloxIO/metablox-foundation-services/key"
+	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/multiformats/go-multibase"
 )
 

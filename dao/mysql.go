@@ -5,9 +5,9 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
-	"github.com/metabloxDID/models"
 	logger "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"github.com/MetaBloxIO/metablox-foundation-services/models"
 )
 
 var SqlDB *sqlx.DB

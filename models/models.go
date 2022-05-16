@@ -5,7 +5,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/metabloxDID/errval"
+	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 )
 
 const Secp256k1Sig = "EcdsaSecp256k1Signature2019"

@@ -12,12 +12,12 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/metabloxDID/contract"
-	"github.com/metabloxDID/errval"
-	"github.com/metabloxDID/key"
-	"github.com/metabloxDID/models"
 	"github.com/mr-tron/base58"
 	"github.com/multiformats/go-multibase"
+	"github.com/MetaBloxIO/metablox-foundation-services/contract"
+	"github.com/MetaBloxIO/metablox-foundation-services/errval"
+	"github.com/MetaBloxIO/metablox-foundation-services/key"
+	"github.com/MetaBloxIO/metablox-foundation-services/models"
 )
 
 func GenerateDIDString(privKey *ecdsa.PrivateKey) string {

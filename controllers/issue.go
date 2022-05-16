@@ -4,10 +4,10 @@ import (
 	"errors"
 
 	"github.com/gin-gonic/gin"
-	"github.com/metabloxDID/contract"
-	"github.com/metabloxDID/credentials"
-	"github.com/metabloxDID/did"
-	"github.com/metabloxDID/models"
+	"github.com/MetaBloxIO/metablox-foundation-services/contract"
+	"github.com/MetaBloxIO/metablox-foundation-services/credentials"
+	"github.com/MetaBloxIO/metablox-foundation-services/did"
+	"github.com/MetaBloxIO/metablox-foundation-services/models"
 )
 
 func IssueWifiVC(c *gin.Context) (*models.VerifiableCredential, error) {
