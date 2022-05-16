@@ -24,7 +24,7 @@ make build
 ```
 
 ## Running the Service
-The executable, ```metabloxDID```, is located in the top-level directory. Run the following command in the top level of the repository to start running the backend.
+The executable, ```metablox-foundation-services```, is located in the top-level directory. Run the following command in the top level of the repository to start running the backend.
 ``` bash
 .MetaBloxIO/metablox-foundation-services
 ```

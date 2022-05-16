@@ -6,10 +6,10 @@ mysql:
   host: "127.0.0.1"
   port: 3306
   user: "tester"
-  password: "omnisolutesting"
+  password: "testing"
   dbname: "foundationService"
   testhost: "127.0.0.1"
   testport: 3306
   testuser: "tester"
-  testpassword: "omnisolutesting"
+  testpassword: "testing"
   testdbname: "foundationservicetest"
