@@ -48,12 +48,12 @@ These settings determine the parameters used when connecting to the mysql databa
 |host|"127.0.0.1"|The address where the mysql server is being hosted.|
 |port|3306|The port that the host is using for the mysql server.|
 |user|"tester"|The username that should be used to access the mysql database.|
-|password|"omnisolutesting"|The password that should be used to access the mysql database.|
+|password|"testing"|The password that should be used to access the mysql database.|
 |dbname|"foundationService"|The name of the database that should be opened on the mysql server.|
 |testhost|"127.0.0.1"|**optional**: The address where the mysql test server is being hosted.|
 |testport|3306|**optional**: The port that the testhost is using for the mysql test server.|
 |testuser|"tester"| **optional**: The username that should be used to access the mysql test database.|
-|testpassword|"omnisolutesting"|**optional**: The password that should be used to access the mysql test database.|
+|testpassword|"testing"|**optional**: The password that should be used to access the mysql test database.|
 |testdbname|"foundationservicetest"|**optional**: The name of the database that should be opened on the mysql test server.|
 
 ## Database Information
