@@ -209,7 +209,7 @@ func CreateMiningLicenseVC(issuerDocument *models.DIDDocument, miningLicenseInfo
 	return vc, nil
 }
 
-func RenewVC(vc *models.VerifiableCredential) error {
+func RenewVC(vc *models.VerifiableCredential, issuerPrivKey *ecdsa.PrivateKey) error {
 	splitID := strings.Split(vc.ID, "/")
 	idNum := splitID[len(splitID)-1]
 
@@ -233,6 +233,18 @@ func RenewVC(vc *models.VerifiableCredential) error {
 	if err != nil {
 		return err
 	}
+
+	vc.Proof.JWSSignature = ""
+	vc.Proof.Created = time.Now().Format(time.RFC3339)
+
+	hashedVC := sha256.Sum256(ConvertVCToBytes(*vc))
+
+	signatureData, err := key.CreateJWSSignature(issuerPrivKey, hashedVC[:])
+	if err != nil {
+		return err
+	}
+	vc.Proof.JWSSignature = signatureData
+
 	return nil
 }
 

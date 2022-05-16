@@ -33,7 +33,7 @@ func RenewVC(c *gin.Context) (*models.VerifiableCredential, error) {
 		return nil, errval.ErrVerifyPresent
 	}
 
-	err = credentials.RenewVC(&vp.VerifiableCredential[0])
+	err = credentials.RenewVC(&vp.VerifiableCredential[0], issuerPrivateKey)
 	if err != nil {
 		return nil, err
 	}
