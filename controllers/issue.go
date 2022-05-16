@@ -7,24 +7,11 @@ import (
 	"github.com/metabloxDID/contract"
 	"github.com/metabloxDID/credentials"
 	"github.com/metabloxDID/did"
-	"github.com/metabloxDID/errval"
 	"github.com/metabloxDID/models"
 )
 
-func CheckIfValidIssuer(did string) bool {
-	for _, issuer := range ValidIssuers {
-		if did == issuer {
-			return true
-		}
-	}
-	return false
-}
-
 func IssueWifiVC(c *gin.Context) (*models.VerifiableCredential, error) {
-	didString := "did:metablox:" + c.Param("did")
-	if !CheckIfValidIssuer(didString) {
-		return nil, errval.ErrInvalidIssuer
-	}
+	didString := credentials.IssuerDID
 
 	wifiInfo := models.CreateWifiAccessInfo()
 
@@ -43,9 +30,7 @@ func IssueWifiVC(c *gin.Context) (*models.VerifiableCredential, error) {
 		return nil, err
 	}
 
-	vcBytes := [32]byte{}
-	copy(vcBytes[:], credentials.ConvertVCToBytes(*newVC))
-	err = contract.RegisterVC(vcBytes)
+	err = contract.CreateVC(newVC, c.Param("did"), issuerPrivateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -54,10 +39,7 @@ func IssueWifiVC(c *gin.Context) (*models.VerifiableCredential, error) {
 }
 
 func IssueMiningVC(c *gin.Context) (*models.VerifiableCredential, error) {
-	didString := "did:metablox:" + c.Param("did")
-	if !CheckIfValidIssuer(didString) {
-		return nil, errval.ErrInvalidIssuer
-	}
+	didString := credentials.IssuerDID
 
 	miningInfo := models.CreateMiningLicenseInfo()
 
@@ -76,9 +58,7 @@ func IssueMiningVC(c *gin.Context) (*models.VerifiableCredential, error) {
 		return nil, err
 	}
 
-	vcBytes := [32]byte{}
-	copy(vcBytes[:], credentials.ConvertVCToBytes(*newVC))
-	err = contract.RegisterVC(vcBytes)
+	err = contract.CreateVC(newVC, c.Param("did"), issuerPrivateKey)
 	if err != nil {
 		return nil, err
 	}

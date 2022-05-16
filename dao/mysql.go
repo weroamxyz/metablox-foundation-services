@@ -147,6 +147,25 @@ func CheckWifiAccessForExistence(id string) (bool, error) {
 	return false, nil
 }
 
+func GetWifiAccessFromDB(id string) (*models.VerifiableCredential, error) {
+	wifiInfo := models.CreateWifiAccessInfo()
+	sqlStr := "select * from WifiAccessInfo where ID = ?"
+	err := SqlDB.Get(wifiInfo, sqlStr, id)
+	if err != nil {
+		return nil, err
+	}
+
+	vc := models.CreateVerifiableCredential()
+	sqlStr = "select * from Credentials where ID = ?"
+	err = SqlDB.Get(vc, sqlStr, wifiInfo.CredentialID)
+	if err != nil {
+		return nil, err
+	}
+
+	vc.CredentialSubject = *wifiInfo
+	return vc, nil
+}
+
 func CheckMiningLicenseForExistence(id string) (bool, error) {
 	var count int
 	sqlStr := "select count(*) from MiningLicenseInfo where ID = ?"
@@ -158,6 +177,25 @@ func CheckMiningLicenseForExistence(id string) (bool, error) {
 		return true, nil
 	}
 	return false, nil
+}
+
+func GetMiningLicenseFromDB(id string) (*models.VerifiableCredential, error) {
+	miningInfo := models.CreateMiningLicenseInfo()
+	sqlStr := "select * from MiningLicenseInfo where ID = ?"
+	err := SqlDB.Get(miningInfo, sqlStr, id)
+	if err != nil {
+		return nil, err
+	}
+
+	vc := models.CreateVerifiableCredential()
+	sqlStr = "select * from Credentials where ID = ?"
+	err = SqlDB.Get(vc, sqlStr, miningInfo.CredentialID)
+	if err != nil {
+		return nil, err
+	}
+
+	vc.CredentialSubject = *miningInfo
+	return vc, nil
 }
 
 func GetMinerList() ([]models.MinerInfo, error) {

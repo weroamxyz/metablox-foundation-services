@@ -30,7 +30,7 @@ var (
 
 // RegistryMetaData contains all meta data concerning the Registry contract.
 var RegistryMetaData = &bind.MetaData{
-	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"string\",\"name\":\"did\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"name\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"value\",\"type\":\"bytes\"}],\"name\":\"DIDAttributeChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"string\",\"name\":\"vcName\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"name\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"value\",\"type\":\"bytes\"}],\"name\":\"VCSchemaChanged\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"did\",\"type\":\"string\"},{\"internalType\":\"uint8\",\"name\":\"sigV\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"sigR\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"sigS\",\"type\":\"bytes32\"}],\"name\":\"createVcDef\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"name\":\"dids\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"nonce\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"did\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"pubkey\",\"type\":\"address\"},{\"internalType\":\"uint8\",\"name\":\"sigV\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"sigR\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"sigS\",\"type\":\"bytes32\"}],\"name\":\"registerDid\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"did\",\"type\":\"string\"},{\"internalType\":\"uint8\",\"name\":\"sigV\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"sigR\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"sigS\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"name\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"value\",\"type\":\"bytes\"}],\"name\":\"setAttributeSigned\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"vcName\",\"type\":\"string\"},{\"internalType\":\"uint8\",\"name\":\"sigV\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"sigR\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"sigS\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"name\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"value\",\"type\":\"bytes\"}],\"name\":\"setVcAttributeSigned\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"did\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"pubkey\",\"type\":\"address\"},{\"internalType\":\"uint8\",\"name\":\"nSigV\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"nSigR\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"nSigS\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"oSigV\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"oSigR\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"oSigS\",\"type\":\"bytes32\"}],\"name\":\"updateDid\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"name\":\"vcIssuers\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"string\",\"name\":\"did\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"name\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"value\",\"type\":\"bytes\"}],\"name\":\"DIDAttributeChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"string\",\"name\":\"vcName\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"name\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"value\",\"type\":\"bytes\"}],\"name\":\"VCSchemaChanged\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"changed\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"name\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"did\",\"type\":\"string\"},{\"internalType\":\"uint8\",\"name\":\"sigV\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"sigR\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"sigS\",\"type\":\"bytes32\"}],\"name\":\"createVcDef\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"name\":\"dids\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"nonce\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"did\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"uint8\",\"name\":\"sigV\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"sigR\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"sigS\",\"type\":\"bytes32\"}],\"name\":\"registerDid\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"did\",\"type\":\"string\"},{\"internalType\":\"uint8\",\"name\":\"sigV\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"sigR\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"sigS\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"name\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"value\",\"type\":\"bytes\"}],\"name\":\"setAttributeSigned\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"vcName\",\"type\":\"string\"},{\"internalType\":\"uint8\",\"name\":\"sigV\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"sigR\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"sigS\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"name\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"value\",\"type\":\"bytes\"}],\"name\":\"setVcAttributeSigned\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"did\",\"type\":\"string\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"uint8\",\"name\":\"nSigV\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"nSigR\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"nSigS\",\"type\":\"bytes32\"},{\"internalType\":\"uint8\",\"name\":\"oSigV\",\"type\":\"uint8\"},{\"internalType\":\"bytes32\",\"name\":\"oSigR\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"oSigS\",\"type\":\"bytes32\"}],\"name\":\"updateDid\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"name\":\"vcIssuers\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
 // RegistryABI is the input ABI used to generate the binding from.
@@ -179,6 +179,37 @@ func (_Registry *RegistryTransactorRaw) Transact(opts *bind.TransactOpts, method
 	return _Registry.Contract.contract.Transact(opts, method, params...)
 }
 
+// Changed is a free data retrieval call binding the contract method 0xf96d0f9f.
+//
+// Solidity: function changed(address ) view returns(uint256)
+func (_Registry *RegistryCaller) Changed(opts *bind.CallOpts, arg0 common.Address) (*big.Int, error) {
+	var out []interface{}
+	err := _Registry.contract.Call(opts, &out, "changed", arg0)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// Changed is a free data retrieval call binding the contract method 0xf96d0f9f.
+//
+// Solidity: function changed(address ) view returns(uint256)
+func (_Registry *RegistrySession) Changed(arg0 common.Address) (*big.Int, error) {
+	return _Registry.Contract.Changed(&_Registry.CallOpts, arg0)
+}
+
+// Changed is a free data retrieval call binding the contract method 0xf96d0f9f.
+//
+// Solidity: function changed(address ) view returns(uint256)
+func (_Registry *RegistryCallerSession) Changed(arg0 common.Address) (*big.Int, error) {
+	return _Registry.Contract.Changed(&_Registry.CallOpts, arg0)
+}
+
 // Dids is a free data retrieval call binding the contract method 0xf44ab516.
 //
 // Solidity: function dids(string ) view returns(address)
@@ -295,23 +326,23 @@ func (_Registry *RegistryTransactorSession) CreateVcDef(name string, did string,
 
 // RegisterDid is a paid mutator transaction binding the contract method 0xd0923626.
 //
-// Solidity: function registerDid(string did, address pubkey, uint8 sigV, bytes32 sigR, bytes32 sigS) returns()
-func (_Registry *RegistryTransactor) RegisterDid(opts *bind.TransactOpts, did string, pubkey common.Address, sigV uint8, sigR [32]byte, sigS [32]byte) (*types.Transaction, error) {
-	return _Registry.contract.Transact(opts, "registerDid", did, pubkey, sigV, sigR, sigS)
+// Solidity: function registerDid(string did, address account, uint8 sigV, bytes32 sigR, bytes32 sigS) returns()
+func (_Registry *RegistryTransactor) RegisterDid(opts *bind.TransactOpts, did string, account common.Address, sigV uint8, sigR [32]byte, sigS [32]byte) (*types.Transaction, error) {
+	return _Registry.contract.Transact(opts, "registerDid", did, account, sigV, sigR, sigS)
 }
 
 // RegisterDid is a paid mutator transaction binding the contract method 0xd0923626.
 //
-// Solidity: function registerDid(string did, address pubkey, uint8 sigV, bytes32 sigR, bytes32 sigS) returns()
-func (_Registry *RegistrySession) RegisterDid(did string, pubkey common.Address, sigV uint8, sigR [32]byte, sigS [32]byte) (*types.Transaction, error) {
-	return _Registry.Contract.RegisterDid(&_Registry.TransactOpts, did, pubkey, sigV, sigR, sigS)
+// Solidity: function registerDid(string did, address account, uint8 sigV, bytes32 sigR, bytes32 sigS) returns()
+func (_Registry *RegistrySession) RegisterDid(did string, account common.Address, sigV uint8, sigR [32]byte, sigS [32]byte) (*types.Transaction, error) {
+	return _Registry.Contract.RegisterDid(&_Registry.TransactOpts, did, account, sigV, sigR, sigS)
 }
 
 // RegisterDid is a paid mutator transaction binding the contract method 0xd0923626.
 //
-// Solidity: function registerDid(string did, address pubkey, uint8 sigV, bytes32 sigR, bytes32 sigS) returns()
-func (_Registry *RegistryTransactorSession) RegisterDid(did string, pubkey common.Address, sigV uint8, sigR [32]byte, sigS [32]byte) (*types.Transaction, error) {
-	return _Registry.Contract.RegisterDid(&_Registry.TransactOpts, did, pubkey, sigV, sigR, sigS)
+// Solidity: function registerDid(string did, address account, uint8 sigV, bytes32 sigR, bytes32 sigS) returns()
+func (_Registry *RegistryTransactorSession) RegisterDid(did string, account common.Address, sigV uint8, sigR [32]byte, sigS [32]byte) (*types.Transaction, error) {
+	return _Registry.Contract.RegisterDid(&_Registry.TransactOpts, did, account, sigV, sigR, sigS)
 }
 
 // SetAttributeSigned is a paid mutator transaction binding the contract method 0xbb55343f.
@@ -358,23 +389,23 @@ func (_Registry *RegistryTransactorSession) SetVcAttributeSigned(vcName string, 
 
 // UpdateDid is a paid mutator transaction binding the contract method 0xb6f8a115.
 //
-// Solidity: function updateDid(string did, address pubkey, uint8 nSigV, bytes32 nSigR, bytes32 nSigS, uint8 oSigV, bytes32 oSigR, bytes32 oSigS) returns()
-func (_Registry *RegistryTransactor) UpdateDid(opts *bind.TransactOpts, did string, pubkey common.Address, nSigV uint8, nSigR [32]byte, nSigS [32]byte, oSigV uint8, oSigR [32]byte, oSigS [32]byte) (*types.Transaction, error) {
-	return _Registry.contract.Transact(opts, "updateDid", did, pubkey, nSigV, nSigR, nSigS, oSigV, oSigR, oSigS)
+// Solidity: function updateDid(string did, address account, uint8 nSigV, bytes32 nSigR, bytes32 nSigS, uint8 oSigV, bytes32 oSigR, bytes32 oSigS) returns()
+func (_Registry *RegistryTransactor) UpdateDid(opts *bind.TransactOpts, did string, account common.Address, nSigV uint8, nSigR [32]byte, nSigS [32]byte, oSigV uint8, oSigR [32]byte, oSigS [32]byte) (*types.Transaction, error) {
+	return _Registry.contract.Transact(opts, "updateDid", did, account, nSigV, nSigR, nSigS, oSigV, oSigR, oSigS)
 }
 
 // UpdateDid is a paid mutator transaction binding the contract method 0xb6f8a115.
 //
-// Solidity: function updateDid(string did, address pubkey, uint8 nSigV, bytes32 nSigR, bytes32 nSigS, uint8 oSigV, bytes32 oSigR, bytes32 oSigS) returns()
-func (_Registry *RegistrySession) UpdateDid(did string, pubkey common.Address, nSigV uint8, nSigR [32]byte, nSigS [32]byte, oSigV uint8, oSigR [32]byte, oSigS [32]byte) (*types.Transaction, error) {
-	return _Registry.Contract.UpdateDid(&_Registry.TransactOpts, did, pubkey, nSigV, nSigR, nSigS, oSigV, oSigR, oSigS)
+// Solidity: function updateDid(string did, address account, uint8 nSigV, bytes32 nSigR, bytes32 nSigS, uint8 oSigV, bytes32 oSigR, bytes32 oSigS) returns()
+func (_Registry *RegistrySession) UpdateDid(did string, account common.Address, nSigV uint8, nSigR [32]byte, nSigS [32]byte, oSigV uint8, oSigR [32]byte, oSigS [32]byte) (*types.Transaction, error) {
+	return _Registry.Contract.UpdateDid(&_Registry.TransactOpts, did, account, nSigV, nSigR, nSigS, oSigV, oSigR, oSigS)
 }
 
 // UpdateDid is a paid mutator transaction binding the contract method 0xb6f8a115.
 //
-// Solidity: function updateDid(string did, address pubkey, uint8 nSigV, bytes32 nSigR, bytes32 nSigS, uint8 oSigV, bytes32 oSigR, bytes32 oSigS) returns()
-func (_Registry *RegistryTransactorSession) UpdateDid(did string, pubkey common.Address, nSigV uint8, nSigR [32]byte, nSigS [32]byte, oSigV uint8, oSigR [32]byte, oSigS [32]byte) (*types.Transaction, error) {
-	return _Registry.Contract.UpdateDid(&_Registry.TransactOpts, did, pubkey, nSigV, nSigR, nSigS, oSigV, oSigR, oSigS)
+// Solidity: function updateDid(string did, address account, uint8 nSigV, bytes32 nSigR, bytes32 nSigS, uint8 oSigV, bytes32 oSigR, bytes32 oSigS) returns()
+func (_Registry *RegistryTransactorSession) UpdateDid(did string, account common.Address, nSigV uint8, nSigR [32]byte, nSigS [32]byte, oSigV uint8, oSigR [32]byte, oSigS [32]byte) (*types.Transaction, error) {
+	return _Registry.Contract.UpdateDid(&_Registry.TransactOpts, did, account, nSigV, nSigR, nSigS, oSigV, oSigR, oSigS)
 }
 
 // RegistryDIDAttributeChangedIterator is returned from FilterDIDAttributeChanged and is used to iterate over the raw logs and unpacked data for DIDAttributeChanged events raised by the Registry contract.

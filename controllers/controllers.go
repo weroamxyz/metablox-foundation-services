@@ -5,18 +5,18 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/metabloxDID/contract"
 	"github.com/metabloxDID/key"
 	"github.com/metabloxDID/models"
 )
 
 var NonceLookup map[string]string
-var ValidIssuers []string
+
 var issuerPrivateKey *ecdsa.PrivateKey
 
 func InitializeValues() error {
 	var err error
 	NonceLookup = make(map[string]string)
-	ValidIssuers = []string{"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo"}
 	issuerPrivateKey, err = key.GetIssuerPrivateKey()
 	if err != nil {
 		return err
@@ -100,4 +100,64 @@ func GenerateTestSignatures(c *gin.Context) {
 	}
 
 	ResponseSuccessWithMsg(c, "Generated signature '"+signature+"'")
+}
+
+func AssignIssuer(c *gin.Context) {
+	var inputs struct {
+		CredentialKey string
+		Did           string
+	}
+
+	if err := c.BindJSON(&inputs); err != nil {
+		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed: "+err.Error())
+		return
+	}
+
+	err := contract.RegisterVCIssuer(inputs.CredentialKey, inputs.Did, issuerPrivateKey)
+	if err != nil {
+		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed: "+err.Error())
+		return
+	}
+
+	ResponseSuccessWithMsg(c, "Success")
+}
+
+func SetVCAttribute(c *gin.Context) {
+	var inputs struct {
+		CredentialKey string
+		FieldName     string
+		NewValue      string
+	}
+
+	if err := c.BindJSON(&inputs); err != nil {
+		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed: "+err.Error())
+		return
+	}
+
+	err := contract.UpdateVCValue(inputs.CredentialKey, inputs.FieldName, inputs.NewValue, issuerPrivateKey)
+	if err != nil {
+		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed: "+err.Error())
+		return
+	}
+
+	ResponseSuccessWithMsg(c, "Success")
+}
+
+func ReadVCChangedEvents(c *gin.Context) {
+	var inputs struct {
+		CredentialKey string
+	}
+
+	if err := c.BindJSON(&inputs); err != nil {
+		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed: "+err.Error())
+		return
+	}
+
+	err := contract.ReadVCChangedEvents(inputs.CredentialKey)
+	if err != nil {
+		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed: "+err.Error())
+		return
+	}
+
+	ResponseSuccessWithMsg(c, "Success")
 }

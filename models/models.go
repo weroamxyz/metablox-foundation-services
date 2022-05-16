@@ -20,7 +20,7 @@ const TypeWifi = "WifiAccess"
 const TypeMining = "MiningLicense"
 
 type DIDDocument struct {
-	Context            []string             `json:"@context"`
+	Context            []string             `json:"@context" mapstructure:"@context"`
 	ID                 string               `json:"id"`
 	Created            string               `json:"created"`
 	Updated            string               `json:"updated"`
@@ -28,6 +28,7 @@ type DIDDocument struct {
 	VerificationMethod []VerificationMethod `json:"verificationMethod"`
 	Authentication     string               `json:"authentication"`
 	Service            []Service            `json:"service"`
+	Address            string               `json:"-"` //used to associate dids with public key addresses
 }
 
 type VerificationMethod struct {
@@ -66,7 +67,7 @@ type DocumentMetadata struct {
 }
 
 type VerifiableCredential struct {
-	Context           []string    `json:"@context"`
+	Context           []string    `json:"@context" mapstructure:"@context"`
 	ID                string      `json:"id" db:"ID"`
 	Type              []string    `json:"type"`
 	SubType           string      `json:"-" db:"Type"` //used in place of Type for database operations, as using an array causes issues
@@ -108,7 +109,7 @@ type VPProof struct {
 }
 
 type VerifiablePresentation struct {
-	Context              []string               `json:"@context"`
+	Context              []string               `json:"@context" mapstructure:"@context"`
 	Type                 []string               `json:"type"`
 	VerifiableCredential []VerifiableCredential `json:"verifiableCredential"`
 	Holder               string                 `json:"holder"`
@@ -122,17 +123,17 @@ type Service struct {
 }
 
 type WifiAccessInfo struct {
-	CredentialID string `json:"-"`
-	ID           string `json:"id"`   //id of the user the credential is assigned to
-	Type         string `json:"type"` //user or validator
+	CredentialID string `json:"-" db:"CredentialID"`
+	ID           string `json:"id" db:"ID"`     //id of the user the credential is assigned to
+	Type         string `json:"type" db:"Type"` //user or validator
 }
 
 type MiningLicenseInfo struct {
-	CredentialID string `json:"-"`
-	ID           string `json:"id"`   //id of the user the credential is assigned to
-	Name         string `json:"name"` //manufacturer name
-	Model        string `json:"model"`
-	Serial       string `json:"serial"` //serial number
+	CredentialID string `json:"-" db:"CredentialID"`
+	ID           string `json:"id" db:"ID"`     //id of the user the credential is assigned to
+	Name         string `json:"name" db:"Name"` //manufacturer name
+	Model        string `json:"model" db:"Model"`
+	Serial       string `json:"serial" db:"Serial"` //serial number
 }
 
 type MinerInfo struct {
@@ -140,6 +141,12 @@ type MinerInfo struct {
 	Name       string `json:"name" db:"Name"`
 	MAC        string `json:"mac" db:"MAC"`
 	CreateTime string `json:"createTime" db:"CreateTime"`
+}
+
+type VCSchemaChanged struct {
+	VcName string
+	Name   [32]byte
+	Value  []byte
 }
 
 func CreateDIDDocument() *DIDDocument {
@@ -289,7 +296,7 @@ func NewMiningLicenseInfo(credentialID, id, name, model, serial string) *MiningL
 
 func GenerateTestMiningLicenseInfo() *MiningLicenseInfo {
 	return NewMiningLicenseInfo(
-		"sampleID2",
+		"1",
 		"did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo",
 		"TestName",
 		"TestModel",

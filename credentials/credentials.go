@@ -19,108 +19,193 @@ import (
 	"github.com/multiformats/go-multibase"
 )
 
-const sampleTrustedIssuer = "did:metablox:sampleIssuer"
+const IssuerDID = "did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo"
+
 const baseIDString = "http://metablox.com/credentials/"
+
+func CreateProof(vm string) models.VCProof {
+	vcProof := models.CreateVCProof()
+	vcProof.Type = models.Secp256k1Sig
+	vcProof.VerificationMethod = vm
+	vcProof.JWSSignature = ""
+	vcProof.Created = time.Now().Format(time.RFC3339)
+	vcProof.ProofPurpose = models.PurposeAuth
+	return *vcProof
+}
+
+func ConvertTimesFromDBFormat(vc *models.VerifiableCredential) error {
+	issuanceTime, err := time.Parse("2006-01-02 15:04:05", vc.IssuanceDate)
+	if err != nil {
+		return err
+	}
+	vc.IssuanceDate = issuanceTime.Format(time.RFC3339)
+
+	expirationTime, err := time.Parse("2006-01-02 15:04:05", vc.ExpirationDate)
+	if err != nil {
+		return err
+	}
+	vc.ExpirationDate = expirationTime.Format(time.RFC3339)
+	return nil
+}
+
+func ConvertTimesToDBFormat(vc *models.VerifiableCredential) error {
+	issuanceTime, err := time.Parse(time.RFC3339, vc.IssuanceDate)
+	if err != nil {
+		return err
+	}
+	vc.IssuanceDate = issuanceTime.Format("2006-01-02 15:04:05")
+
+	expirationTime, err := time.Parse(time.RFC3339, vc.ExpirationDate)
+	if err != nil {
+		return err
+	}
+	vc.ExpirationDate = expirationTime.Format("2006-01-02 15:04:05")
+	return nil
+}
 
 //Base function for creating VCs. Called by any function that creates a type of VC
 func CreateVC(issuerDocument *models.DIDDocument) (*models.VerifiableCredential, error) {
 	context := []string{models.ContextCredential, models.ContextSecp256k1}
 	vcType := []string{models.TypeCredential}
-	expirationDate := time.Now().AddDate(10, 0, 0).Format(time.RFC3339) //arbitrarily setting VCs to last for 10 years for the moment, can change when necessary
+	loc, _ := time.LoadLocation("UTC")
+	expirationDate := time.Now().In(loc).AddDate(10, 0, 0).Format(time.RFC3339) //arbitrarily setting VCs to last for 10 years for the moment, can change when necessary
 	description := ""
 
-	vcProof := models.CreateVCProof()
-	vcProof.Type = models.Secp256k1Sig
-	vcProof.VerificationMethod = issuerDocument.Authentication
-	vcProof.JWSSignature = ""
-	vcProof.Created = time.Now().Format(time.RFC3339)
-	vcProof.ProofPurpose = models.PurposeAuth
+	vcProof := CreateProof(issuerDocument.Authentication)
 
-	newVC := models.NewVerifiableCredential(context, "0", vcType, "", issuerDocument.ID, time.Now().Format(time.RFC3339), expirationDate, description, nil, *vcProof, false)
+	newVC := models.NewVerifiableCredential(context, "0", vcType, "", issuerDocument.ID, time.Now().In(loc).Format(time.RFC3339), expirationDate, description, nil, vcProof, false)
 
 	return newVC, nil
 }
 
 func CreateWifiAccessVC(issuerDocument *models.DIDDocument, wifiAccessInfo *models.WifiAccessInfo, issuerPrivKey *ecdsa.PrivateKey) (*models.VerifiableCredential, error) {
+	var vc *models.VerifiableCredential
 	exists, err := dao.CheckWifiAccessForExistence(wifiAccessInfo.ID)
 	if err != nil {
 		return nil, err
 	}
 	if exists {
-		return nil, errval.ErrWifiExists
-	}
+		vc, err = dao.GetWifiAccessFromDB(wifiAccessInfo.ID)
+		if err != nil {
+			return nil, err
+		}
+		vc.Context = []string{models.ContextCredential, models.ContextSecp256k1}
+		vc.Type = []string{models.TypeCredential, models.TypeWifi}
+		vc.ID = baseIDString + vc.ID
+		err = ConvertTimesFromDBFormat(vc)
+		if err != nil {
+			return nil, err
+		}
+		vc.Proof = CreateProof(issuerDocument.Authentication)
+	} else {
 
-	newVC, err := CreateVC(issuerDocument)
-	if err != nil {
-		return nil, err
-	}
+		vc, err = CreateVC(issuerDocument)
+		if err != nil {
+			return nil, err
+		}
 
-	newVC.Type = append(newVC.Type, models.TypeWifi)
-	newVC.SubType = models.TypeWifi
-	newVC.Description = "Example Wifi Access Credential"
-	newVC.CredentialSubject = *wifiAccessInfo
+		vc.Type = append(vc.Type, models.TypeWifi)
+		vc.SubType = models.TypeWifi
+		vc.Description = "Example Wifi Access Credential"
+		vc.CredentialSubject = *wifiAccessInfo
 
-	//Upload VC to DB and generate ID. Has to be done before creating signature, as changing the ID will change the signature
-	generatedID, err := dao.UploadWifiAccessVC(*newVC)
-	if err != nil {
-		return nil, err
+		//Upload VC to DB and generate ID. Has to be done before creating signature, as changing the ID will change the signature
+		err = ConvertTimesToDBFormat(vc)
+		if err != nil {
+			return nil, err
+		}
+
+		generatedID, err := dao.UploadWifiAccessVC(*vc)
+		if err != nil {
+			return nil, err
+		}
+
+		err = ConvertTimesFromDBFormat(vc)
+		if err != nil {
+			return nil, err
+		}
+
+		vc.ID = baseIDString + strconv.Itoa(generatedID)
 	}
-	newVC.ID = baseIDString + strconv.Itoa(generatedID)
 
 	//Create the proof's signature using a stringified version of the VC and the issuer's private key.
 	//This way, the signature can be verified by re-stringifying the VC and looking up the public key in the issuer's DID document.
 	//Verification will only succeed if the VC was unchanged since the signature and if the issuer
 	//public key matches the private key used to make the signature
-	hashedVC := sha256.Sum256(ConvertVCToBytes(*newVC))
+	hashedVC := sha256.Sum256(ConvertVCToBytes(*vc))
 
 	signatureData, err := key.CreateJWSSignature(issuerPrivKey, hashedVC[:])
 	if err != nil {
 		return nil, err
 	}
-	newVC.Proof.JWSSignature = signatureData
+	vc.Proof.JWSSignature = signatureData
 
-	return newVC, nil
+	return vc, nil
 }
 
 func CreateMiningLicenseVC(issuerDocument *models.DIDDocument, miningLicenseInfo *models.MiningLicenseInfo, issuerPrivKey *ecdsa.PrivateKey) (*models.VerifiableCredential, error) {
+	var vc *models.VerifiableCredential
 	exists, err := dao.CheckMiningLicenseForExistence(miningLicenseInfo.ID)
 	if err != nil {
 		return nil, err
 	}
 	if exists {
-		return nil, errval.ErrMiningExists
-	}
+		vc, err = dao.GetMiningLicenseFromDB(miningLicenseInfo.ID)
+		if err != nil {
+			return nil, err
+		}
+		vc.Context = []string{models.ContextCredential, models.ContextSecp256k1}
+		vc.Type = []string{models.TypeCredential, models.TypeMining}
+		vc.ID = baseIDString + vc.ID
+		err = ConvertTimesFromDBFormat(vc)
+		if err != nil {
+			return nil, err
+		}
+		vc.Proof = CreateProof(issuerDocument.Authentication)
+	} else {
 
-	newVC, err := CreateVC(issuerDocument)
-	if err != nil {
-		return nil, err
-	}
+		vc, err = CreateVC(issuerDocument)
+		if err != nil {
+			return nil, err
+		}
 
-	newVC.Type = append(newVC.Type, models.TypeMining)
-	newVC.SubType = models.TypeMining
-	newVC.Description = "Example Mining License Credential"
-	newVC.CredentialSubject = *miningLicenseInfo
+		vc.Type = append(vc.Type, models.TypeMining)
+		vc.SubType = models.TypeWifi
+		vc.Description = "Example Mining License Credential"
+		vc.CredentialSubject = *miningLicenseInfo
 
-	//Upload VC to DB and generate ID. Has to be done before creating signature, as changing the ID will change the signature
-	generatedID, err := dao.UploadMiningLicenseVC(*newVC)
-	if err != nil {
-		return nil, err
+		//Upload VC to DB and generate ID. Has to be done before creating signature, as changing the ID will change the signature
+		err = ConvertTimesToDBFormat(vc)
+		if err != nil {
+			return nil, err
+		}
+
+		generatedID, err := dao.UploadMiningLicenseVC(*vc)
+		if err != nil {
+			return nil, err
+		}
+
+		err = ConvertTimesFromDBFormat(vc)
+		if err != nil {
+			return nil, err
+		}
+
+		vc.ID = baseIDString + strconv.Itoa(generatedID)
 	}
-	newVC.ID = baseIDString + strconv.Itoa(generatedID)
 
 	//Create the proof's signature using a stringified version of the VC and the issuer's private key.
 	//This way, the signature can be verified by re-stringifying the VC and looking up the public key in the issuer's DID document.
 	//Verification will only succeed if the VC was unchanged since the signature and if the issuer
 	//public key matches the private key used to make the signature
-	hashedVC := sha256.Sum256(ConvertVCToBytes(*newVC))
+	hashedVC := sha256.Sum256(ConvertVCToBytes(*vc))
 
 	signatureData, err := key.CreateJWSSignature(issuerPrivKey, hashedVC[:])
 	if err != nil {
 		return nil, err
 	}
-	newVC.Proof.JWSSignature = signatureData
+	vc.Proof.JWSSignature = signatureData
 
-	return newVC, nil
+	return vc, nil
 }
 
 func RenewVC(vc *models.VerifiableCredential) error {
@@ -184,7 +269,7 @@ func JsonToVC(jsonVC []byte) (*models.VerifiableCredential, error) {
 func VerifyVC(vc *models.VerifiableCredential) (bool, error) {
 	//can modify to match the DID of the actual trusted issuer(s). May also want different
 	//trusted issuers for different types of VCs
-	if vc.Issuer != sampleTrustedIssuer {
+	if vc.Issuer != IssuerDID {
 		return false, errval.ErrUnknownIssuer
 	}
 
