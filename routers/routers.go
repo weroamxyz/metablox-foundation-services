@@ -1,8 +1,8 @@
 package routers
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/MetaBloxIO/metablox-foundation-services/controllers"
+	"github.com/gin-gonic/gin"
 )
 
 func Setup() {
@@ -22,9 +22,12 @@ func Setup() {
 
 	r.GET("/nonce", controllers.GenerateNonceHandler)
 
+	r.GET("/pubkey", controllers.GetIssuerPublicKeyHandler)
+
 	r.GET("/testing/signatures/:message", controllers.GenerateTestSignatures) //todo: don't leave this active in any release version as it is only for testing
 	r.POST("/testing/assignissuer", controllers.AssignIssuer)
 	r.POST("/testing/updatevc", controllers.SetVCAttribute)
 	r.POST("/testing/readvcchanged", controllers.ReadVCChangedEvents)
+	r.POST("/testing/signpresentation", controllers.GenerateTestingPresentationSignatures)
 	r.Run(":8888")
 }

@@ -297,7 +297,7 @@ func GetDocument(targetDID string) (*models.DIDDocument, [32]byte, error) { //to
 	}
 
 	placeholderDoc := models.GenerateTestDIDDocument()
-	placeholderDoc.Address = address.Hex()
-	placeholderHash := [32]byte{92, 67, 129, 94, 156, 179, 0, 112, 161, 221, 33, 243, 227, 229, 88, 215, 116, 209, 46, 122, 193, 9, 107, 28, 173, 20, 8, 175, 147, 109, 184, 210} //sha256.Sum256(ConvertDocToBytes(*placeholderDoc))
+	placeholderDoc.VerificationMethod[0].BlockchainAccountId = "eip155:1:" + address.Hex()
+	placeholderHash := [32]byte{94, 241, 27, 134, 190, 223, 112, 91, 189, 49, 221, 31, 228, 35, 189, 213, 251, 60, 60, 210, 162, 45, 151, 3, 31, 78, 41, 239, 41, 75, 198, 139}
 	return placeholderDoc, placeholderHash, nil
 }

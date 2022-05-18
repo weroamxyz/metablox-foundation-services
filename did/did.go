@@ -12,13 +12,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/MetaBloxIO/metablox-foundation-services/contract"
+	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/mr-tron/base58"
-	"github.com/multiformats/go-multibase"
-	"github.com/MetaBloxIO/metablox-foundation-services/contract"
-	"github.com/MetaBloxIO/metablox-foundation-services/errval"
-	"github.com/MetaBloxIO/metablox-foundation-services/key"
-	"github.com/MetaBloxIO/metablox-foundation-services/models"
 )
 
 func GenerateDIDString(privKey *ecdsa.PrivateKey) string {
@@ -46,14 +43,11 @@ func CreateDID(privKey *ecdsa.PrivateKey) (*models.DIDDocument, error) {
 	document.Updated = document.Created
 	document.Version = 1
 
-	pubData := crypto.FromECDSAPub(&privKey.PublicKey)
+	address := crypto.PubkeyToAddress(privKey.PublicKey)
 
 	VM := models.VerificationMethod{}
 	VM.ID = document.ID + "#verification"
-	VM.MultibaseKey, err = multibase.Encode(multibase.Base58BTC, pubData)
-	if err != nil {
-		return nil, err
-	}
+	VM.BlockchainAccountId = "eip155:1:" + address.Hex()
 	VM.Controller = document.ID
 	VM.MethodType = models.Secp256k1Key
 
@@ -176,49 +170,6 @@ func ResolveRepresentation(did string, options *models.RepresentationResolutionO
 	}
 }
 
-func AuthenticateDocumentSubject(document *models.DIDDocument, message, signature []byte) (bool, error) {
-	//The subject of the document is the person who has the private key matching the public key in the Authentication verification method
-
-	//Get Authentication VM
-	var authenticationMethod *models.VerificationMethod
-	for _, vm := range document.VerificationMethod {
-		if vm.ID == document.Authentication {
-			authenticationMethod = &vm
-			break
-		}
-	}
-	if authenticationMethod == nil {
-		return false, errval.ErrMissingAuthentication
-	}
-
-	switch authenticationMethod.MethodType {
-	case models.Secp256k1Key:
-		_, pubData, err := multibase.Decode(authenticationMethod.MultibaseKey)
-		if err != nil {
-			return false, err
-		}
-
-		result := crypto.VerifySignature(pubData, message, signature)
-		return result, nil
-
-	default:
-		return false, errval.ErrUnknownVMType
-	}
-}
-
-func AuthenticateSecp256k1(signature, nonce string, vm models.VerificationMethod) (bool, error) {
-	_, pubData, err := multibase.Decode(vm.MultibaseKey)
-	if err != nil {
-		return false, err
-	}
-
-	pubKey, err := crypto.UnmarshalPubkey(pubData)
-	if err != nil {
-		return false, err
-	}
-	return key.VerifyJWSSignature(signature, pubKey, []byte(nonce))
-}
-
 func ConvertDocToBytes(doc models.DIDDocument) []byte {
 	var convertedBytes []byte
 
@@ -252,7 +203,7 @@ func ConvertDocToBytes(doc models.DIDDocument) []byte {
 func ConvertVMToBytes(vm models.VerificationMethod) []byte {
 	var convertedBytes []byte
 
-	convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(vm.ID), []byte(vm.MethodType), []byte(vm.Controller), []byte(vm.MultibaseKey)}, []byte{})
+	convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(vm.ID), []byte(vm.MethodType), []byte(vm.Controller), []byte(vm.BlockchainAccountId)}, []byte{})
 	return convertedBytes
 }
 

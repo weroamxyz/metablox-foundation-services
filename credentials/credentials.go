@@ -11,13 +11,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/MetaBloxIO/metablox-foundation-services/dao"
 	"github.com/MetaBloxIO/metablox-foundation-services/did"
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 	"github.com/MetaBloxIO/metablox-foundation-services/key"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
-	"github.com/multiformats/go-multibase"
 )
 
 var IssuerDID string
@@ -279,7 +277,7 @@ func JsonToVC(jsonVC []byte) (*models.VerifiableCredential, error) {
 
 //Need to make sure that the stated issuer of the VC actually created it (using the proof alongside the issuer's verification methods),
 //as well as check that the issuer is a trusted source
-func VerifyVC(vc *models.VerifiableCredential) (bool, error) {
+func VerifyVC(vc *models.VerifiableCredential, pubKey *ecdsa.PublicKey) (bool, error) {
 	//can modify to match the DID of the actual trusted issuer(s). May also want different
 	//trusted issuers for different types of VCs
 	if vc.Issuer != IssuerDID {
@@ -302,26 +300,24 @@ func VerifyVC(vc *models.VerifiableCredential) (bool, error) {
 		if targetVM.MethodType != models.Secp256k1Key {
 			return false, errval.ErrSecp256k1WrongVMType
 		}
-		return VerifyVCSecp256k1(vc, targetVM)
+
+		success, err := key.CompareAddresses(targetVM, pubKey)
+		if !success {
+			return false, err
+		}
+
+		return VerifyVCSecp256k1(vc, pubKey)
 	default:
 		return false, errval.ErrUnknownProofType
 	}
 }
 
-func VerifyVCSecp256k1(vc *models.VerifiableCredential, targetVM models.VerificationMethod) (bool, error) {
+func VerifyVCSecp256k1(vc *models.VerifiableCredential, pubKey *ecdsa.PublicKey) (bool, error) {
 	copiedVC := *vc
 	//have to make sure to remove the signature from the copy, as the original did not have a signature at the time the signature was generated
 	copiedVC.Proof.JWSSignature = ""
 	hashedVC := sha256.Sum256(ConvertVCToBytes(copiedVC))
-	_, pubData, err := multibase.Decode(targetVM.MultibaseKey)
-	if err != nil {
-		return false, err
-	}
 
-	pubKey, err := crypto.UnmarshalPubkey(pubData)
-	if err != nil {
-		return false, err
-	}
 	result, err := key.VerifyJWSSignature(vc.Proof.JWSSignature, pubKey, hashedVC[:])
 	if err != nil {
 		return false, err

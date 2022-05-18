@@ -151,13 +151,12 @@ func TestRevokeVC(t *testing.T) {
 
 func TestVerifyVC(t *testing.T) {
 	vc := models.GenerateTestVC()
-	issuerDocument := models.GenerateTestDIDDocument()
 
-	success, err := VerifyVCSecp256k1(vc, issuerDocument.VerificationMethod[0])
+	success, err := VerifyVCSecp256k1(vc, &models.GenerateTestPrivKey().PublicKey)
 	assert.Nil(t, err)
 	assert.True(t, success)
 	vc.Type = append(vc.Type, "Modified")
-	success, err = VerifyVCSecp256k1(vc, issuerDocument.VerificationMethod[0])
+	success, err = VerifyVCSecp256k1(vc, &models.GenerateTestPrivKey().PublicKey)
 	assert.Equal(t, errval.ErrJWSAuthentication, err)
 	assert.False(t, success)
 }

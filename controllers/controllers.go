@@ -2,14 +2,17 @@ package controllers
 
 import (
 	"crypto/ecdsa"
+	"crypto/sha256"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"github.com/MetaBloxIO/metablox-foundation-services/contract"
 	"github.com/MetaBloxIO/metablox-foundation-services/credentials"
 	"github.com/MetaBloxIO/metablox-foundation-services/did"
 	"github.com/MetaBloxIO/metablox-foundation-services/key"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
+	"github.com/MetaBloxIO/metablox-foundation-services/presentations"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/gin-gonic/gin"
 )
 
 var NonceLookup map[string]string
@@ -34,7 +37,15 @@ func IssueWifiVCHandler(c *gin.Context) {
 		return
 	}
 
-	ResponseSuccess(c, newVC)
+	var output struct {
+		Credential   models.VerifiableCredential `json:"credential"`
+		IssuerPubKey []byte                      `json:"issuerPubKey"`
+	}
+
+	output.Credential = *newVC
+	output.IssuerPubKey = crypto.FromECDSAPub(&issuerPrivateKey.PublicKey)
+
+	ResponseSuccess(c, output)
 }
 
 func IssueMiningVCHandler(c *gin.Context) {
@@ -44,7 +55,15 @@ func IssueMiningVCHandler(c *gin.Context) {
 		return
 	}
 
-	ResponseSuccess(c, newVC)
+	var output struct {
+		Credential   models.VerifiableCredential `json:"credential"`
+		IssuerPubKey []byte                      `json:"issuerPubKey"`
+	}
+
+	output.Credential = *newVC
+	output.IssuerPubKey = crypto.FromECDSAPub(&issuerPrivateKey.PublicKey)
+
+	ResponseSuccess(c, output)
 }
 
 func RenewVCHandler(c *gin.Context) {
@@ -54,7 +73,15 @@ func RenewVCHandler(c *gin.Context) {
 		return
 	}
 
-	ResponseSuccess(c, renewedVC)
+	var output struct {
+		Credential   models.VerifiableCredential `json:"credential"`
+		IssuerPubKey []byte                      `json:"issuerPubKey"`
+	}
+
+	output.Credential = *renewedVC
+	output.IssuerPubKey = crypto.FromECDSAPub(&issuerPrivateKey.PublicKey)
+
+	ResponseSuccess(c, output)
 }
 
 func RevokeVCHandler(c *gin.Context) {
@@ -163,4 +190,28 @@ func ReadVCChangedEvents(c *gin.Context) {
 	}
 
 	ResponseSuccessWithMsg(c, "Success")
+}
+
+func GetIssuerPublicKeyHandler(c *gin.Context) {
+	ResponseSuccess(c, crypto.FromECDSAPub(&issuerPrivateKey.PublicKey))
+}
+
+func GenerateTestingPresentationSignatures(c *gin.Context) {
+	presentation := models.CreatePresentation()
+	c.BindJSON(presentation)
+	for i, vc := range presentation.VerifiableCredential {
+		vc.Proof.JWSSignature = ""
+		ConvertCredentialSubject(&vc)
+		hashedVC := sha256.Sum256(credentials.ConvertVCToBytes(vc))
+
+		signatureData, _ := key.CreateJWSSignature(models.GenerateTestPrivKey(), hashedVC[:])
+		vc.Proof.JWSSignature = signatureData
+		presentation.VerifiableCredential[i] = vc
+	}
+	presentation.Proof.JWSSignature = ""
+	hashedVP := sha256.Sum256(presentations.ConvertVPToBytes(*presentation))
+
+	signatureData, _ := key.CreateJWSSignature(models.GenerateTestPrivKey(), hashedVP[:])
+	presentation.Proof.JWSSignature = signatureData
+	ResponseSuccess(c, presentation)
 }

@@ -8,8 +8,6 @@ import (
 	"sort"
 	"time"
 
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/multiformats/go-multibase"
 	"github.com/MetaBloxIO/metablox-foundation-services/credentials"
 	"github.com/MetaBloxIO/metablox-foundation-services/did"
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
@@ -46,7 +44,8 @@ func CreatePresentation(credentials []models.VerifiableCredential, holderDocumen
 
 //Need to first verify the presentation's proof using the holder's DID document. Afterwards, need to verify
 //the proof of each credential included inside the presentation
-func VerifyVP(presentation *models.VerifiablePresentation) (bool, error) {
+func VerifyVP(presentation *models.VerifiablePresentation, holderKey, issuerKey *ecdsa.PublicKey) (bool, error) {
+
 	resolutionMeta, holderDoc, _ := did.Resolve(presentation.Holder, models.CreateResolutionOptions())
 	if resolutionMeta.Error != "" {
 		return false, errors.New(resolutionMeta.Error)
@@ -64,7 +63,13 @@ func VerifyVP(presentation *models.VerifiablePresentation) (bool, error) {
 		if targetVM.MethodType != models.Secp256k1Key {
 			return false, errval.ErrSecp256k1WrongVMType
 		}
-		success, err = VerifyVPSecp256k1(presentation, targetVM)
+
+		success, err = key.CompareAddresses(targetVM, holderKey)
+		if !success {
+			return false, err
+		}
+
+		success, err = VerifyVPSecp256k1(presentation, holderKey)
 	default:
 		return false, errval.ErrUnknownProofType
 	}
@@ -74,7 +79,7 @@ func VerifyVP(presentation *models.VerifiablePresentation) (bool, error) {
 	}
 
 	for _, credential := range presentation.VerifiableCredential {
-		success, err = credentials.VerifyVC(&credential)
+		success, err = credentials.VerifyVC(&credential, issuerKey)
 		if !success {
 			return false, err
 		}
@@ -83,20 +88,12 @@ func VerifyVP(presentation *models.VerifiablePresentation) (bool, error) {
 	return true, nil
 }
 
-func VerifyVPSecp256k1(presentation *models.VerifiablePresentation, targetVM models.VerificationMethod) (bool, error) {
+func VerifyVPSecp256k1(presentation *models.VerifiablePresentation, pubKey *ecdsa.PublicKey) (bool, error) {
 	copiedVP := *presentation
 	//have to make sure to remove the signature from the copy, as the original did not have a signature at the time the signature was generated
 	copiedVP.Proof.JWSSignature = ""
 	hashedVP := sha256.Sum256(ConvertVPToBytes(copiedVP))
-	_, pubData, err := multibase.Decode(targetVM.MultibaseKey)
-	if err != nil {
-		return false, err
-	}
 
-	pubKey, err := crypto.UnmarshalPubkey(pubData)
-	if err != nil {
-		return false, err
-	}
 	result, err := key.VerifyJWSSignature(presentation.Proof.JWSSignature, pubKey, hashedVP[:])
 	if err != nil {
 		return false, err

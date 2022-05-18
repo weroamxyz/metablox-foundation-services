@@ -9,12 +9,12 @@ import (
 )
 
 const Secp256k1Sig = "EcdsaSecp256k1Signature2019"
-const Secp256k1Key = "EcdsaSecp256k1VerificationKey2019"
+const Secp256k1Key = "EcdsaSecp256k1RecoveryMethod2020"
 const PurposeAuth = "Authentication"
 
 const ContextDID = "https://w3id.org/did/v1"
 const ContextCredential = "https://www.w3.org/2018/credentials/v1"
-const ContextSecp256k1 = "https://ns.did.ai/suites/secp256k1-2019/v1/"
+const ContextSecp256k1 = "https://identity.foundation/EcdsaSecp256k1RecoverySignature2020#"
 
 const TypeCredential = "VerifiableCredential"
 const TypeWifi = "WifiAccess"
@@ -29,14 +29,13 @@ type DIDDocument struct {
 	VerificationMethod []VerificationMethod `json:"verificationMethod"`
 	Authentication     string               `json:"authentication"`
 	Service            []Service            `json:"service"`
-	Address            string               `json:"-"` //used to associate dids with public key addresses
 }
 
 type VerificationMethod struct {
-	ID           string `json:"id"`
-	MethodType   string `json:"type"`
-	Controller   string `json:"controller"`
-	MultibaseKey string `json:"publicKeyMultibase"`
+	ID                  string `json:"id"`
+	MethodType          string `json:"type"`
+	Controller          string `json:"controller"`
+	BlockchainAccountId string `json:"blockchainAccountId"`
 }
 
 type ResolutionOptions struct {
@@ -242,7 +241,7 @@ func GenerateTestDIDDocument() *DIDDocument {
 	document.Created = "2022-03-31T12:53:19-07:00"
 	document.Updated = "2022-03-31T12:53:19-07:00"
 	document.Version = 1
-	document.VerificationMethod = append(document.VerificationMethod, VerificationMethod{ID: "did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification", MethodType: "EcdsaSecp256k1VerificationKey2019", Controller: "did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX", MultibaseKey: "zPYHK5ZNAzqo2PQ11r54Ku8p2qrwn42ebt7qM4827vAvGuMUV65EKFR7CqmKuvkKJuXPyNrZd8WG3jiqcSzLzpdg9"})
+	document.VerificationMethod = append(document.VerificationMethod, VerificationMethod{ID: "did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification", MethodType: "EcdsaSecp256k1RecoveryMethod2020", Controller: "did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX", BlockchainAccountId: "eip155:1:0xBE1e1dB948CC1f441514aFb8924B67891f1c6889"})
 	document.Authentication = "did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification"
 	return document
 }

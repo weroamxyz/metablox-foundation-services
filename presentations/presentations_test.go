@@ -3,12 +3,12 @@ package presentations
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/MetaBloxIO/metablox-foundation-services/credentials"
 	"github.com/MetaBloxIO/metablox-foundation-services/dao"
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/MetaBloxIO/metablox-foundation-services/settings"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateVP(t *testing.T) {
@@ -50,14 +50,13 @@ func TestCreateVP(t *testing.T) {
 }
 
 func TestVerifyVP(t *testing.T) {
-	issuerDocument := models.GenerateTestDIDDocument()
 	samplePresentation := models.GenerateTestPresentation()
 
-	success, err := VerifyVPSecp256k1(samplePresentation, issuerDocument.VerificationMethod[0])
+	success, err := VerifyVPSecp256k1(samplePresentation, &models.GenerateTestPrivKey().PublicKey)
 	assert.Nil(t, err)
 	assert.True(t, success)
 	samplePresentation.Type = append(samplePresentation.Type, "Modified")
-	success, err = VerifyVPSecp256k1(samplePresentation, issuerDocument.VerificationMethod[0])
+	success, err = VerifyVPSecp256k1(samplePresentation, &models.GenerateTestPrivKey().PublicKey)
 	assert.Equal(t, errval.ErrJWSAuthentication, err)
 	assert.False(t, success)
 }
