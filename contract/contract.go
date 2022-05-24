@@ -6,6 +6,7 @@ import (
 	"crypto/ecdsa"
 	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/MetaBloxIO/metablox-foundation-services/registry"
@@ -290,14 +291,31 @@ func UploadDocument(document *models.DIDDocument, did string, privateKey *ecdsa.
 	return nil
 }
 
-func GetDocument(targetDID string) (*models.DIDDocument, [32]byte, error) { //todo: replace document placeholder values as they are added to smart contract
+func GetDocument(targetDID string) (*models.DIDDocument, [32]byte, error) {
 	address, err := instance.Dids(nil, targetDID)
 	if err != nil {
 		return nil, [32]byte{0}, err
 	}
 
-	placeholderDoc := models.GenerateTestDIDDocument()
-	placeholderDoc.VerificationMethod[0].BlockchainAccountId = "eip155:1:" + address.Hex()
+	document := new(models.DIDDocument)
+
+	document.ID = targetDID
+	document.Context = make([]string, 0)
+	document.Context = append(document.Context, models.ContextSecp256k1)
+	document.Context = append(document.Context, models.ContextDID)
+	document.Created = time.Now().Format(time.RFC3339) //todo: need to get this from contract
+	document.Updated = document.Created                //todo: need to get this from contract
+	document.Version = 1                               //todo: need to get this from contract
+
+	VM := models.VerificationMethod{}
+	VM.ID = document.ID + "#verification"
+	VM.BlockchainAccountId = "eip155:1:" + address.Hex()
+	VM.Controller = document.ID
+	VM.MethodType = models.Secp256k1Key
+
+	document.VerificationMethod = append(document.VerificationMethod, VM)
+	document.Authentication = VM.ID
+
 	placeholderHash := [32]byte{94, 241, 27, 134, 190, 223, 112, 91, 189, 49, 221, 31, 228, 35, 189, 213, 251, 60, 60, 210, 162, 45, 151, 3, 31, 78, 41, 239, 41, 75, 198, 139}
-	return placeholderDoc, placeholderHash, nil
+	return document, placeholderHash, nil
 }

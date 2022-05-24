@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"crypto/ecdsa"
 	"crypto/sha256"
 	"net/http"
 
@@ -17,16 +16,14 @@ import (
 
 var NonceLookup map[string]string
 
-var issuerPrivateKey *ecdsa.PrivateKey
-
 func InitializeValues() error {
 	var err error
 	NonceLookup = make(map[string]string)
-	issuerPrivateKey, err = key.GetIssuerPrivateKey()
+	credentials.IssuerPrivateKey, err = key.GetIssuerPrivateKey()
 	if err != nil {
 		return err
 	}
-	credentials.IssuerDID = did.GenerateDIDString(issuerPrivateKey)
+	credentials.IssuerDID = did.GenerateDIDString(credentials.IssuerPrivateKey)
 	return nil
 }
 
@@ -37,15 +34,7 @@ func IssueWifiVCHandler(c *gin.Context) {
 		return
 	}
 
-	var output struct {
-		Credential   models.VerifiableCredential `json:"credential"`
-		IssuerPubKey []byte                      `json:"issuerPubKey"`
-	}
-
-	output.Credential = *newVC
-	output.IssuerPubKey = crypto.FromECDSAPub(&issuerPrivateKey.PublicKey)
-
-	ResponseSuccess(c, output)
+	ResponseSuccess(c, newVC)
 }
 
 func IssueMiningVCHandler(c *gin.Context) {
@@ -55,15 +44,7 @@ func IssueMiningVCHandler(c *gin.Context) {
 		return
 	}
 
-	var output struct {
-		Credential   models.VerifiableCredential `json:"credential"`
-		IssuerPubKey []byte                      `json:"issuerPubKey"`
-	}
-
-	output.Credential = *newVC
-	output.IssuerPubKey = crypto.FromECDSAPub(&issuerPrivateKey.PublicKey)
-
-	ResponseSuccess(c, output)
+	ResponseSuccess(c, newVC)
 }
 
 func RenewVCHandler(c *gin.Context) {
@@ -73,15 +54,7 @@ func RenewVCHandler(c *gin.Context) {
 		return
 	}
 
-	var output struct {
-		Credential   models.VerifiableCredential `json:"credential"`
-		IssuerPubKey []byte                      `json:"issuerPubKey"`
-	}
-
-	output.Credential = *renewedVC
-	output.IssuerPubKey = crypto.FromECDSAPub(&issuerPrivateKey.PublicKey)
-
-	ResponseSuccess(c, output)
+	ResponseSuccess(c, renewedVC)
 }
 
 func RevokeVCHandler(c *gin.Context) {
@@ -143,7 +116,7 @@ func AssignIssuer(c *gin.Context) {
 		return
 	}
 
-	err := contract.RegisterVCIssuer(inputs.CredentialKey, inputs.Did, issuerPrivateKey)
+	err := contract.RegisterVCIssuer(inputs.CredentialKey, inputs.Did, credentials.IssuerPrivateKey)
 	if err != nil {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed: "+err.Error())
 		return
@@ -164,7 +137,7 @@ func SetVCAttribute(c *gin.Context) {
 		return
 	}
 
-	err := contract.UpdateVCValue(inputs.CredentialKey, inputs.FieldName, inputs.NewValue, issuerPrivateKey)
+	err := contract.UpdateVCValue(inputs.CredentialKey, inputs.FieldName, inputs.NewValue, credentials.IssuerPrivateKey)
 	if err != nil {
 		ResponseErrorWithMsg(c, http.StatusNotAcceptable, "Failed: "+err.Error())
 		return
@@ -193,7 +166,7 @@ func ReadVCChangedEvents(c *gin.Context) {
 }
 
 func GetIssuerPublicKeyHandler(c *gin.Context) {
-	ResponseSuccess(c, crypto.FromECDSAPub(&issuerPrivateKey.PublicKey))
+	ResponseSuccess(c, crypto.FromECDSAPub(&credentials.IssuerPrivateKey.PublicKey))
 }
 
 func GenerateTestingPresentationSignatures(c *gin.Context) {

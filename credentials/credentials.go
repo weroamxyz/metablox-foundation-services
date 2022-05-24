@@ -16,9 +16,11 @@ import (
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 	"github.com/MetaBloxIO/metablox-foundation-services/key"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 var IssuerDID string
+var IssuerPrivateKey *ecdsa.PrivateKey
 
 const baseIDString = "http://metablox.com/credentials/"
 
@@ -29,6 +31,7 @@ func CreateProof(vm string) models.VCProof {
 	vcProof.JWSSignature = ""
 	vcProof.Created = time.Now().Format(time.RFC3339)
 	vcProof.ProofPurpose = models.PurposeAuth
+	vcProof.PublicKeyString = crypto.FromECDSAPub(&IssuerPrivateKey.PublicKey)
 	return *vcProof
 }
 
@@ -277,7 +280,7 @@ func JsonToVC(jsonVC []byte) (*models.VerifiableCredential, error) {
 
 //Need to make sure that the stated issuer of the VC actually created it (using the proof alongside the issuer's verification methods),
 //as well as check that the issuer is a trusted source
-func VerifyVC(vc *models.VerifiableCredential, pubKey *ecdsa.PublicKey) (bool, error) {
+func VerifyVC(vc *models.VerifiableCredential) (bool, error) {
 	//can modify to match the DID of the actual trusted issuer(s). May also want different
 	//trusted issuers for different types of VCs
 	if vc.Issuer != IssuerDID {
@@ -294,6 +297,11 @@ func VerifyVC(vc *models.VerifiableCredential, pubKey *ecdsa.PublicKey) (bool, e
 		return false, err
 	}
 
+	publicKey, err := crypto.UnmarshalPubkey(vc.Proof.PublicKeyString)
+	if err != nil {
+		return false, err
+	}
+
 	//currently only support EcdsaSecp256k1Signature2019, but it's possible we could introduce more
 	switch vc.Proof.Type {
 	case models.Secp256k1Sig:
@@ -301,12 +309,12 @@ func VerifyVC(vc *models.VerifiableCredential, pubKey *ecdsa.PublicKey) (bool, e
 			return false, errval.ErrSecp256k1WrongVMType
 		}
 
-		success, err := key.CompareAddresses(targetVM, pubKey)
+		success, err := key.CompareAddresses(targetVM, publicKey)
 		if !success {
 			return false, err
 		}
 
-		return VerifyVCSecp256k1(vc, pubKey)
+		return VerifyVCSecp256k1(vc, publicKey)
 	default:
 		return false, errval.ErrUnknownProofType
 	}
@@ -353,6 +361,6 @@ func ConvertVCToBytes(vc models.VerifiableCredential) []byte {
 		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(miningLicenseInfo.ID), []byte(miningLicenseInfo.Name), []byte(miningLicenseInfo.Model), []byte(miningLicenseInfo.Serial)}, []byte{})
 	}
 
-	convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(vc.Proof.Type), []byte(vc.Proof.Created), []byte(vc.Proof.VerificationMethod), []byte(vc.Proof.ProofPurpose), []byte(vc.Proof.JWSSignature)}, []byte{})
+	convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(vc.Proof.Type), []byte(vc.Proof.Created), []byte(vc.Proof.VerificationMethod), []byte(vc.Proof.ProofPurpose), []byte(vc.Proof.JWSSignature), vc.Proof.PublicKeyString}, []byte{})
 	return convertedBytes
 }

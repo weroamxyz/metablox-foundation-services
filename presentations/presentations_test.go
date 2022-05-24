@@ -25,6 +25,7 @@ func TestCreateVP(t *testing.T) {
 
 	err = dao.CreateTestWifiAccessTable()
 	assert.Nil(t, err)
+	credentials.IssuerPrivateKey = models.GenerateTestPrivKey()
 
 	issuerDocument := models.GenerateTestDIDDocument()
 	issuerDocument.ID = "did:metablox:sampleIssuer"
@@ -34,7 +35,7 @@ func TestCreateVP(t *testing.T) {
 	assert.Nil(t, err)
 	credentialArray := make([]models.VerifiableCredential, 0)
 	credentialArray = append(credentialArray, *vc)
-	issuerDocument.ID = "did:metablox:HFXPiudexfvsJBqABNmBp785YwaKGjo95kmDpBxhMMYo"
+	issuerDocument.ID = "did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX"
 
 	presentation, err := CreatePresentation(credentialArray, *issuerDocument, issuerPrivKey, "sampleNonce")
 	assert.Nil(t, err)

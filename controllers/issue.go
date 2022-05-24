@@ -3,11 +3,11 @@ package controllers
 import (
 	"errors"
 
-	"github.com/gin-gonic/gin"
 	"github.com/MetaBloxIO/metablox-foundation-services/contract"
 	"github.com/MetaBloxIO/metablox-foundation-services/credentials"
 	"github.com/MetaBloxIO/metablox-foundation-services/did"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
+	"github.com/gin-gonic/gin"
 )
 
 func IssueWifiVC(c *gin.Context) (*models.VerifiableCredential, error) {
@@ -25,12 +25,12 @@ func IssueWifiVC(c *gin.Context) (*models.VerifiableCredential, error) {
 		return nil, errors.New(resolutionMeta.Error)
 	}
 
-	newVC, err := credentials.CreateWifiAccessVC(issuerDocument, wifiInfo, issuerPrivateKey)
+	newVC, err := credentials.CreateWifiAccessVC(issuerDocument, wifiInfo, credentials.IssuerPrivateKey)
 	if err != nil {
 		return nil, err
 	}
 
-	err = contract.CreateVC(newVC, c.Param("did"), issuerPrivateKey)
+	err = contract.CreateVC(newVC, c.Param("did"), credentials.IssuerPrivateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -53,12 +53,12 @@ func IssueMiningVC(c *gin.Context) (*models.VerifiableCredential, error) {
 		return nil, errors.New(resolutionMeta.Error)
 	}
 
-	newVC, err := credentials.CreateMiningLicenseVC(issuerDocument, miningInfo, issuerPrivateKey)
+	newVC, err := credentials.CreateMiningLicenseVC(issuerDocument, miningInfo, credentials.IssuerPrivateKey)
 	if err != nil {
 		return nil, err
 	}
 
-	err = contract.CreateVC(newVC, c.Param("did"), issuerPrivateKey)
+	err = contract.CreateVC(newVC, c.Param("did"), credentials.IssuerPrivateKey)
 	if err != nil {
 		return nil, err
 	}

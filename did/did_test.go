@@ -26,8 +26,7 @@ func TestGenerateDIDString(t *testing.T) {
 
 func TestCreateDID(t *testing.T) {
 	privKey := models.GenerateTestPrivKey()
-	document, err := CreateDID(privKey)
-	assert.Nil(t, err)
+	document := CreateDID(privKey)
 
 	exampleDocument := models.GenerateTestDIDDocument()
 	assert.Equal(t, exampleDocument.Context, document.Context)

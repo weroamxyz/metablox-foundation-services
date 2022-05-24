@@ -1,11 +1,12 @@
 package controllers
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/MetaBloxIO/metablox-foundation-services/contract"
+	"github.com/MetaBloxIO/metablox-foundation-services/credentials"
 	"github.com/MetaBloxIO/metablox-foundation-services/did"
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
+	"github.com/gin-gonic/gin"
 )
 
 func SendDocToRegistry(c *gin.Context) error {
@@ -21,7 +22,7 @@ func SendDocToRegistry(c *gin.Context) error {
 		return errval.ErrDIDFormat
 	}
 
-	err := contract.UploadDocument(document, splitString[2], issuerPrivateKey)
+	err := contract.UploadDocument(document, splitString[2], credentials.IssuerPrivateKey)
 	if err != nil {
 		return err
 	}

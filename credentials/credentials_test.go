@@ -7,6 +7,7 @@ import (
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/MetaBloxIO/metablox-foundation-services/settings"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -116,7 +117,9 @@ func TestRenewVC(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "2023-03-31T12:53:19-07:00", vc.ExpirationDate)
 
-	success, err := VerifyVCSecp256k1(vc, models.GenerateTestDIDDocument().VerificationMethod[0])
+	pubKey, err := crypto.UnmarshalPubkey(vc.Proof.PublicKeyString)
+	assert.Nil(t, err)
+	success, err := VerifyVCSecp256k1(vc, pubKey)
 	assert.Nil(t, err)
 	assert.True(t, success)
 

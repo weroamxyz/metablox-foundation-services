@@ -13,6 +13,7 @@ import (
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 	"github.com/MetaBloxIO/metablox-foundation-services/key"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 func CreatePresentation(credentials []models.VerifiableCredential, holderDocument models.DIDDocument, holderPrivKey *ecdsa.PrivateKey, nonce string) (*models.VerifiablePresentation, error) {
@@ -23,6 +24,7 @@ func CreatePresentation(credentials []models.VerifiableCredential, holderDocumen
 	presentationProof.Created = time.Now().Format(time.RFC3339)
 	presentationProof.ProofPurpose = "Authentication"
 	presentationProof.Nonce = nonce
+	presentationProof.PublicKeyString = crypto.FromECDSAPub(&holderPrivKey.PublicKey)
 	context := []string{models.ContextCredential, models.ContextSecp256k1}
 	presentationType := []string{"VerifiablePresentation"}
 	presentation := models.NewPresentation(context, presentationType, credentials, holderDocument.ID, *presentationProof)
@@ -44,7 +46,7 @@ func CreatePresentation(credentials []models.VerifiableCredential, holderDocumen
 
 //Need to first verify the presentation's proof using the holder's DID document. Afterwards, need to verify
 //the proof of each credential included inside the presentation
-func VerifyVP(presentation *models.VerifiablePresentation, holderKey, issuerKey *ecdsa.PublicKey) (bool, error) {
+func VerifyVP(presentation *models.VerifiablePresentation) (bool, error) {
 
 	resolutionMeta, holderDoc, _ := did.Resolve(presentation.Holder, models.CreateResolutionOptions())
 	if resolutionMeta.Error != "" {
@@ -52,6 +54,11 @@ func VerifyVP(presentation *models.VerifiablePresentation, holderKey, issuerKey 
 	}
 
 	targetVM, err := holderDoc.RetrieveVerificationMethod(presentation.Proof.VerificationMethod)
+	if err != nil {
+		return false, err
+	}
+
+	holderKey, err := crypto.UnmarshalPubkey(presentation.Proof.PublicKeyString)
 	if err != nil {
 		return false, err
 	}
@@ -79,7 +86,7 @@ func VerifyVP(presentation *models.VerifiablePresentation, holderKey, issuerKey 
 	}
 
 	for _, credential := range presentation.VerifiableCredential {
-		success, err = credentials.VerifyVC(&credential, issuerKey)
+		success, err = credentials.VerifyVC(&credential)
 		if !success {
 			return false, err
 		}
@@ -125,6 +132,6 @@ func ConvertVPToBytes(vp models.VerifiablePresentation) []byte {
 		convertedBytes = bytes.Join([][]byte{convertedBytes, credentials.ConvertVCToBytes(item)}, []byte{})
 	}
 
-	convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(vp.Holder), []byte(vp.Proof.Type), []byte(vp.Proof.Created), []byte(vp.Proof.VerificationMethod), []byte(vp.Proof.ProofPurpose), []byte(vp.Proof.JWSSignature), []byte(vp.Proof.Nonce)}, []byte{})
+	convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(vp.Holder), []byte(vp.Proof.Type), []byte(vp.Proof.Created), []byte(vp.Proof.VerificationMethod), []byte(vp.Proof.ProofPurpose), []byte(vp.Proof.JWSSignature), []byte(vp.Proof.Nonce), vp.Proof.PublicKeyString}, []byte{})
 	return convertedBytes
 }

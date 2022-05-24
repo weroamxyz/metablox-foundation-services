@@ -3,7 +3,6 @@ package did
 import (
 	"bytes"
 	"crypto/ecdsa"
-	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"regexp"
@@ -27,15 +26,11 @@ func GenerateDIDString(privKey *ecdsa.PrivateKey) string {
 	return returnString
 }
 
-func CreateDID(privKey *ecdsa.PrivateKey) (*models.DIDDocument, error) {
+func CreateDID(privKey *ecdsa.PrivateKey) *models.DIDDocument {
 
 	document := new(models.DIDDocument)
 
-	var err error
 	document.ID = GenerateDIDString(privKey)
-	if err != nil {
-		return nil, err
-	}
 	document.Context = make([]string, 0)
 	document.Context = append(document.Context, models.ContextSecp256k1)
 	document.Context = append(document.Context, models.ContextDID)
@@ -56,7 +51,7 @@ func CreateDID(privKey *ecdsa.PrivateKey) (*models.DIDDocument, error) {
 
 	//once blockchain is implemented, will also need to upload the document to the blockchain
 
-	return document, nil
+	return document
 }
 
 func DocumentToJson(document *models.DIDDocument) ([]byte, error) {
@@ -128,7 +123,7 @@ func Resolve(did string, options *models.ResolutionOptions) (*models.ResolutionM
 		return &models.ResolutionMetadata{Error: "invalid Did"}, nil, &models.DocumentMetadata{}
 	}
 
-	generatedDocument, generatedHash, err := contract.GetDocument(did)
+	generatedDocument, _, err := contract.GetDocument(did)
 	if err != nil {
 		return &models.ResolutionMetadata{Error: err.Error()}, nil, nil
 	}
@@ -142,10 +137,10 @@ func Resolve(did string, options *models.ResolutionOptions) (*models.ResolutionM
 		return &models.ResolutionMetadata{Error: "generated document DID does not match provided DID"}, nil, nil
 	}
 
-	comparisonHash := sha256.Sum256(ConvertDocToBytes(*generatedDocument))
+	/*comparisonHash := sha256.Sum256(ConvertDocToBytes(*generatedDocument))	//disabling this at the moment to avoid needing to update placeholderHash while we're still modfiying document layout
 	if comparisonHash != generatedHash {
 		return &models.ResolutionMetadata{Error: "document failed hash check"}, nil, nil
-	}
+	}*/
 	return &models.ResolutionMetadata{}, generatedDocument, nil
 }
 
