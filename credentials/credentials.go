@@ -172,7 +172,7 @@ func CreateMiningLicenseVC(issuerDocument *models.DIDDocument, miningLicenseInfo
 		}
 
 		vc.Type = append(vc.Type, models.TypeMining)
-		vc.SubType = models.TypeWifi
+		vc.SubType = models.TypeMining
 		vc.Description = "Example Mining License Credential"
 		vc.CredentialSubject = *miningLicenseInfo
 
@@ -183,6 +183,71 @@ func CreateMiningLicenseVC(issuerDocument *models.DIDDocument, miningLicenseInfo
 		}
 
 		generatedID, err := dao.UploadMiningLicenseVC(*vc)
+		if err != nil {
+			return nil, err
+		}
+
+		err = ConvertTimesFromDBFormat(vc)
+		if err != nil {
+			return nil, err
+		}
+
+		vc.ID = baseIDString + strconv.Itoa(generatedID)
+	}
+
+	//Create the proof's signature using a stringified version of the VC and the issuer's private key.
+	//This way, the signature can be verified by re-stringifying the VC and looking up the public key in the issuer's DID document.
+	//Verification will only succeed if the VC was unchanged since the signature and if the issuer
+	//public key matches the private key used to make the signature
+	hashedVC := sha256.Sum256(ConvertVCToBytes(*vc))
+
+	signatureData, err := key.CreateJWSSignature(issuerPrivKey, hashedVC[:])
+	if err != nil {
+		return nil, err
+	}
+	vc.Proof.JWSSignature = signatureData
+
+	return vc, nil
+}
+
+func CreateStakingVC(issuerDocument *models.DIDDocument, stakingInfo *models.StakingVCInfo, issuerPrivKey *ecdsa.PrivateKey) (*models.VerifiableCredential, error) {
+	var vc *models.VerifiableCredential
+	exists, err := dao.CheckStakingVCForExistence(stakingInfo.ID)
+	if err != nil {
+		return nil, err
+	}
+	if exists {
+		vc, err = dao.GetStakingVCFromDB(stakingInfo.ID)
+		if err != nil {
+			return nil, err
+		}
+		vc.Context = []string{models.ContextCredential, models.ContextSecp256k1}
+		vc.Type = []string{models.TypeCredential, models.TypeStaking}
+		vc.ID = baseIDString + vc.ID
+		err = ConvertTimesFromDBFormat(vc)
+		if err != nil {
+			return nil, err
+		}
+		vc.Proof = CreateProof(issuerDocument.Authentication)
+	} else {
+
+		vc, err = CreateVC(issuerDocument)
+		if err != nil {
+			return nil, err
+		}
+
+		vc.Type = append(vc.Type, models.TypeStaking)
+		vc.SubType = models.TypeStaking
+		vc.Description = "Example Staking Credential"
+		vc.CredentialSubject = *stakingInfo
+
+		//Upload VC to DB and generate ID. Has to be done before creating signature, as changing the ID will change the signature
+		err = ConvertTimesToDBFormat(vc)
+		if err != nil {
+			return nil, err
+		}
+
+		generatedID, err := dao.UploadStakingVC(*vc)
 		if err != nil {
 			return nil, err
 		}
@@ -359,6 +424,9 @@ func ConvertVCToBytes(vc models.VerifiableCredential) []byte {
 	case models.TypeMining:
 		miningLicenseInfo := vc.CredentialSubject.(models.MiningLicenseInfo)
 		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(miningLicenseInfo.ID), []byte(miningLicenseInfo.Name), []byte(miningLicenseInfo.Model), []byte(miningLicenseInfo.Serial)}, []byte{})
+	case models.TypeStaking:
+		stakingInfo := vc.CredentialSubject.(models.StakingVCInfo)
+		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(stakingInfo.ID)}, []byte{})
 	}
 
 	convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(vc.Proof.Type), []byte(vc.Proof.Created), []byte(vc.Proof.VerificationMethod), []byte(vc.Proof.ProofPurpose), []byte(vc.Proof.JWSSignature), vc.Proof.PublicKeyString}, []byte{})

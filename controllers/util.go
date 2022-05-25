@@ -22,6 +22,11 @@ func ConvertCredentialSubject(vc *models.VerifiableCredential) {
 			miningInfo.Serial = subjectMap["serial"].(string)
 			vc.CredentialSubject = *miningInfo
 			return
+		case models.TypeStaking:
+			stakingInfo := models.CreateStakingVCInfo()
+			stakingInfo.ID = subjectMap["id"].(string)
+			vc.CredentialSubject = *stakingInfo
+			return
 		}
 	}
 }

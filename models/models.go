@@ -19,6 +19,7 @@ const ContextSecp256k1 = "https://identity.foundation/EcdsaSecp256k1RecoverySign
 const TypeCredential = "VerifiableCredential"
 const TypeWifi = "WifiAccess"
 const TypeMining = "MiningLicense"
+const TypeStaking = "StakingVC"
 
 type DIDDocument struct {
 	Context            []string             `json:"@context" mapstructure:"@context"`
@@ -138,6 +139,11 @@ type MiningLicenseInfo struct {
 	Serial       string `json:"serial" db:"Serial"` //serial number
 }
 
+type StakingVCInfo struct {
+	CredentialID string `json:"-" db:"CredentialID"`
+	ID           string `json:"id" db:"ID"` //id of the user the credential is assigned to
+}
+
 type MinerInfo struct {
 	ID         string `json:"id" db:"ID"`
 	Name       string `json:"name" db:"Name"`
@@ -198,6 +204,10 @@ func CreateWifiAccessInfo() *WifiAccessInfo {
 
 func CreateMiningLicenseInfo() *MiningLicenseInfo {
 	return &MiningLicenseInfo{}
+}
+
+func CreateStakingVCInfo() *StakingVCInfo {
+	return &StakingVCInfo{}
 }
 
 func CreateVCProof() *VCProof {
