@@ -251,7 +251,7 @@ func GenerateTestDIDDocument() *DIDDocument {
 	document.Created = "2022-03-31T12:53:19-07:00"
 	document.Updated = "2022-03-31T12:53:19-07:00"
 	document.Version = 1
-	document.VerificationMethod = append(document.VerificationMethod, VerificationMethod{ID: "did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification", MethodType: "EcdsaSecp256k1RecoveryMethod2020", Controller: "did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX", BlockchainAccountId: "eip155:1:0xBE1e1dB948CC1f441514aFb8924B67891f1c6889"})
+	document.VerificationMethod = append(document.VerificationMethod, VerificationMethod{ID: "did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification", MethodType: "EcdsaSecp256k1RecoveryMethod2020", Controller: "did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX", BlockchainAccountId: "eip155:1666600000:0xBE1e1dB948CC1f441514aFb8924B67891f1c6889"})
 	document.Authentication = "did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification"
 	return document
 }

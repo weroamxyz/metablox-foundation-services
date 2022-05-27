@@ -381,9 +381,9 @@ func VerifyVC(vc *models.VerifiableCredential) (bool, error) {
 			return false, errval.ErrSecp256k1WrongVMType
 		}
 
-		success, err := key.CompareAddresses(targetVM, publicKey)
+		success := key.CompareAddresses(targetVM, publicKey)
 		if !success {
-			return false, err
+			return false, errval.ErrWrongAddress
 		}
 
 		return VerifyVCSecp256k1(vc, publicKey)

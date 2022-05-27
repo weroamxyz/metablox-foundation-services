@@ -10,12 +10,10 @@ import (
 )
 
 func SendDocToRegistry(c *gin.Context) error {
-	/*document := models.CreateDIDDocument()
+	document := models.CreateDIDDocument()
 	if err := c.BindJSON(document); err != nil {
 		return err
-	}*/
-
-	document := models.GenerateTestDIDDocument()
+	}
 
 	splitString, valid := did.PrepareDID(document.ID)
 	if !valid {

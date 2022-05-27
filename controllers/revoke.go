@@ -7,6 +7,7 @@ import (
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/MetaBloxIO/metablox-foundation-services/presentations"
 	"github.com/gin-gonic/gin"
+	logger "github.com/sirupsen/logrus"
 )
 
 func RevokeVC(c *gin.Context) (*models.VerifiableCredential, error) {
@@ -30,7 +31,7 @@ func RevokeVC(c *gin.Context) (*models.VerifiableCredential, error) {
 
 	success, err := presentations.VerifyVP(input)
 	if err != nil {
-		return nil, err
+		logger.Warn(err)
 	}
 
 	if !success {
