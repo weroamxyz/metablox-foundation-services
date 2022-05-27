@@ -71,7 +71,6 @@ type VerifiableCredential struct {
 	Context           []string    `json:"@context" mapstructure:"@context"`
 	ID                string      `json:"id" db:"ID"`
 	Type              []string    `json:"type"`
-	SubType           string      `json:"-" db:"Type"` //used in place of Type for database operations, as using an array causes issues
 	Issuer            string      `json:"issuer" db:"Issuer"`
 	IssuanceDate      string      `json:"issuanceDate" db:"IssuanceDate"`
 	ExpirationDate    string      `json:"expirationDate" db:"ExpirationDate"`
@@ -178,12 +177,11 @@ func CreateVerifiableCredential() *VerifiableCredential {
 	return &VerifiableCredential{}
 }
 
-func NewVerifiableCredential(context []string, id string, vctype []string, subtype, issuer, issuanceDate, expirationDate, description string, subject interface{}, proof VCProof, revoked bool) *VerifiableCredential {
+func NewVerifiableCredential(context []string, id string, vctype []string, issuer, issuanceDate, expirationDate, description string, subject interface{}, proof VCProof, revoked bool) *VerifiableCredential {
 	return &VerifiableCredential{
 		Context:           context,
 		ID:                id,
 		Type:              vctype,
-		SubType:           subtype,
 		Issuer:            issuer,
 		IssuanceDate:      issuanceDate,
 		ExpirationDate:    expirationDate,
@@ -355,7 +353,6 @@ func GenerateTestVC() *VerifiableCredential {
 		[]string{ContextCredential, ContextSecp256k1},
 		"http://metablox.com/credentials/1",
 		[]string{TypeCredential, "PermanentResidentCard"},
-		"PermanentResidentCard",
 		"did:metablox:sampleIssuer",
 		"2022-03-31T12:53:19-07:00",
 		"2032-03-31T12:53:19-07:00",
@@ -382,7 +379,6 @@ func GenerateTestWifiAccessVC() *VerifiableCredential {
 		[]string{ContextSecp256k1, ContextCredential},
 		"http://metablox.com/credentials/1",
 		[]string{TypeCredential, TypeWifi},
-		TypeWifi,
 		"did:metablox:sampleIssuer",
 		"2022-03-31T12:53:19-07:00",
 		"2032-03-31T12:53:19-07:00",
@@ -409,7 +405,6 @@ func GenerateTestMiningLicenseVC() *VerifiableCredential {
 		[]string{ContextSecp256k1, ContextCredential},
 		"http://metablox.com/credentials/1",
 		[]string{TypeMining, TypeCredential},
-		TypeMining,
 		"did:metablox:sampleIssuer",
 		"2022-03-31T12:53:19-07:00",
 		"2032-03-31T12:53:19-07:00",

@@ -57,7 +57,7 @@ func UploadWifiAccessVC(vc models.VerifiableCredential) (int, error) {
 		return 0, err
 	}
 
-	sqlStr := "insert into Credentials (Type, Issuer, IssuanceDate, ExpirationDate, Description, Revoked) values (:Type, :Issuer, :IssuanceDate, :ExpirationDate, :Description, 0)"
+	sqlStr := "insert into Credentials (Type, Issuer, IssuanceDate, ExpirationDate, Description, Revoked) values ('WifiAccess', :Issuer, :IssuanceDate, :ExpirationDate, :Description, 0)"
 	result, err := tx.NamedExec(sqlStr, vc)
 	if err != nil {
 		tx.Rollback()
@@ -84,7 +84,7 @@ func UploadMiningLicenseVC(vc models.VerifiableCredential) (int, error) {
 		return 0, err
 	}
 
-	sqlStr := "insert into Credentials (Type, Issuer, IssuanceDate, ExpirationDate, Description, Revoked) values (:Type, :Issuer, :IssuanceDate, :ExpirationDate, :Description, 0)"
+	sqlStr := "insert into Credentials (Type, Issuer, IssuanceDate, ExpirationDate, Description, Revoked) values ('MiningLicense', :Issuer, :IssuanceDate, :ExpirationDate, :Description, 0)"
 	result, err := tx.NamedExec(sqlStr, vc)
 	if err != nil {
 		tx.Rollback()
@@ -111,7 +111,7 @@ func UploadStakingVC(vc models.VerifiableCredential) (int, error) {
 		return 0, err
 	}
 
-	sqlStr := "insert into Credentials (Type, Issuer, IssuanceDate, ExpirationDate, Description, Revoked) values (:Type, :Issuer, :IssuanceDate, :ExpirationDate, :Description, 0)"
+	sqlStr := "insert into Credentials (Type, Issuer, IssuanceDate, ExpirationDate, Description, Revoked) values ('StakingVC', :Issuer, :IssuanceDate, :ExpirationDate, :Description, 0)"
 	result, err := tx.NamedExec(sqlStr, vc)
 	if err != nil {
 		tx.Rollback()
@@ -183,7 +183,7 @@ func GetWifiAccessFromDB(id string) (*models.VerifiableCredential, error) {
 	}
 
 	vc := models.CreateVerifiableCredential()
-	sqlStr = "select * from Credentials where ID = ?"
+	sqlStr = "select ID, Issuer, IssuanceDate, ExpirationDate, Description, Revoked from Credentials where ID = ?"
 	err = SqlDB.Get(vc, sqlStr, wifiInfo.CredentialID)
 	if err != nil {
 		return nil, err
@@ -215,7 +215,7 @@ func GetMiningLicenseFromDB(id string) (*models.VerifiableCredential, error) {
 	}
 
 	vc := models.CreateVerifiableCredential()
-	sqlStr = "select * from Credentials where ID = ?"
+	sqlStr = "select ID, Issuer, IssuanceDate, ExpirationDate, Description, Revoked from Credentials where ID = ?"
 	err = SqlDB.Get(vc, sqlStr, miningInfo.CredentialID)
 	if err != nil {
 		return nil, err
@@ -247,7 +247,7 @@ func GetStakingVCFromDB(id string) (*models.VerifiableCredential, error) {
 	}
 
 	vc := models.CreateVerifiableCredential()
-	sqlStr = "select * from Credentials where ID = ?"
+	sqlStr = "select ID, Issuer, IssuanceDate, ExpirationDate, Description, Revoked from Credentials where ID = ?"
 	err = SqlDB.Get(vc, sqlStr, stakingInfo.CredentialID)
 	if err != nil {
 		return nil, err
