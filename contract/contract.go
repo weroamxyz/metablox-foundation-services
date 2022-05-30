@@ -302,7 +302,7 @@ func GetDocument(targetDID string) (*models.DIDDocument, [32]byte, error) {
 
 	document := new(models.DIDDocument)
 
-	document.ID = targetDID
+	document.ID = "did:metablox:" + targetDID
 	document.Context = make([]string, 0)
 	document.Context = append(document.Context, models.ContextSecp256k1)
 	document.Context = append(document.Context, models.ContextDID)
