@@ -264,6 +264,9 @@ func RevokeVC(vcBytes [32]byte) error {
 }
 
 func UploadDocument(document *models.DIDDocument, did string, privateKey *ecdsa.PrivateKey) error {
+	fmt.Println(did)
+	ownerAccount, _ := instance.Dids(nil, did)
+	fmt.Println(ownerAccount.Hex())
 	pubAddress := crypto.PubkeyToAddress(privateKey.PublicKey)
 	nonce, err := instance.Nonce(nil, pubAddress)
 	if err != nil {
@@ -309,7 +312,7 @@ func GetDocument(targetDID string) (*models.DIDDocument, [32]byte, error) {
 
 	VM := models.VerificationMethod{}
 	VM.ID = document.ID + "#verification"
-	VM.BlockchainAccountId = "eip155:1:" + address.Hex()
+	VM.BlockchainAccountId = "eip155:1666600000:" + address.Hex()
 	VM.Controller = document.ID
 	VM.MethodType = models.Secp256k1Key
 

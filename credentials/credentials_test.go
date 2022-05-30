@@ -1,6 +1,7 @@
 package credentials
 
 import (
+	"os"
 	"testing"
 
 	"github.com/MetaBloxIO/metablox-foundation-services/dao"
@@ -15,6 +16,10 @@ func TestCreateMiningLicenseVC(t *testing.T) {
 	err := settings.Init()
 	assert.Nil(t, err)
 	err = dao.TestDBInit()
+	assert.Nil(t, err)
+	privData, err := os.ReadFile("../wallet/issuer")
+	assert.Nil(t, err)
+	IssuerPrivateKey, err = crypto.ToECDSA(privData)
 	assert.Nil(t, err)
 	t.Cleanup(dao.Close)
 	t.Cleanup(dao.DeleteTestCredentialsTable)
@@ -109,7 +114,7 @@ func TestRenewVC(t *testing.T) {
 
 	vc := models.GenerateTestVC()
 	vc.ExpirationDate = "2022-03-31T12:53:19-07:00"
-	err = dao.InsertSampleIntoCredentials(vc)
+	err = dao.InsertSampleIntoCredentials(vc, "PermanentResidentCard")
 	assert.Nil(t, err)
 	issuerPrivKey := models.GenerateTestPrivKey()
 
@@ -140,7 +145,7 @@ func TestRevokeVC(t *testing.T) {
 	assert.Nil(t, err)
 
 	vc := models.GenerateTestWifiAccessVC()
-	err = dao.InsertSampleIntoCredentials(vc)
+	err = dao.InsertSampleIntoCredentials(vc, "PermanentResidentCard")
 	assert.Nil(t, err)
 
 	err = RevokeVC(vc)

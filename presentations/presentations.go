@@ -71,9 +71,9 @@ func VerifyVP(presentation *models.VerifiablePresentation) (bool, error) {
 			return false, errval.ErrSecp256k1WrongVMType
 		}
 
-		success, err = key.CompareAddresses(targetVM, holderKey)
+		success = key.CompareAddresses(targetVM, holderKey)
 		if !success {
-			return false, err
+			return false, errval.ErrWrongAddress
 		}
 
 		success, err = VerifyVPSecp256k1(presentation, holderKey)

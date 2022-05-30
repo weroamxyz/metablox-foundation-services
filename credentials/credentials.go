@@ -24,6 +24,16 @@ var IssuerPrivateKey *ecdsa.PrivateKey
 
 const baseIDString = "http://metablox.com/credentials/"
 
+func InitializeValues() error {
+	var err error
+	IssuerPrivateKey, err = key.GetIssuerPrivateKey()
+	if err != nil {
+		return err
+	}
+	IssuerDID = did.GenerateDIDString(IssuerPrivateKey)
+	return nil
+}
+
 func CreateProof(vm string) models.VCProof {
 	vcProof := models.CreateVCProof()
 	vcProof.Type = models.Secp256k1Sig
@@ -75,7 +85,7 @@ func CreateVC(issuerDocument *models.DIDDocument) (*models.VerifiableCredential,
 
 	vcProof := CreateProof(issuerDocument.Authentication)
 
-	newVC := models.NewVerifiableCredential(context, "0", vcType, "", issuerDocument.ID, time.Now().In(loc).Format(time.RFC3339), expirationDate, description, nil, vcProof, false)
+	newVC := models.NewVerifiableCredential(context, "0", vcType, issuerDocument.ID, time.Now().In(loc).Format(time.RFC3339), expirationDate, description, nil, vcProof, false)
 
 	return newVC, nil
 }
@@ -107,7 +117,6 @@ func CreateWifiAccessVC(issuerDocument *models.DIDDocument, wifiAccessInfo *mode
 		}
 
 		vc.Type = append(vc.Type, models.TypeWifi)
-		vc.SubType = models.TypeWifi
 		vc.Description = "Example Wifi Access Credential"
 		vc.CredentialSubject = *wifiAccessInfo
 
@@ -172,7 +181,6 @@ func CreateMiningLicenseVC(issuerDocument *models.DIDDocument, miningLicenseInfo
 		}
 
 		vc.Type = append(vc.Type, models.TypeMining)
-		vc.SubType = models.TypeMining
 		vc.Description = "Example Mining License Credential"
 		vc.CredentialSubject = *miningLicenseInfo
 
@@ -237,7 +245,6 @@ func CreateStakingVC(issuerDocument *models.DIDDocument, stakingInfo *models.Sta
 		}
 
 		vc.Type = append(vc.Type, models.TypeStaking)
-		vc.SubType = models.TypeStaking
 		vc.Description = "Example Staking Credential"
 		vc.CredentialSubject = *stakingInfo
 
@@ -374,9 +381,9 @@ func VerifyVC(vc *models.VerifiableCredential) (bool, error) {
 			return false, errval.ErrSecp256k1WrongVMType
 		}
 
-		success, err := key.CompareAddresses(targetVM, publicKey)
+		success := key.CompareAddresses(targetVM, publicKey)
 		if !success {
-			return false, err
+			return false, errval.ErrWrongAddress
 		}
 
 		return VerifyVCSecp256k1(vc, publicKey)

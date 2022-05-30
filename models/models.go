@@ -71,7 +71,6 @@ type VerifiableCredential struct {
 	Context           []string    `json:"@context" mapstructure:"@context"`
 	ID                string      `json:"id" db:"ID"`
 	Type              []string    `json:"type"`
-	SubType           string      `json:"-" db:"Type"` //used in place of Type for database operations, as using an array causes issues
 	Issuer            string      `json:"issuer" db:"Issuer"`
 	IssuanceDate      string      `json:"issuanceDate" db:"IssuanceDate"`
 	ExpirationDate    string      `json:"expirationDate" db:"ExpirationDate"`
@@ -178,12 +177,11 @@ func CreateVerifiableCredential() *VerifiableCredential {
 	return &VerifiableCredential{}
 }
 
-func NewVerifiableCredential(context []string, id string, vctype []string, subtype, issuer, issuanceDate, expirationDate, description string, subject interface{}, proof VCProof, revoked bool) *VerifiableCredential {
+func NewVerifiableCredential(context []string, id string, vctype []string, issuer, issuanceDate, expirationDate, description string, subject interface{}, proof VCProof, revoked bool) *VerifiableCredential {
 	return &VerifiableCredential{
 		Context:           context,
 		ID:                id,
 		Type:              vctype,
-		SubType:           subtype,
 		Issuer:            issuer,
 		IssuanceDate:      issuanceDate,
 		ExpirationDate:    expirationDate,
@@ -253,7 +251,7 @@ func GenerateTestDIDDocument() *DIDDocument {
 	document.Created = "2022-03-31T12:53:19-07:00"
 	document.Updated = "2022-03-31T12:53:19-07:00"
 	document.Version = 1
-	document.VerificationMethod = append(document.VerificationMethod, VerificationMethod{ID: "did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification", MethodType: "EcdsaSecp256k1RecoveryMethod2020", Controller: "did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX", BlockchainAccountId: "eip155:1:0xBE1e1dB948CC1f441514aFb8924B67891f1c6889"})
+	document.VerificationMethod = append(document.VerificationMethod, VerificationMethod{ID: "did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification", MethodType: "EcdsaSecp256k1RecoveryMethod2020", Controller: "did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX", BlockchainAccountId: "eip155:1666600000:0xBE1e1dB948CC1f441514aFb8924B67891f1c6889"})
 	document.Authentication = "did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification"
 	return document
 }
@@ -355,7 +353,6 @@ func GenerateTestVC() *VerifiableCredential {
 		[]string{ContextCredential, ContextSecp256k1},
 		"http://metablox.com/credentials/1",
 		[]string{TypeCredential, "PermanentResidentCard"},
-		"PermanentResidentCard",
 		"did:metablox:sampleIssuer",
 		"2022-03-31T12:53:19-07:00",
 		"2032-03-31T12:53:19-07:00",
@@ -382,7 +379,6 @@ func GenerateTestWifiAccessVC() *VerifiableCredential {
 		[]string{ContextSecp256k1, ContextCredential},
 		"http://metablox.com/credentials/1",
 		[]string{TypeCredential, TypeWifi},
-		TypeWifi,
 		"did:metablox:sampleIssuer",
 		"2022-03-31T12:53:19-07:00",
 		"2032-03-31T12:53:19-07:00",
@@ -409,7 +405,6 @@ func GenerateTestMiningLicenseVC() *VerifiableCredential {
 		[]string{ContextSecp256k1, ContextCredential},
 		"http://metablox.com/credentials/1",
 		[]string{TypeMining, TypeCredential},
-		TypeMining,
 		"did:metablox:sampleIssuer",
 		"2022-03-31T12:53:19-07:00",
 		"2032-03-31T12:53:19-07:00",

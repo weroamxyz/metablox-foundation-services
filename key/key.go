@@ -5,7 +5,6 @@ import (
 	"crypto/ecdsa"
 	"os"
 
-	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/spf13/viper"
@@ -94,12 +93,12 @@ func VerifyJWSSignature(signature string, pubKey *ecdsa.PublicKey, message []byt
 	}
 }
 
-func CompareAddresses(vm models.VerificationMethod, pubKey *ecdsa.PublicKey) (bool, error) {
+func CompareAddresses(vm models.VerificationMethod, pubKey *ecdsa.PublicKey) bool {
 	givenAddress := crypto.PubkeyToAddress(*pubKey)
-	givenAccountID := "eip155:1:" + givenAddress.Hex()
+	givenAccountID := "eip155:1666600000:" + givenAddress.Hex()
 	if vm.BlockchainAccountId != givenAccountID {
-		return false, errval.ErrWrongAddress
+		return false
 	}
 
-	return true, nil
+	return true
 }

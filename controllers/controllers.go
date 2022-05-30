@@ -6,7 +6,6 @@ import (
 
 	"github.com/MetaBloxIO/metablox-foundation-services/contract"
 	"github.com/MetaBloxIO/metablox-foundation-services/credentials"
-	"github.com/MetaBloxIO/metablox-foundation-services/did"
 	"github.com/MetaBloxIO/metablox-foundation-services/key"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/MetaBloxIO/metablox-foundation-services/presentations"
@@ -16,15 +15,8 @@ import (
 
 var NonceLookup map[string]string
 
-func InitializeValues() error {
-	var err error
+func InitializeValues() {
 	NonceLookup = make(map[string]string)
-	credentials.IssuerPrivateKey, err = key.GetIssuerPrivateKey()
-	if err != nil {
-		return err
-	}
-	credentials.IssuerDID = did.GenerateDIDString(credentials.IssuerPrivateKey)
-	return nil
 }
 
 func IssueWifiVCHandler(c *gin.Context) {

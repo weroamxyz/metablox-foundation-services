@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/MetaBloxIO/metablox-foundation-services/contract"
 	"github.com/MetaBloxIO/metablox-foundation-services/controllers"
+	"github.com/MetaBloxIO/metablox-foundation-services/credentials"
 	"github.com/MetaBloxIO/metablox-foundation-services/dao"
 	"github.com/MetaBloxIO/metablox-foundation-services/routers"
 	"github.com/MetaBloxIO/metablox-foundation-services/settings"
@@ -28,7 +29,9 @@ func main() {
 		return
 	}
 
-	err = controllers.InitializeValues()
+	controllers.InitializeValues()
+
+	err = credentials.InitializeValues()
 	if err != nil {
 		logger.Error(err)
 		return

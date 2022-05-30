@@ -42,7 +42,7 @@ func CreateDID(privKey *ecdsa.PrivateKey) *models.DIDDocument {
 
 	VM := models.VerificationMethod{}
 	VM.ID = document.ID + "#verification"
-	VM.BlockchainAccountId = "eip155:1:" + address.Hex()
+	VM.BlockchainAccountId = "eip155:1666600000:" + address.Hex()
 	VM.Controller = document.ID
 	VM.MethodType = models.Secp256k1Key
 

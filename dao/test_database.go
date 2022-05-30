@@ -3,9 +3,9 @@ package dao
 import (
 	"fmt"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/MetaBloxIO/metablox-foundation-services/settings"
+	"github.com/jmoiron/sqlx"
 	"github.com/spf13/viper"
 )
 
@@ -64,14 +64,14 @@ func DeleteTestCredentialsTable() {
 	SqlDB.Exec(sqlStr)
 }
 
-func InsertSampleIntoCredentials(vc *models.VerifiableCredential) error {
-	sqlStr := "insert into Credentials (Type, Issuer, IssuanceDate, ExpirationDate, Description, Revoked) values (:Type,:Issuer,:IssuanceDate,:ExpirationDate,:Description,:Revoked);"
-	_, err := SqlDB.NamedExec(sqlStr, vc)
+func InsertSampleIntoCredentials(vc *models.VerifiableCredential, vcType string) error {
+	sqlStr := "insert into Credentials (Type, Issuer, IssuanceDate, ExpirationDate, Description, Revoked) values (?,?,?,?,?,?);"
+	_, err := SqlDB.Exec(sqlStr, vcType, vc.Issuer, vc.IssuanceDate, vc.ExpirationDate, vc.Description, vc.Revoked)
 	return err
 }
 
 func RetrieveSampleFromCredentials(id string) (*models.VerifiableCredential, error) {
-	sqlStr := "select * from Credentials where ID = ?;"
+	sqlStr := "select ID, Issuer, IssuanceDate, ExpirationDate, Description, Revoked from Credentials where ID = ?;"
 	result := models.CreateVerifiableCredential()
 	err := SqlDB.Get(result, sqlStr, id)
 	return result, err
