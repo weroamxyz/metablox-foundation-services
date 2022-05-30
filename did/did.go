@@ -123,7 +123,7 @@ func Resolve(did string, options *models.ResolutionOptions) (*models.ResolutionM
 		return &models.ResolutionMetadata{Error: "invalid Did"}, nil, &models.DocumentMetadata{}
 	}
 
-	generatedDocument, _, err := contract.GetDocument(did)
+	generatedDocument, _, err := contract.GetDocument(splitDID[2])
 	if err != nil {
 		return &models.ResolutionMetadata{Error: err.Error()}, nil, nil
 	}
