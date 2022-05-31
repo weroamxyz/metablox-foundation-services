@@ -3,12 +3,12 @@ package key
 import (
 	"bytes"
 	"crypto/ecdsa"
-	"os"
-
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/spf13/viper"
 	gojose "gopkg.in/square/go-jose.v2"
+	"math/big"
+	"os"
 )
 
 func GenerateNewPrivateKey(fileName string) (*ecdsa.PrivateKey, error) {
@@ -62,10 +62,27 @@ func CreateJWSSignature(privKey *ecdsa.PrivateKey, message []byte) (string, erro
 	if err != nil {
 		return "", err
 	}
+	c := privKey.PublicKey.Curve
+	N := c.Params().N
 
 	signature, err := signer.Sign(message)
 	if err != nil {
 		return "", err
+	}
+
+	sBytes := make([]byte, 32)
+	copy(sBytes, signature.Signatures[0].Signature[32:])
+	var s = new(big.Int).SetBytes(sBytes)
+
+	m := new(big.Int).Div(N, big.NewInt(2))
+	q := s.Cmp(m)
+	if q > 0 || s.Cmp(big.NewInt(1)) < 0 {
+		sub := new(big.Int).Sub(N, s)
+		s = new(big.Int).Mod(sub, N)
+		newBytes := s.Bytes()
+		sByte := make([]byte, 32)
+		copy(sByte[32-len(newBytes):], newBytes)
+		copy(signature.Signatures[0].Signature[32:], sByte)
 	}
 
 	compactserialized, err := signature.DetachedCompactSerialize()
