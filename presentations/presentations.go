@@ -5,7 +5,6 @@ import (
 	"crypto/ecdsa"
 	"crypto/sha256"
 	"errors"
-	"sort"
 	"time"
 
 	"github.com/MetaBloxIO/metablox-foundation-services/credentials"
@@ -119,9 +118,6 @@ func ConvertVPToBytes(vp models.VerifiablePresentation) []byte {
 		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(item)}, []byte{})
 	}
 
-	sort.SliceStable(vp.VerifiableCredential, func(i, j int) bool { //sort the credentials by ID
-		return vp.VerifiableCredential[i].ID < vp.VerifiableCredential[j].ID
-	})
 	for _, item := range vp.VerifiableCredential {
 		convertedBytes = bytes.Join([][]byte{convertedBytes, credentials.ConvertVCToBytes(item)}, []byte{})
 	}
