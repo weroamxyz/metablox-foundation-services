@@ -111,16 +111,10 @@ func VerifyVPSecp256k1(presentation *models.VerifiablePresentation, pubKey *ecds
 func ConvertVPToBytes(vp models.VerifiablePresentation) []byte {
 	var convertedBytes []byte
 
-	sort.SliceStable(vp.Context, func(i, j int) bool { //have to sort arrays alphabetically before iterating over them to ensure a consistent ordering
-		return vp.Context[i] < vp.Context[j]
-	})
 	for _, item := range vp.Context {
 		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(item)}, []byte{})
 	}
 
-	sort.SliceStable(vp.Type, func(i, j int) bool {
-		return vp.Type[i] < vp.Type[j]
-	})
 	for _, item := range vp.Type {
 		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(item)}, []byte{})
 	}

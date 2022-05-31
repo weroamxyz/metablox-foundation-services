@@ -6,7 +6,6 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -408,16 +407,10 @@ func VerifyVCSecp256k1(vc *models.VerifiableCredential, pubKey *ecdsa.PublicKey)
 func ConvertVCToBytes(vc models.VerifiableCredential) []byte {
 	var convertedBytes []byte
 
-	sort.SliceStable(vc.Context, func(i, j int) bool { //have to sort arrays alphabetically before iterating over them to ensure a consistent ordering
-		return vc.Context[i] < vc.Context[j]
-	})
 	for _, item := range vc.Context {
 		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(item)}, []byte{})
 	}
 
-	sort.SliceStable(vc.Type, func(i, j int) bool {
-		return vc.Type[i] < vc.Type[j]
-	})
 	for _, item := range vc.Type {
 		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(item)}, []byte{})
 	}
