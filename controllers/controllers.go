@@ -190,3 +190,12 @@ func GenerateTestingPresentationSignatures(c *gin.Context) {
 	presentation.Proof.JWSSignature = signatureData
 	ResponseSuccess(c, presentation)
 }
+
+func RegisterDIDHandler(c *gin.Context) {
+	hash, err := RegisterDID(c)
+	if err != nil {
+		ResponseErrorWithMsg(c, CodeError, err.Error())
+		return
+	}
+	ResponseSuccessWithMsgAndData(c, "DID has been successfully registered to registry", hash)
+}
