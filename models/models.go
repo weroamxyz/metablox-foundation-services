@@ -34,7 +34,7 @@ type DIDDocument struct {
 
 type RegisterDID struct {
 	Did     string `json:"did"`
-	Account string `json:"address"`
+	Account string `json:"account"`
 	SigV    uint8  `json:"sigV"`
 	SigR    string `json:"sigR"`
 	SigS    string `json:"sigS"`
