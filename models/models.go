@@ -32,6 +32,14 @@ type DIDDocument struct {
 	Service            []Service            `json:"service"`
 }
 
+type RegisterDID struct {
+	Did     string `json:"did"`
+	Account string `json:"address"`
+	SigV    uint8  `json:"sigV"`
+	SigR    string `json:"sigR"`
+	SigS    string `json:"sigS"`
+}
+
 type VerificationMethod struct {
 	ID                  string `json:"id"`
 	MethodType          string `json:"type"`
@@ -158,6 +166,10 @@ type VCSchemaChanged struct {
 
 func CreateDIDDocument() *DIDDocument {
 	return &DIDDocument{}
+}
+
+func NewRegisterDID() *RegisterDID {
+	return &RegisterDID{}
 }
 
 func (doc DIDDocument) RetrieveVerificationMethod(vmID string) (VerificationMethod, error) {

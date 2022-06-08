@@ -9,6 +9,7 @@ func Setup() {
 	r := gin.New()
 
 	r.POST("/registry/storedoc", controllers.SendDocToRegistryHandler)
+	r.POST("/registry/storedid", controllers.RegisterDIDHandler)
 
 	r.POST("/vc/wifi/issue", controllers.IssueWifiVCHandler)
 	r.POST("/vc/wifi/renew", controllers.RenewVCHandler)

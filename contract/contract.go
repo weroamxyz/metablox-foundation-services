@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	"time"
 
@@ -321,4 +322,41 @@ func GetDocument(targetDID string) (*models.DIDDocument, [32]byte, error) {
 
 	placeholderHash := [32]byte{94, 241, 27, 134, 190, 223, 112, 91, 189, 49, 221, 31, 228, 35, 189, 213, 251, 60, 60, 210, 162, 45, 151, 3, 31, 78, 41, 239, 41, 75, 198, 139}
 	return document, placeholderHash, nil
+}
+
+func RegisterDID(register *models.RegisterDID, key *ecdsa.PrivateKey) (*types.Transaction, error) {
+	userAddress := common.HexToAddress(register.Account)
+	// todo: verify signature first better here
+
+	auth, err := generateAuth(key)
+	if err != nil {
+		return nil, err
+	}
+
+	var r [32]byte
+	copy(r[:], []byte(register.SigR)[:32])
+	var s [32]byte
+	copy(s[:], []byte(register.SigS)[:32])
+
+	//pubAddress := crypto.PubkeyToAddress(key.PublicKey)
+	//
+	//msg := ethereum.CallMsg{
+	//	From:  pubAddress,
+	//	To:    &contractAddress,
+	//	Value: big.NewInt(0),
+	//}
+	//
+	//// EstimateGas
+	//_, err = client.EstimateGas(context.Background(), msg)
+	//if err != nil {
+	//	return err
+	//}
+
+	tx, err := instance.RegisterDid(auth, register.Did, userAddress, register.SigV, r, s)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("transaction hash: ", tx.Hash().Hex())
+	return tx, nil
 }
