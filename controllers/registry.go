@@ -30,28 +30,28 @@ func SendDocToRegistry(c *gin.Context) error {
 }
 
 func RegisterDID(c *gin.Context) (map[string]interface{}, error) {
+	// 1.new param instance
 	register := models.NewRegisterDID()
 	if err := c.BindJSON(register); err != nil {
 		return nil, err
 	}
-
+	// 2.check did format
 	_, valid := did.PrepareDID(register.Did)
 	if !valid {
 		return nil, errval.ErrDIDFormat
 	}
-
+	// 3.check account format
 	flag := regutil.IsETHAddress(register.Account)
 	if !flag {
 		return nil, errval.ErrETHAddress
 	}
-
+	// 4. handle biz logic
 	tx, err := contract.RegisterDID(register, credentials.IssuerPrivateKey)
 	if err != nil {
 		return nil, err
 	}
-
+	// 5. wrap response
 	data := make(map[string]interface{})
 	data["txHash"] = tx.Hash().Hex()
-
 	return data, nil
 }
