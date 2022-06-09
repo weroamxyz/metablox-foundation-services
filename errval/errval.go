@@ -22,4 +22,5 @@ var (
 	ErrMissingVM              = errors.New("failed to find verification method")
 	ErrWrongAddress           = errors.New("provided public key does not match issuer address")
 	ErrETHAddress             = errors.New("provided address is not a correct ETH address")
+	ErrVerifySignature        = errors.New("failed to verify signature")
 )

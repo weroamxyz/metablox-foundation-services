@@ -5,6 +5,8 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"github.com/MetaBloxIO/metablox-foundation-services/errval"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	"time"
@@ -325,38 +327,66 @@ func GetDocument(targetDID string) (*models.DIDDocument, [32]byte, error) {
 }
 
 func RegisterDID(register *models.RegisterDID, key *ecdsa.PrivateKey) (*types.Transaction, error) {
-	userAddress := common.HexToAddress(register.Account)
-	// todo: verify signature first better here
+
+	// check user signature
+	if err := CheckSignature(register); err != nil {
+		return nil, err
+	}
 
 	auth, err := generateAuth(key)
 	if err != nil {
 		return nil, err
 	}
 
+	// todo eth_call calling
+
+	rr, _ := hexutil.Decode(register.SigR)
+	ss, _ := hexutil.Decode(register.SigS)
 	var r [32]byte
-	copy(r[:], []byte(register.SigR)[:32])
+	copy(r[:], rr[:32])
 	var s [32]byte
-	copy(s[:], []byte(register.SigS)[:32])
+	copy(s[:], ss[:32])
 
-	//pubAddress := crypto.PubkeyToAddress(key.PublicKey)
-	//
-	//msg := ethereum.CallMsg{
-	//	From:  pubAddress,
-	//	To:    &contractAddress,
-	//	Value: big.NewInt(0),
-	//}
-	//
-	//// EstimateGas
-	//_, err = client.EstimateGas(context.Background(), msg)
-	//if err != nil {
-	//	return err
-	//}
-
-	tx, err := instance.RegisterDid(auth, register.Did, userAddress, register.SigV, r, s)
+	// send contract tx
+	tx, err := instance.RegisterDid(auth, register.Did, common.HexToAddress(register.Account), register.SigV, r, s)
 	if err != nil {
 		return nil, err
 	}
 
-	fmt.Println("transaction hash: ", tx.Hash().Hex())
+	fmt.Println("registerDID tx hash: ", tx.Hash().Hex())
 	return tx, nil
+}
+
+// CheckSignature verify user params
+func CheckSignature(register *models.RegisterDID) error {
+	// 1.get newest nonce
+	userAddress := common.HexToAddress(register.Account)
+	nonce, err := instance.Nonce(nil, userAddress)
+	if err != nil {
+		return err
+	}
+	// 2.rebuild message hash bytes
+	var messageBytes []byte
+	messageBytes = bytes.Join([][]byte{messageBytes, []byte(register.Did), userAddress.Bytes(), []byte(nonce.String()), []byte("register")}, nil)
+	msgHash := crypto.Keccak256Hash(messageBytes)
+	comboHash := crypto.Keccak256Hash([]byte("\x19Ethereum Signed Message:\n32"), msgHash.Bytes())
+
+	// 3.rebuild signature bytes
+	r, err := hexutil.Decode(register.SigR)
+	s, err := hexutil.Decode(register.SigS)
+	// check user signature
+	var signBytes []byte
+	signBytes = bytes.Join([][]byte{r, s}, nil)
+	signBytes = append(signBytes, byte(register.SigV-27))
+
+	// 4.try to recover user's public key
+	userPub, err := crypto.SigToPub(comboHash.Bytes(), signBytes)
+	if err != nil {
+		return err
+	}
+	// 5.Judge result
+	if crypto.PubkeyToAddress(*userPub) != userAddress {
+		return errval.ErrVerifySignature
+	}
+	return nil
 }

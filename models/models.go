@@ -1,6 +1,7 @@
 package models
 
 import (
+	"bytes"
 	"crypto/ecdsa"
 
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
@@ -34,10 +35,17 @@ type DIDDocument struct {
 
 type RegisterDID struct {
 	Did     string `json:"did"`
-	Account string `json:"address"`
+	Account string `json:"account"`
 	SigV    uint8  `json:"sigV"`
 	SigR    string `json:"sigR"`
 	SigS    string `json:"sigS"`
+}
+
+func (c *RegisterDID) ToSigBytes() []byte {
+	var signBytes []byte
+	signBytes = bytes.Join([][]byte{[]byte(c.SigR)[:32], []byte(c.SigS)[:32]}, nil)
+	signBytes = append(signBytes, byte(c.SigV-27))
+	return signBytes
 }
 
 type VerificationMethod struct {
