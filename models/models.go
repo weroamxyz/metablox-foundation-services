@@ -3,6 +3,7 @@ package models
 import (
 	"bytes"
 	"crypto/ecdsa"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 	"github.com/ethereum/go-ethereum/common"
@@ -43,7 +44,9 @@ type RegisterDID struct {
 
 func (c *RegisterDID) ToSigBytes() []byte {
 	var signBytes []byte
-	signBytes = bytes.Join([][]byte{[]byte(c.SigR)[:32], []byte(c.SigS)[:32]}, nil)
+	r, _ := hexutil.Decode(c.SigR)
+	s, _ := hexutil.Decode(c.SigR)
+	signBytes = bytes.Join([][]byte{r, s}, nil)
 	signBytes = append(signBytes, byte(c.SigV-27))
 	return signBytes
 }
