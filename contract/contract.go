@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"github.com/MetaBloxIO/metablox-foundation-services/comm/regutil"
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -22,25 +23,27 @@ import (
 )
 
 var (
-	registryContract string
-	rpcUrl           string
-	wssUrl           string
-	client           *ethclient.Client
-	instance         *registry.Registry
-	contractAddress  common.Address
-	chainID          *big.Int
+	rpcUrl          string
+	wssUrl          string
+	client          *ethclient.Client
+	instance        *registry.Registry
+	contractAddress common.Address
+	chainID         *big.Int
 )
 
 func Init() error {
 	var err error
 	rpcUrl = viper.GetString("metablox.rpcUrl")
 	wssUrl = viper.GetString("metablox.wssUrl")
-	registryContract = viper.GetString("metablox.registryContract")
+	contractStr := viper.GetString("metablox.registryContract")
+	if !regutil.IsETHAddress(contractStr) {
+		return errval.ErrETHAddress
+	}
 	client, err = ethclient.Dial(rpcUrl)
 	if err != nil {
 		return err
 	}
-	contractAddress = common.HexToAddress(registryContract)
+	contractAddress = common.HexToAddress(contractStr)
 	instance, err = registry.NewRegistry(contractAddress, client)
 	if err != nil {
 		return err
