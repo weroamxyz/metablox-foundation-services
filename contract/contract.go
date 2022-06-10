@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/spf13/viper"
 	"math/big"
 	"time"
 
@@ -20,21 +21,31 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-const deployedContract = "0xf880b97Be7c402Cc441895bF397c3f865BfE1Cb2"
-const network = "wss://ws.s0.b.hmny.io"
-
-var client *ethclient.Client
-var instance *registry.Registry
-var contractAddress common.Address
+var (
+	registryContract string
+	rpcUrl           string
+	wssUrl           string
+	client           *ethclient.Client
+	instance         *registry.Registry
+	contractAddress  common.Address
+	chainID          *big.Int
+)
 
 func Init() error {
 	var err error
-	client, err = ethclient.Dial(network)
+	rpcUrl = viper.GetString("metablox.rpcUrl")
+	wssUrl = viper.GetString("metablox.wssUrl")
+	registryContract = viper.GetString("metablox.registryContract")
+	client, err = ethclient.Dial(rpcUrl)
 	if err != nil {
 		return err
 	}
-	contractAddress = common.HexToAddress(deployedContract)
+	contractAddress = common.HexToAddress(registryContract)
 	instance, err = registry.NewRegistry(contractAddress, client)
+	if err != nil {
+		return err
+	}
+	chainID, err = client.ChainID(context.Background())
 	if err != nil {
 		return err
 	}
@@ -62,7 +73,7 @@ func createSignatureFromMessage(messageBytes []byte, privateKey *ecdsa.PrivateKe
 }
 
 func generateAuth(privateKey *ecdsa.PrivateKey) (*bind.TransactOpts, error) {
-	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(1666700000))
+	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
 	if err != nil {
 		return nil, err
 	}
