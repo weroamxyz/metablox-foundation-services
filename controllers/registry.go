@@ -41,7 +41,7 @@ func RegisterDIDForUser(c *gin.Context) (map[string]interface{}, error) {
 		return nil, errval.ErrDIDFormat
 	}
 	// 3.check account format
-	if flag := regutil.IsETHAddress(register.Account); !flag {
+	if !regutil.IsETHAddress(register.Account) {
 		return nil, errval.ErrETHAddress
 	}
 	// 4. handle biz logic

@@ -39,7 +39,7 @@ func Init() error {
 	if !regutil.IsETHAddress(contractStr) {
 		return errval.ErrETHAddress
 	}
-	client, err = ethclient.Dial(rpcUrl)
+	client, err = ethclient.Dial(wssUrl)
 	if err != nil {
 		return err
 	}
@@ -109,7 +109,7 @@ func RegisterVCIssuer(credentialKey, did string, privateKey *ecdsa.PrivateKey) e
 
 	var messageBytes []byte
 
-	messageBytes = bytes.Join([][]byte{messageBytes, []byte(credentialKey), []byte(did), common.LeftPadBytes(nonce.Bytes(), 32), []byte("createVc")}, nil)
+	messageBytes = bytes.Join([][]byte{messageBytes, []byte(credentialKey), []byte(did), []byte(nonce.String()), []byte("createVc")}, nil)
 	r, s, v, err := createSignatureFromMessage(messageBytes, privateKey)
 	if err != nil {
 		return err
@@ -150,7 +150,7 @@ func UpdateVCValue(credentialKey, fieldName, newValue string, privateKey *ecdsa.
 
 	copy(fieldBytes[:], []byte(fieldName))
 
-	messageBytes = bytes.Join([][]byte{messageBytes, []byte(credentialKey), common.LeftPadBytes(nonce.Bytes(), 32), []byte("setVcAttribute"), fieldBytes[:], []byte(newValue)}, nil)
+	messageBytes = bytes.Join([][]byte{messageBytes, []byte(credentialKey), []byte(nonce.String()), []byte("setVcAttribute"), fieldBytes[:], []byte(newValue)}, nil)
 	r, s, v, err := createSignatureFromMessage(messageBytes, privateKey)
 	if err != nil {
 		return err
@@ -292,7 +292,7 @@ func UploadDocument(document *models.DIDDocument, did string, privateKey *ecdsa.
 	}
 	var messageBytes []byte
 
-	messageBytes = bytes.Join([][]byte{messageBytes, []byte(did), pubAddress.Bytes(), common.LeftPadBytes(nonce.Bytes(), 32) /*nonceBytes[:]*/, []byte("register")}, nil)
+	messageBytes = bytes.Join([][]byte{messageBytes, []byte(did), pubAddress.Bytes(), []byte(nonce.String()) /*nonceBytes[:]*/, []byte("register")}, nil)
 	r, s, v, err := createSignatureFromMessage(messageBytes, privateKey)
 	if err != nil {
 		return err
@@ -373,7 +373,7 @@ func RegisterDID(register *models.RegisterDID, key *ecdsa.PrivateKey) (*types.Tr
 	if err != nil {
 		return nil, err
 	}
-	if flag := CheckBalance(balance, auth.GasPrice, auth.GasLimit); !flag {
+	if !SufficientBalance(balance, auth.GasPrice, auth.GasLimit) {
 		return nil, errval.ErrETHBalance
 	}
 
@@ -392,7 +392,7 @@ func EstimateGas(from, to common.Address, input []byte) (uint64, error) {
 	return client.EstimateGas(context.Background(), msg)
 }
 
-func CheckBalance(balance *big.Int, price *big.Int, limit uint64) bool {
+func SufficientBalance(balance *big.Int, price *big.Int, limit uint64) bool {
 	return balance.Cmp(new(big.Int).Mul(price, new(big.Int).SetUint64(limit))) >= 0
 }
 
@@ -406,7 +406,7 @@ func CheckSignature(register *models.RegisterDID) error {
 	}
 	// 2.rebuild message hash bytes
 	var messageBytes []byte
-	messageBytes = bytes.Join([][]byte{messageBytes, []byte(register.Did), userAddress.Bytes(), common.LeftPadBytes(nonce.Bytes(), 32), []byte("register")}, nil)
+	messageBytes = bytes.Join([][]byte{messageBytes, []byte(register.Did), userAddress.Bytes(), []byte(nonce.String()), []byte("register")}, nil)
 	msgHash := crypto.Keccak256Hash(messageBytes)
 	comboHash := crypto.Keccak256Hash([]byte("\x19Ethereum Signed Message:\n32"), msgHash.Bytes())
 

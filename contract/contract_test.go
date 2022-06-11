@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/ecdsa"
+	"encoding/json"
 	"fmt"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/MetaBloxIO/metablox-foundation-services/registry"
@@ -24,21 +25,21 @@ import (
 var (
 	privateKey, _ = crypto.HexToECDSA("9fd8f6049129527c63830aead266bcf7c53aa82109422da9335aac0c0a36a968")
 	testRpcUrl    = "https://api.s0.b.hmny.io"
-	testContract  = common.HexToAddress("0xd3E90701C814aA7C5eBD1B62395311d5C7B71f5e")
+	testContract  = common.HexToAddress("0xf880b97Be7c402Cc441895bF397c3f865BfE1Cb2")
 )
 
 func TestCheckSignature(t *testing.T) {
 	register := &models.RegisterDID{
-		Did:     "did:metablox:123456",
-		Account: "0x56BdBb8eCB54570b5a3971Aaacf85040E7AC3B4F",
-		SigV:    28,
-		SigR:    "0xee2ec79d91108a250de1a88bc2158ad07784a49edea283f1b4d34adf7e623a87",
-		SigS:    "0x6a92eb22aa0189fb7009f55f2fa8170bfbbd5e7ff882051f199005b79f7439d2",
+		Did:     "did:metablox:506690700",
+		Account: "0x611b915b936Fde54Dfc309c0B31430aD345c4596",
+		SigV:    27,
+		SigR:    "0xf008542cc23c47972fdce69cb743d372d88917986f181c7c495005b75c374a86",
+		SigS:    "0x61371be1c5ccb45bc5490453ec70ac1112a7ce45413fae880fc62ff608d4ca83",
 	}
 	userAddress := common.HexToAddress(register.Account)
 	// Use fixed nonce =  1 here for testing
 	var messageBytes []byte
-	messageBytes = bytes.Join([][]byte{messageBytes, []byte(register.Did), userAddress.Bytes(), common.LeftPadBytes(big.NewInt(1).Bytes(), 32), []byte("register")}, nil)
+	messageBytes = bytes.Join([][]byte{messageBytes, []byte(register.Did), userAddress.Bytes(), []byte(big.NewInt(0).String()), []byte("register")}, nil)
 	msgHash := crypto.Keccak256Hash(messageBytes)
 	comboHash := crypto.Keccak256Hash([]byte("\x19Ethereum Signed Message:\n32"), msgHash.Bytes())
 	userPub, err := crypto.SigToPub(comboHash.Bytes(), register.ToSigBytes())
@@ -46,17 +47,18 @@ func TestCheckSignature(t *testing.T) {
 	assert.Equal(t, userAddress, crypto.PubkeyToAddress(*userPub))
 
 	// Test error sigV
-	register.SigV = 27
+	register.SigV = 28
 	userPub1, err := crypto.SigToPub(comboHash.Bytes(), register.ToSigBytes())
 	assert.NoError(t, err)
 	assert.NotEqual(t, userAddress, crypto.PubkeyToAddress(*userPub1))
 }
 
 func TestEstimateGas(t *testing.T) {
-
-	//9fd8f6049129527c63830aead266bcf7c53aa82109422da9335aac0c0a36a968
-	userAddress := common.HexToAddress("0x56BdBb8eCB54570b5a3971Aaacf85040E7AC3B4F")
-	did := "did:metablox:123456"
+	// private
+	key, err := crypto.HexToECDSA("877a728b5f40a375ea97914bd44bf31419ae6a1bb39eace7fe49cdf915c1183b")
+	assert.NoError(t, err)
+	userAddress := crypto.PubkeyToAddress(key.PublicKey)
+	did := "did:metablox:123456789ABC"
 	testClient, err := ethclient.Dial(testRpcUrl)
 	assert.NoError(t, err)
 	abi, err := registry.RegistryMetaData.GetAbi()
@@ -67,29 +69,25 @@ func TestEstimateGas(t *testing.T) {
 	fmt.Printf("print nonce : %s\n", nonce)
 	assert.NoError(t, err, "get nonce failed")
 	var messageBytes []byte
-	messageBytes = bytes.Join([][]byte{messageBytes, []byte(did), userAddress.Bytes(), common.LeftPadBytes(nonce.Bytes(), 32), []byte("register")}, nil)
-	r, s, v, err := createSignatureFromMessage(messageBytes, privateKey)
+	messageBytes = bytes.Join([][]byte{messageBytes, []byte(did), userAddress.Bytes(), []byte(nonce.String()), []byte("register")}, nil)
+	r, s, v, err := createSignatureFromMessage(messageBytes, key)
 
-	fmt.Println(hexutil.Encode(r[:]))
-	fmt.Println(hexutil.Encode(s[:]))
-	messageHash := crypto.Keccak256Hash(messageBytes)
-	comboHash := crypto.Keccak256Hash([]byte("\x19Ethereum Signed Message:\n32"), messageHash.Bytes())
-
-	var signbytes [65]byte
-	copy(signbytes[:32], r[:])
-	copy(signbytes[32:64], s[:])
-	signbytes[64] = v - 27
-
-	pubKey, _ := crypto.SigToPub(comboHash[:], signbytes[:])
-	resultAddress := crypto.PubkeyToAddress(*pubKey)
-	assert.Equal(t, resultAddress, userAddress)
+	tempRegister := &models.RegisterDID{
+		Did:     did,
+		Account: userAddress.Hex(),
+		SigV:    v,
+		SigR:    hexutil.Encode(r[:]),
+		SigS:    hexutil.Encode(s[:]),
+	}
+	jsonRegister, _ := json.MarshalIndent(tempRegister, "", "\t")
+	fmt.Printf("\nprint request json:\n %s\n", jsonRegister)
 
 	input, err := abi.Pack("registerDid", did, userAddress, v, r, s)
-
 	assert.NoError(t, err)
+
 	msg := ethereum.CallMsg{From: userAddress, To: &testContract, Data: input}
-	_, err = testClient.EstimateGas(context.Background(), msg)
-	assert.Equal(t, "execution reverted: did_exist", err.Error())
+	gas, err := testClient.EstimateGas(context.Background(), msg)
+	assert.Equal(t, uint64(0xf407), gas)
 }
 
 func TestRegisterDid(t *testing.T) {
@@ -105,14 +103,22 @@ func TestRegisterDid(t *testing.T) {
 	nonce, err := testInstance.Nonce(nil, address)
 
 	var messageBytes []byte
-	messageBytes = bytes.Join([][]byte{messageBytes, []byte(randomdid), address.Bytes(), common.LeftPadBytes(nonce.Bytes(), 32), []byte("register")}, nil)
+	messageBytes = bytes.Join([][]byte{messageBytes, []byte(randomdid), address.Bytes(), []byte(nonce.String()), []byte("register")}, nil)
 	r, s, v, err := createSignatureFromMessage(messageBytes, randomkey)
 	assert.NoError(t, err, "gen signature failed")
 
 	auth, err := tempGenerateAuth(privateKey, testClient)
 	assert.NoError(t, err)
 
-	fmt.Printf("\nprint request json:\n \tr=%s\n\ts=%s\n\tv=%d\n\taccount=%s\n\tdid=%s\n", hexutil.Encode(r[:]), hexutil.Encode(s[:]), v, address.Hex(), randomdid)
+	tempRegister := &models.RegisterDID{
+		Did:     randomdid,
+		Account: address.Hex(),
+		SigV:    v,
+		SigR:    hexutil.Encode(r[:]),
+		SigS:    hexutil.Encode(s[:]),
+	}
+	jsonRegister, _ := json.MarshalIndent(tempRegister, "", "\t")
+	fmt.Printf("\nprint request json:\n %s\n", jsonRegister)
 	fmt.Printf("\nprint contract input:\n \tr=%v\n\ts=%v\n\tv=%d\n\taccount=%s\n\tdid=%s\n", r, s, v, address.Hex(), randomdid)
 	tx, err := testInstance.RegisterDid(auth, randomdid, address, v, r, s)
 	assert.NoError(t, err)
@@ -122,6 +128,7 @@ func TestRegisterDid(t *testing.T) {
 	var receipt *types.Receipt
 	for receipt == nil {
 		receipt, _ = testClient.TransactionReceipt(context.Background(), tx.Hash())
+		time.Sleep(time.Second)
 	}
 	receiptJson, _ := receipt.MarshalJSON()
 	fmt.Printf("\nprint receipt:\n \t%v\n", string(receiptJson))
