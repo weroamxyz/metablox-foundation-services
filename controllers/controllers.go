@@ -192,7 +192,7 @@ func GenerateTestingPresentationSignatures(c *gin.Context) {
 }
 
 func RegisterDIDHandler(c *gin.Context) {
-	hash, err := RegisterDID(c)
+	hash, err := RegisterDIDForUser(c)
 	if err != nil {
 		ResponseErrorWithMsg(c, CodeError, err.Error())
 		return
