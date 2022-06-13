@@ -39,7 +39,7 @@ func Init() error {
 	if !regutil.IsETHAddress(contractStr) {
 		return errval.ErrETHAddress
 	}
-	client, err = ethclient.Dial(rpcUrl)
+	client, err = ethclient.Dial(wssUrl)
 	if err != nil {
 		return err
 	}
@@ -353,19 +353,12 @@ func RegisterDID(register *models.RegisterDID, key *ecdsa.PrivateKey) (*types.Tr
 		return nil, err
 	}
 
-	rr, _ := hexutil.Decode(register.SigR)
-	ss, _ := hexutil.Decode(register.SigS)
-	var r [32]byte
-	copy(r[:], rr[:32])
-	var s [32]byte
-	copy(s[:], ss[:32])
-
 	//  eth_call/EstimateGas first,to make sure tx no error before send to blockchain
 	abi, err := registry.RegistryMetaData.GetAbi()
 	if err != nil {
 		return nil, err
 	}
-	input, err := abi.Pack("registerDid", register.Did, common.HexToAddress(register.Account), register.SigV, r, s)
+	input, err := abi.Pack("registerDid", register.Did, register.Address(), register.SigV, register.SigRBytes32(), register.SigSBytes32())
 	if err != nil {
 		return nil, err
 	}
@@ -376,16 +369,16 @@ func RegisterDID(register *models.RegisterDID, key *ecdsa.PrivateKey) (*types.Tr
 	auth.GasLimit = gas
 
 	// check eth balance
-	balance, err := client.BalanceAt(context.Background(), auth.From, big.NewInt(-1))
+	balance, err := client.BalanceAt(context.Background(), auth.From, nil)
 	if err != nil {
 		return nil, err
 	}
-	if flag := CheckBalance(balance, auth.GasPrice, auth.GasLimit); !flag {
+	if !SufficientBalance(balance, auth.GasPrice, auth.GasLimit) {
 		return nil, errval.ErrETHBalance
 	}
 
 	// send contract tx
-	tx, err := instance.RegisterDid(auth, register.Did, common.HexToAddress(register.Account), register.SigV, r, s)
+	tx, err := instance.RegisterDid(auth, register.Did, register.Address(), register.SigV, register.SigRBytes32(), register.SigSBytes32())
 	if err != nil {
 		return nil, err
 	}
@@ -399,14 +392,14 @@ func EstimateGas(from, to common.Address, input []byte) (uint64, error) {
 	return client.EstimateGas(context.Background(), msg)
 }
 
-func CheckBalance(balance *big.Int, price *big.Int, limit uint64) bool {
-	return balance.Cmp(new(big.Int).Mul(price, big.NewInt(int64(limit)))) >= 0
+func SufficientBalance(balance *big.Int, price *big.Int, limit uint64) bool {
+	return balance.Cmp(new(big.Int).Mul(price, new(big.Int).SetUint64(limit))) >= 0
 }
 
 // CheckSignature verify user params
 func CheckSignature(register *models.RegisterDID) error {
 	// 1.get newest nonce
-	userAddress := common.HexToAddress(register.Account)
+	userAddress := register.Address()
 	nonce, err := instance.Nonce(nil, userAddress)
 	if err != nil {
 		return err

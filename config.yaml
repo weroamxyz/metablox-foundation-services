@@ -17,4 +17,4 @@ mysql:
 metablox:
   rpcUrl: "https://api.s0.b.hmny.io"
   wssUrl: "wss://ws.s0.b.hmny.io"
-  registryContract: "0xd3E90701C814aA7C5eBD1B62395311d5C7B71f5e"
+  registryContract: "0xf880b97Be7c402Cc441895bF397c3f865BfE1Cb2"

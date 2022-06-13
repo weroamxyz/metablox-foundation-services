@@ -29,7 +29,7 @@ func SendDocToRegistry(c *gin.Context) error {
 	return nil
 }
 
-func RegisterDID(c *gin.Context) (map[string]interface{}, error) {
+func RegisterDIDForUser(c *gin.Context) (map[string]interface{}, error) {
 	// 1.new param instance
 	register := models.NewRegisterDID()
 	if err := c.BindJSON(register); err != nil {
@@ -41,8 +41,7 @@ func RegisterDID(c *gin.Context) (map[string]interface{}, error) {
 		return nil, errval.ErrDIDFormat
 	}
 	// 3.check account format
-	flag := regutil.IsETHAddress(register.Account)
-	if !flag {
+	if !regutil.IsETHAddress(register.Account) {
 		return nil, errval.ErrETHAddress
 	}
 	// 4. handle biz logic

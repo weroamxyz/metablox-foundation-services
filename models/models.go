@@ -42,10 +42,28 @@ type RegisterDID struct {
 	SigS    string `json:"sigS"`
 }
 
+func (c *RegisterDID) Address() common.Address {
+	return common.HexToAddress(c.Account)
+}
+
+func (c *RegisterDID) SigRBytes32() [32]byte {
+	var t [32]byte
+	r, _ := hexutil.Decode(c.SigR)
+	copy(t[:], r[:32])
+	return t
+}
+
+func (c *RegisterDID) SigSBytes32() [32]byte {
+	var t [32]byte
+	s, _ := hexutil.Decode(c.SigS)
+	copy(t[:], s[:32])
+	return t
+}
+
 func (c *RegisterDID) ToSigBytes() []byte {
 	var signBytes []byte
 	r, _ := hexutil.Decode(c.SigR)
-	s, _ := hexutil.Decode(c.SigR)
+	s, _ := hexutil.Decode(c.SigS)
 	signBytes = bytes.Join([][]byte{r, s}, nil)
 	signBytes = append(signBytes, byte(c.SigV-27))
 	return signBytes
