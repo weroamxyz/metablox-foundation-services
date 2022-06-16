@@ -23,9 +23,9 @@ import (
 )
 
 var (
-	privateKey, _ = crypto.HexToECDSA("9fd8f6049129527c63830aead266bcf7c53aa82109422da9335aac0c0a36a968")
-	testRpcUrl    = "https://api.s0.b.hmny.io"
-	testContract  = common.HexToAddress("0xf880b97Be7c402Cc441895bF397c3f865BfE1Cb2")
+	privateKey, _ = crypto.HexToECDSA("01F903CE0C960FF3A9E68E80FF5FFC344358D80CE1C221C3F9711AF07F83A3BD")
+	testRpcUrl    = "https://api.s0.ps.hmny.io"
+	testContract  = common.HexToAddress("0x0b9269e8947e46Bb60FFc54C137e7093907fD273")
 )
 
 func TestCheckSignature(t *testing.T) {
@@ -93,7 +93,7 @@ func TestEstimateGas(t *testing.T) {
 func TestRegisterDid(t *testing.T) {
 	randomkey, err := crypto.GenerateKey()
 	fmt.Println("randomkey generated: ", hexutil.Encode(crypto.FromECDSA(randomkey)))
-	randomdid := "did:metablox:" + strconv.Itoa(time.Now().Nanosecond())
+	randomdid := strconv.Itoa(time.Now().Nanosecond())
 	address := crypto.PubkeyToAddress(randomkey.PublicKey)
 
 	testClient, err := ethclient.Dial(testRpcUrl)
@@ -102,6 +102,7 @@ func TestRegisterDid(t *testing.T) {
 	assert.NoError(t, err, "initial test instance failed")
 	nonce, err := testInstance.Nonce(nil, address)
 
+	fmt.Println("nonce=", nonce)
 	var messageBytes []byte
 	messageBytes = bytes.Join([][]byte{messageBytes, []byte(randomdid), address.Bytes(), []byte(nonce.String()), []byte("register")}, nil)
 	r, s, v, err := createSignatureFromMessage(messageBytes, randomkey)
@@ -111,7 +112,7 @@ func TestRegisterDid(t *testing.T) {
 	assert.NoError(t, err)
 
 	tempRegister := &models.RegisterDID{
-		Did:     randomdid,
+		Did:     "did:metablox:" + randomdid,
 		Account: address.Hex(),
 		SigV:    v,
 		SigR:    hexutil.Encode(r[:]),

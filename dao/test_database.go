@@ -6,16 +6,15 @@ import (
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/MetaBloxIO/metablox-foundation-services/settings"
 	"github.com/jmoiron/sqlx"
-	"github.com/spf13/viper"
 )
 
 func TestDBInit() (err error) {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
-		viper.GetString("mysql.testuser"),
-		viper.GetString("mysql.testpassword"),
-		viper.GetString("mysql.testhost"),
-		viper.GetString("mysql.testport"),
-		viper.GetString("mysql.testdbname"),
+		"tester",
+		"testing",
+		"127.0.0.1",
+		"3306",
+		"foundationservicetest",
 	)
 	SqlDB, err = sqlx.Connect("mysql", dsn)
 	if err != nil {
