@@ -24,7 +24,6 @@ import (
 
 var (
 	rpcUrl          string
-	wssUrl          string
 	client          *ethclient.Client
 	instance        *registry.Registry
 	contractAddress common.Address
@@ -34,12 +33,11 @@ var (
 func Init() error {
 	var err error
 	rpcUrl = viper.GetString("metablox.rpcUrl")
-	wssUrl = viper.GetString("metablox.wssUrl")
 	contractStr := viper.GetString("metablox.registryContract")
 	if !regutil.IsETHAddress(contractStr) {
 		return errval.ErrETHAddress
 	}
-	client, err = ethclient.Dial(wssUrl)
+	client, err = ethclient.Dial(rpcUrl)
 	if err != nil {
 		return err
 	}

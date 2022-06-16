@@ -1,5 +1,3 @@
-network: devnet
-
 storage:
   key_saving: "./wallet/"
   key_loading: "./wallet/"
@@ -12,5 +10,5 @@ mysql:
   dbname: "foundationService"
 
 metablox:
-  rpcUrl: "https://api.s0.b.hmny.io"
-  registryContract: "0xf880b97Be7c402Cc441895bF397c3f865BfE1Cb2"
+  rpcUrl: "https://api.s0.ps.hmny.io/"
+  registryContract: "0x8a9DE3908DDD37b1F2D46D875214237C0505BF94"
