@@ -346,9 +346,9 @@ func RegisterDID(register *models.RegisterDID, key *ecdsa.PrivateKey) (*types.Tr
 	didArr := strings.Split(register.Did, ":")
 
 	// check user signature
-	if err := CheckSignature(register, didArr[2]); err != nil {
-		return nil, err
-	}
+	//if err := CheckSignature(register, didArr[2]); err != nil {
+	//	return nil, err
+	//}
 
 	auth, err := generateAuth(key)
 	if err != nil {
@@ -356,28 +356,28 @@ func RegisterDID(register *models.RegisterDID, key *ecdsa.PrivateKey) (*types.Tr
 	}
 
 	//  eth_call/EstimateGas first,to make sure tx no error before send to blockchain
-	abi, err := registry.RegistryMetaData.GetAbi()
-	if err != nil {
-		return nil, err
-	}
-	input, err := abi.Pack("registerDid", didArr[2], register.Address(), register.SigV, register.SigRBytes32(), register.SigSBytes32())
-	if err != nil {
-		return nil, err
-	}
-	gas, err := EstimateGas(auth.From, contractAddress, input)
-	if err != nil {
-		return nil, err
-	}
-	auth.GasLimit = gas
-
+	//abi, err := registry.RegistryMetaData.GetAbi()
+	//if err != nil {
+	//	return nil, err
+	//}
+	//input, err := abi.Pack("registerDid", didArr[2], register.Address(), register.SigV, register.SigRBytes32(), register.SigSBytes32())
+	//if err != nil {
+	//	return nil, err
+	//}
+	//gas, err := EstimateGas(auth.From, contractAddress, input)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//auth.GasLimit = gas
+	//
 	// check eth balance
-	balance, err := client.BalanceAt(context.Background(), auth.From, nil)
-	if err != nil {
-		return nil, err
-	}
-	if !SufficientBalance(balance, auth.GasPrice, auth.GasLimit) {
-		return nil, errval.ErrETHBalance
-	}
+	//balance, err := client.BalanceAt(context.Background(), auth.From, nil)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//if !SufficientBalance(balance, auth.GasPrice, auth.GasLimit) {
+	//	return nil, errval.ErrETHBalance
+	//}
 
 	// send contract tx
 	tx, err := instance.RegisterDid(auth, didArr[2], register.Address(), register.SigV, register.SigRBytes32(), register.SigSBytes32())
