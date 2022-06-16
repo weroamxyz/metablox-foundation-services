@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"github.com/MetaBloxIO/metablox-foundation-services/comm/regutil"
 	"github.com/MetaBloxIO/metablox-foundation-services/contract"
 	"github.com/MetaBloxIO/metablox-foundation-services/credentials"
@@ -8,6 +9,7 @@ import (
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/gin-gonic/gin"
+	logger "github.com/sirupsen/logrus"
 )
 
 func SendDocToRegistry(c *gin.Context) error {
@@ -35,6 +37,10 @@ func RegisterDIDForUser(c *gin.Context) (map[string]interface{}, error) {
 	if err := c.BindJSON(register); err != nil {
 		return nil, err
 	}
+
+	jsonStr, err := json.MarshalIndent(register, "", "\t")
+	logger.Infoln("received request params:", string(jsonStr))
+
 	// 2.check did format
 	_, valid := did.PrepareDID(register.Did)
 	if !valid {

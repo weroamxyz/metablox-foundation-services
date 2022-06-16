@@ -10,8 +10,10 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
+	logger "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
@@ -341,8 +343,10 @@ func GetDocument(targetDID string) (*models.DIDDocument, [32]byte, error) {
 
 func RegisterDID(register *models.RegisterDID, key *ecdsa.PrivateKey) (*types.Transaction, error) {
 
+	didArr := strings.Split(register.Did, ":")
+
 	// check user signature
-	if err := CheckSignature(register); err != nil {
+	if err := CheckSignature(register, didArr[2]); err != nil {
 		return nil, err
 	}
 
@@ -356,7 +360,7 @@ func RegisterDID(register *models.RegisterDID, key *ecdsa.PrivateKey) (*types.Tr
 	if err != nil {
 		return nil, err
 	}
-	input, err := abi.Pack("registerDid", register.Did, register.Address(), register.SigV, register.SigRBytes32(), register.SigSBytes32())
+	input, err := abi.Pack("registerDid", didArr[2], register.Address(), register.SigV, register.SigRBytes32(), register.SigSBytes32())
 	if err != nil {
 		return nil, err
 	}
@@ -376,7 +380,7 @@ func RegisterDID(register *models.RegisterDID, key *ecdsa.PrivateKey) (*types.Tr
 	}
 
 	// send contract tx
-	tx, err := instance.RegisterDid(auth, register.Did, register.Address(), register.SigV, register.SigRBytes32(), register.SigSBytes32())
+	tx, err := instance.RegisterDid(auth, didArr[2], register.Address(), register.SigV, register.SigRBytes32(), register.SigSBytes32())
 	if err != nil {
 		return nil, err
 	}
@@ -395,7 +399,7 @@ func SufficientBalance(balance *big.Int, price *big.Int, limit uint64) bool {
 }
 
 // CheckSignature verify user params
-func CheckSignature(register *models.RegisterDID) error {
+func CheckSignature(register *models.RegisterDID, didSuffix string) error {
 	// 1.get newest nonce
 	userAddress := register.Address()
 	nonce, err := instance.Nonce(nil, userAddress)
@@ -404,7 +408,7 @@ func CheckSignature(register *models.RegisterDID) error {
 	}
 	// 2.rebuild message hash bytes
 	var messageBytes []byte
-	messageBytes = bytes.Join([][]byte{messageBytes, []byte(register.Did), userAddress.Bytes(), []byte(nonce.String()), []byte("register")}, nil)
+	messageBytes = bytes.Join([][]byte{messageBytes, []byte(didSuffix), userAddress.Bytes(), []byte(nonce.String()), []byte("register")}, nil)
 	msgHash := crypto.Keccak256Hash(messageBytes)
 	comboHash := crypto.Keccak256Hash([]byte("\x19Ethereum Signed Message:\n32"), msgHash.Bytes())
 
@@ -422,7 +426,9 @@ func CheckSignature(register *models.RegisterDID) error {
 		return err
 	}
 	// 5.Judge result
-	if crypto.PubkeyToAddress(*userPub) != userAddress {
+	recoverAddress := crypto.PubkeyToAddress(*userPub)
+	if recoverAddress != userAddress {
+		logger.Warningln("the recoverAddress[", recoverAddress.Hex(), "] is not equal to the user account address")
 		return errval.ErrVerifySignature
 	}
 	return nil
