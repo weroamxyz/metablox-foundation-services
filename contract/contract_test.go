@@ -18,6 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"math/big"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 )
@@ -30,16 +31,20 @@ var (
 
 func TestCheckSignature(t *testing.T) {
 	register := &models.RegisterDID{
-		Did:     "did:metablox:506690700",
-		Account: "0x611b915b936Fde54Dfc309c0B31430aD345c4596",
+		Did:     "did:metablox:154767800",
+		Account: "0xAe7c8dDA478335fAa0b23A7D550496307275a2af",
 		SigV:    27,
-		SigR:    "0xf008542cc23c47972fdce69cb743d372d88917986f181c7c495005b75c374a86",
-		SigS:    "0x61371be1c5ccb45bc5490453ec70ac1112a7ce45413fae880fc62ff608d4ca83",
+		SigR:    "0xb7b67db2f03613d82332d5cd5947d50300683ee269a0c1cf6cdafa70129b9924",
+		SigS:    "0x0019b3132c149f3128d4cda7375166ca57cb14df2450116d829c938fb8a6a0c2",
 	}
+
 	userAddress := common.HexToAddress(register.Account)
 	// Use fixed nonce =  1 here for testing
+	didArr := strings.Split(register.Did, ":")
+	assert.Equal(t, 3, len(didArr))
+
 	var messageBytes []byte
-	messageBytes = bytes.Join([][]byte{messageBytes, []byte(register.Did), userAddress.Bytes(), []byte(big.NewInt(0).String()), []byte("register")}, nil)
+	messageBytes = bytes.Join([][]byte{messageBytes, []byte(didArr[2]), userAddress.Bytes(), []byte(big.NewInt(0).String()), []byte("register")}, nil)
 	msgHash := crypto.Keccak256Hash(messageBytes)
 	comboHash := crypto.Keccak256Hash([]byte("\x19Ethereum Signed Message:\n32"), msgHash.Bytes())
 	userPub, err := crypto.SigToPub(comboHash.Bytes(), register.ToSigBytes())
@@ -68,8 +73,11 @@ func TestEstimateGas(t *testing.T) {
 	nonce, err := testInstance.Nonce(nil, userAddress)
 	fmt.Printf("print nonce : %s\n", nonce)
 	assert.NoError(t, err, "get nonce failed")
+
+	didArr := strings.Split(did, ":")
+	assert.Equal(t, 3, len(didArr))
 	var messageBytes []byte
-	messageBytes = bytes.Join([][]byte{messageBytes, []byte(did), userAddress.Bytes(), []byte(nonce.String()), []byte("register")}, nil)
+	messageBytes = bytes.Join([][]byte{messageBytes, []byte(didArr[2]), userAddress.Bytes(), []byte(nonce.String()), []byte("register")}, nil)
 	r, s, v, err := createSignatureFromMessage(messageBytes, key)
 
 	tempRegister := &models.RegisterDID{
@@ -82,12 +90,12 @@ func TestEstimateGas(t *testing.T) {
 	jsonRegister, _ := json.MarshalIndent(tempRegister, "", "\t")
 	fmt.Printf("\nprint request json:\n %s\n", jsonRegister)
 
-	input, err := abi.Pack("registerDid", did, userAddress, v, r, s)
+	input, err := abi.Pack("registerDid", didArr[2], userAddress, v, r, s)
 	assert.NoError(t, err)
 
 	msg := ethereum.CallMsg{From: userAddress, To: &testContract, Data: input}
 	gas, err := testClient.EstimateGas(context.Background(), msg)
-	assert.Equal(t, uint64(0xf407), gas)
+	assert.Equal(t, uint64(75907), gas, err)
 }
 
 func TestRegisterDid(t *testing.T) {
