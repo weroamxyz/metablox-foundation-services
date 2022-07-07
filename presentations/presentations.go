@@ -15,6 +15,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
+//create a presentation using 1 or more credentials. Currently unused
 func CreatePresentation(credentials []models.VerifiableCredential, holderDocument models.DIDDocument, holderPrivKey *ecdsa.PrivateKey, nonce string) (*models.VerifiablePresentation, error) {
 	presentationProof := models.CreateVPProof()
 	presentationProof.Type = models.Secp256k1Sig
@@ -43,8 +44,8 @@ func CreatePresentation(credentials []models.VerifiableCredential, holderDocumen
 	return presentation, nil
 }
 
-//Need to first verify the presentation's proof using the holder's DID document. Afterwards, need to verify
-//the proof of each credential included inside the presentation
+//Verify a presentation. Need to first verify the presentation's proof using the holder's DID document.
+//Afterwards, need to verify the proof of each credential included inside the presentation
 func VerifyVP(presentation *models.VerifiablePresentation) (bool, error) {
 
 	resolutionMeta, holderDoc, _ := did.Resolve(presentation.Holder, models.CreateResolutionOptions())
@@ -66,11 +67,11 @@ func VerifyVP(presentation *models.VerifiablePresentation) (bool, error) {
 	var success bool
 	switch presentation.Proof.Type {
 	case models.Secp256k1Sig:
-		if targetVM.MethodType != models.Secp256k1Key {
+		if targetVM.MethodType != models.Secp256k1Key { //vm must be the same type as the proof
 			return false, errval.ErrSecp256k1WrongVMType
 		}
 
-		success = key.CompareAddresses(targetVM, holderKey)
+		success = key.CompareAddresses(targetVM, holderKey) //vm must have the address that matches the proof's public key
 		if !success {
 			return false, errval.ErrWrongAddress
 		}
@@ -84,7 +85,7 @@ func VerifyVP(presentation *models.VerifiablePresentation) (bool, error) {
 		return false, err
 	}
 
-	for _, credential := range presentation.VerifiableCredential {
+	for _, credential := range presentation.VerifiableCredential { //verify each individual credential stored in the presentation
 		success, err = credentials.VerifyVC(&credential)
 		if !success {
 			return false, err
@@ -94,6 +95,9 @@ func VerifyVP(presentation *models.VerifiablePresentation) (bool, error) {
 	return true, nil
 }
 
+//Verify that the provided public key matches the signature in the proof.
+//Since we've made sure that the address in the holder vm matches this public key,
+//verifying the signature here proves that the signature was made with the holder's private key
 func VerifyVPSecp256k1(presentation *models.VerifiablePresentation, pubKey *ecdsa.PublicKey) (bool, error) {
 	copiedVP := *presentation
 	//have to make sure to remove the signature from the copy, as the original did not have a signature at the time the signature was generated
@@ -107,6 +111,7 @@ func VerifyVPSecp256k1(presentation *models.VerifiablePresentation, pubKey *ecds
 	return result, nil
 }
 
+//convert presentation to bytes so it can be hashed
 func ConvertVPToBytes(vp models.VerifiablePresentation) []byte {
 	var convertedBytes []byte
 

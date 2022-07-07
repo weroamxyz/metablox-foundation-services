@@ -10,6 +10,7 @@ import (
 	logger "github.com/sirupsen/logrus"
 )
 
+//renew the first credential in the provided presentation. Currently always increase the expiration date by 1 year
 func RenewVC(c *gin.Context) (*models.VerifiableCredential, error) {
 	input := models.CreatePresentation()
 
@@ -17,7 +18,7 @@ func RenewVC(c *gin.Context) (*models.VerifiableCredential, error) {
 		return nil, err
 	}
 
-	err := CheckNonce(c.ClientIP(), input.Proof.Nonce)
+	err := CheckNonce(c.ClientIP(), input.Proof.Nonce) //presentation must have a valid nonce
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +45,7 @@ func RenewVC(c *gin.Context) (*models.VerifiableCredential, error) {
 
 	vcBytes := [32]byte{}
 	copy(vcBytes[:], credentials.ConvertVCToBytes(input.VerifiableCredential[0]))
-	err = contract.RenewVC(vcBytes)
+	err = contract.RenewVC(vcBytes) //currently does nothing
 	if err != nil {
 		return nil, err
 	}

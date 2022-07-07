@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+//issue a wifi access credential using inputted WifiAccessInfo, or return the credential that already exists for the DID in the input
 func IssueWifiVC(c *gin.Context) (*models.VerifiableCredential, error) {
 	didString := credentials.IssuerDID
 
@@ -30,6 +31,7 @@ func IssueWifiVC(c *gin.Context) (*models.VerifiableCredential, error) {
 		return nil, err
 	}
 
+	//TODO: currently does nothing
 	err = contract.CreateVC(newVC, c.Param("did"), credentials.IssuerPrivateKey)
 	if err != nil {
 		return nil, err
@@ -38,6 +40,7 @@ func IssueWifiVC(c *gin.Context) (*models.VerifiableCredential, error) {
 	return newVC, nil
 }
 
+//issue a mining license credential using inputted MiningLicenseInfo, or return the credential that already exists for the DID in the input
 func IssueMiningVC(c *gin.Context) (*models.VerifiableCredential, error) {
 	didString := credentials.IssuerDID
 
@@ -66,6 +69,7 @@ func IssueMiningVC(c *gin.Context) (*models.VerifiableCredential, error) {
 	return newVC, nil
 }
 
+//issue a staking credential using inputted StakingVCInfo, or return the credential that already exists for the DID in the input
 func IssueStakingVC(c *gin.Context) (*models.VerifiableCredential, error) {
 	didString := credentials.IssuerDID
 

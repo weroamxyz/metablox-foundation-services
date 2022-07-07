@@ -21,8 +21,11 @@ import (
 var IssuerDID string
 var IssuerPrivateKey *ecdsa.PrivateKey
 
+//All credential ids use a format of this value plus a number. ex. 'http://metablox.com/credentials/5'
+//Only the number is stored in the db as the ID; the full string is only used in formal credentials
 const baseIDString = "http://metablox.com/credentials/"
 
+//read in private key for issuer and generate the DID from it
 func InitializeValues() error {
 	var err error
 	IssuerPrivateKey, err = key.GetIssuerPrivateKey()
@@ -33,6 +36,7 @@ func InitializeValues() error {
 	return nil
 }
 
+//create a credential proof using the provided verification method string
 func CreateProof(vm string) models.VCProof {
 	vcProof := models.CreateVCProof()
 	vcProof.Type = models.Secp256k1Sig
@@ -44,6 +48,7 @@ func CreateProof(vm string) models.VCProof {
 	return *vcProof
 }
 
+//convert issuance and expiration times of credential from db format to RFC3339
 func ConvertTimesFromDBFormat(vc *models.VerifiableCredential) error {
 	issuanceTime, err := time.Parse("2006-01-02 15:04:05", vc.IssuanceDate)
 	if err != nil {
@@ -59,6 +64,7 @@ func ConvertTimesFromDBFormat(vc *models.VerifiableCredential) error {
 	return nil
 }
 
+//convert issuance and expiration times of credential from RFC3339 to db format
 func ConvertTimesToDBFormat(vc *models.VerifiableCredential) error {
 	issuanceTime, err := time.Parse(time.RFC3339, vc.IssuanceDate)
 	if err != nil {
@@ -74,7 +80,7 @@ func ConvertTimesToDBFormat(vc *models.VerifiableCredential) error {
 	return nil
 }
 
-//Base function for creating VCs. Called by any function that creates a type of VC
+//Base function for creating VCs. Called by any function that creates a type of VC to initialize universal values
 func CreateVC(issuerDocument *models.DIDDocument) (*models.VerifiableCredential, error) {
 	context := []string{models.ContextCredential, models.ContextSecp256k1}
 	vcType := []string{models.TypeCredential}
@@ -89,6 +95,8 @@ func CreateVC(issuerDocument *models.DIDDocument) (*models.VerifiableCredential,
 	return newVC, nil
 }
 
+//create credential used to access wifi using the information provided in wifiAccessInfo.
+//If a wifi credential already exists for this DID, return the existing credential
 func CreateWifiAccessVC(issuerDocument *models.DIDDocument, wifiAccessInfo *models.WifiAccessInfo, issuerPrivKey *ecdsa.PrivateKey) (*models.VerifiableCredential, error) {
 	var vc *models.VerifiableCredential
 	exists, err := dao.CheckWifiAccessForExistence(wifiAccessInfo.ID)
@@ -116,7 +124,7 @@ func CreateWifiAccessVC(issuerDocument *models.DIDDocument, wifiAccessInfo *mode
 		}
 
 		vc.Type = append(vc.Type, models.TypeWifi)
-		vc.Description = "Example Wifi Access Credential"
+		vc.Description = "Example Wifi Access Credential" //TODO: probably should fix this placeholder value at some point
 		vc.CredentialSubject = *wifiAccessInfo
 
 		//Upload VC to DB and generate ID. Has to be done before creating signature, as changing the ID will change the signature
@@ -153,6 +161,8 @@ func CreateWifiAccessVC(issuerDocument *models.DIDDocument, wifiAccessInfo *mode
 	return vc, nil
 }
 
+//create credential used by miners using the information provided in miningLicenseInfo.
+//If a mining credential already exists for this DID, return the existing credential
 func CreateMiningLicenseVC(issuerDocument *models.DIDDocument, miningLicenseInfo *models.MiningLicenseInfo, issuerPrivKey *ecdsa.PrivateKey) (*models.VerifiableCredential, error) {
 	var vc *models.VerifiableCredential
 	exists, err := dao.CheckMiningLicenseForExistence(miningLicenseInfo.ID)
@@ -180,7 +190,7 @@ func CreateMiningLicenseVC(issuerDocument *models.DIDDocument, miningLicenseInfo
 		}
 
 		vc.Type = append(vc.Type, models.TypeMining)
-		vc.Description = "Example Mining License Credential"
+		vc.Description = "Example Mining License Credential" //TODO: probably should fix this placeholder value at some point
 		vc.CredentialSubject = *miningLicenseInfo
 
 		//Upload VC to DB and generate ID. Has to be done before creating signature, as changing the ID will change the signature
@@ -217,6 +227,8 @@ func CreateMiningLicenseVC(issuerDocument *models.DIDDocument, miningLicenseInfo
 	return vc, nil
 }
 
+//create credential for staking using the information provided in stakingInfo.
+//If a staking credential already exists for this DID, return the existing credential
 func CreateStakingVC(issuerDocument *models.DIDDocument, stakingInfo *models.StakingVCInfo, issuerPrivKey *ecdsa.PrivateKey) (*models.VerifiableCredential, error) {
 	var vc *models.VerifiableCredential
 	exists, err := dao.CheckStakingVCForExistence(stakingInfo.ID)
@@ -244,7 +256,7 @@ func CreateStakingVC(issuerDocument *models.DIDDocument, stakingInfo *models.Sta
 		}
 
 		vc.Type = append(vc.Type, models.TypeStaking)
-		vc.Description = "Example Staking Credential"
+		vc.Description = "Example Staking Credential" //TODO: probably should fix this placeholder value at some point
 		vc.CredentialSubject = *stakingInfo
 
 		//Upload VC to DB and generate ID. Has to be done before creating signature, as changing the ID will change the signature
@@ -281,6 +293,7 @@ func CreateStakingVC(issuerDocument *models.DIDDocument, stakingInfo *models.Sta
 	return vc, nil
 }
 
+//update the provided credential's expiration date as well as its signature
 func RenewVC(vc *models.VerifiableCredential, issuerPrivKey *ecdsa.PrivateKey) error {
 	splitID := strings.Split(vc.ID, "/")
 	idNum := splitID[len(splitID)-1]
@@ -290,7 +303,7 @@ func RenewVC(vc *models.VerifiableCredential, issuerPrivKey *ecdsa.PrivateKey) e
 		return err
 	}
 
-	if revoked {
+	if revoked { //can't renew a revoked credential
 		return errval.ErrRenewRevoked
 	}
 
@@ -311,7 +324,7 @@ func RenewVC(vc *models.VerifiableCredential, issuerPrivKey *ecdsa.PrivateKey) e
 
 	hashedVC := sha256.Sum256(ConvertVCToBytes(*vc))
 
-	signatureData, err := key.CreateJWSSignature(issuerPrivKey, hashedVC[:])
+	signatureData, err := key.CreateJWSSignature(issuerPrivKey, hashedVC[:]) //since the expiration date has changed, the signature must also change
 	if err != nil {
 		return err
 	}
@@ -320,6 +333,7 @@ func RenewVC(vc *models.VerifiableCredential, issuerPrivKey *ecdsa.PrivateKey) e
 	return nil
 }
 
+//revoke the provided credential. No need to update the signature since we're making the credential invalid anyways
 func RevokeVC(vc *models.VerifiableCredential) error {
 	vc.Revoked = true
 	splitID := strings.Split(vc.ID, "/")
@@ -332,6 +346,7 @@ func RevokeVC(vc *models.VerifiableCredential) error {
 	return nil
 }
 
+//convert credential to a JSON format. Currently unused
 func VCToJson(vc *models.VerifiableCredential) ([]byte, error) {
 	jsonVC, err := json.Marshal(vc)
 	if err != nil {
@@ -340,6 +355,7 @@ func VCToJson(vc *models.VerifiableCredential) ([]byte, error) {
 	return jsonVC, nil
 }
 
+//convert JSON formatted credential to object. Currently unused
 func JsonToVC(jsonVC []byte) (*models.VerifiableCredential, error) {
 	vc := models.CreateVerifiableCredential()
 	err := json.Unmarshal(jsonVC, vc)
@@ -352,9 +368,7 @@ func JsonToVC(jsonVC []byte) (*models.VerifiableCredential, error) {
 //Need to make sure that the stated issuer of the VC actually created it (using the proof alongside the issuer's verification methods),
 //as well as check that the issuer is a trusted source
 func VerifyVC(vc *models.VerifiableCredential) (bool, error) {
-	//can modify to match the DID of the actual trusted issuer(s). May also want different
-	//trusted issuers for different types of VCs
-	if vc.Issuer != IssuerDID {
+	if vc.Issuer != IssuerDID { //issuer of VC must be the same issuer stored here
 		return false, errval.ErrUnknownIssuer
 	}
 
@@ -363,11 +377,13 @@ func VerifyVC(vc *models.VerifiableCredential) (bool, error) {
 		return false, errors.New(resolutionMeta.Error)
 	}
 
+	//get verification method from the issuer DID document which is listed in the vc proof
 	targetVM, err := issuerDoc.RetrieveVerificationMethod(vc.Proof.VerificationMethod)
 	if err != nil {
 		return false, err
 	}
 
+	//get public key stored in the vc proof
 	publicKey, err := crypto.UnmarshalPubkey(vc.Proof.PublicKeyString)
 	if err != nil {
 		return false, err
@@ -376,11 +392,11 @@ func VerifyVC(vc *models.VerifiableCredential) (bool, error) {
 	//currently only support EcdsaSecp256k1Signature2019, but it's possible we could introduce more
 	switch vc.Proof.Type {
 	case models.Secp256k1Sig:
-		if targetVM.MethodType != models.Secp256k1Key {
+		if targetVM.MethodType != models.Secp256k1Key { //vm must be the same type as the proof
 			return false, errval.ErrSecp256k1WrongVMType
 		}
 
-		success := key.CompareAddresses(targetVM, publicKey)
+		success := key.CompareAddresses(targetVM, publicKey) //vm must have the address that matches the proof's public key
 		if !success {
 			return false, errval.ErrWrongAddress
 		}
@@ -391,6 +407,9 @@ func VerifyVC(vc *models.VerifiableCredential) (bool, error) {
 	}
 }
 
+//Verify that the provided public key matches the signature in the proof.
+//Since we've made sure that the address in the issuer vm matches this public key,
+//verifying the signature here proves that the signature was made with the issuer's private key
 func VerifyVCSecp256k1(vc *models.VerifiableCredential, pubKey *ecdsa.PublicKey) (bool, error) {
 	copiedVC := *vc
 	//have to make sure to remove the signature from the copy, as the original did not have a signature at the time the signature was generated
@@ -404,6 +423,7 @@ func VerifyVCSecp256k1(vc *models.VerifiableCredential, pubKey *ecdsa.PublicKey)
 	return result, nil
 }
 
+//convert credential to bytes so it can be hashed
 func ConvertVCToBytes(vc models.VerifiableCredential) []byte {
 	var convertedBytes []byte
 
