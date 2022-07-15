@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 
+	"github.com/MetaBloxIO/metablox-foundation-services/contract"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -37,14 +38,10 @@ func TestCreateDID(t *testing.T) {
 	assert.Equal(t, exampleDocument.Authentication, document.Authentication)
 }
 
-func TestConvertDocumentToJson(t *testing.T) {
-	document := models.GenerateTestDIDDocument()
-	jsonDoc, err := DocumentToJson(document)
-	assert.Nil(t, err)
-	assert.Equal(t, exampleDIDDocString, string(jsonDoc))
-}
-
 func TestResolveDID(t *testing.T) {
+	err := contract.TestInit()
+	assert.Nil(t, err)
+
 	options := &models.ResolutionOptions{}
 	resolutionMeta, document, documentMeta := Resolve("bad:did", options) //missing final section
 	assert.Equal(t, invalidDIDMetadata, resolutionMeta)
@@ -71,9 +68,9 @@ func TestResolveDID(t *testing.T) {
 	assert.Nil(t, document)
 	assert.Equal(t, emptyDocumentMetadata, documentMeta)
 
-	resolutionMeta, document, documentMeta = Resolve("did:metablox:valid", options) //resolvable did
+	resolutionMeta, document, documentMeta = Resolve("did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX", options) //resolvable did
 	assert.Equal(t, emptyResolutionMetadata, resolutionMeta)
-	exampleDocument := models.GenerateTestDIDDocument()
+	exampleDocument := models.GenerateTestResolvedDIDDocument()
 	assert.Equal(t, exampleDocument.Context, document.Context)
 	assert.Equal(t, exampleDocument.ID, document.ID)
 	//no point comparing create/update time, won't be equal
@@ -84,13 +81,15 @@ func TestResolveDID(t *testing.T) {
 }
 
 func TestResolveDIDRepresentation(t *testing.T) {
+	err := contract.TestInit()
+	assert.Nil(t, err)
 	options := &models.RepresentationResolutionOptions{Accept: "application/did+json"}
 
 	resolutionMeta, byteStream, documentMeta := ResolveRepresentation("did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX", options) //resolvable did
 	assert.Equal(t, emptyJSONRepresentationResolutionMetadata, resolutionMeta)
-	exampleDocument := models.GenerateTestDIDDocument()
+	exampleDocument := models.GenerateTestResolvedDIDDocument()
 	document := models.CreateDIDDocument()
-	err := json.Unmarshal(byteStream, document)
+	err = json.Unmarshal(byteStream, document)
 	assert.Nil(t, err)
 
 	assert.Equal(t, exampleDocument.Context, document.Context)

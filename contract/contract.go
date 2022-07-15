@@ -5,6 +5,10 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"math/big"
+	"strings"
+	"time"
+
 	"github.com/MetaBloxIO/metablox-foundation-services/comm/regutil"
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 	"github.com/ethereum/go-ethereum"
@@ -12,9 +16,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	logger "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"math/big"
-	"strings"
-	"time"
 
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/MetaBloxIO/metablox-foundation-services/registry"
@@ -54,6 +55,15 @@ func Init() error {
 	}
 
 	return nil
+}
+
+func TestInit() error {
+	testClient, err := ethclient.Dial("https://api.s0.ps.hmny.io")
+	if err != nil {
+		return err
+	}
+	instance, err = registry.NewRegistry(common.HexToAddress("0x0b9269e8947e46Bb60FFc54C137e7093907fD273"), testClient)
+	return err
 }
 
 func createSignatureFromMessage(messageBytes []byte, privateKey *ecdsa.PrivateKey) ([32]byte, [32]byte, uint8, error) {

@@ -25,7 +25,7 @@ func CreatePresentation(credentials []models.VerifiableCredential, holderDocumen
 	presentationProof.ProofPurpose = "Authentication"
 	presentationProof.Nonce = nonce
 	presentationProof.PublicKeyString = crypto.FromECDSAPub(&holderPrivKey.PublicKey)
-	context := []string{models.ContextCredential, models.ContextSecp256k1}
+	context := []string{models.ContextSecp256k1, models.ContextCredential}
 	presentationType := []string{"VerifiablePresentation"}
 	presentation := models.NewPresentation(context, presentationType, credentials, holderDocument.ID, *presentationProof)
 	//Create the proof's signature using a stringified version of the VP and the holder's private key.

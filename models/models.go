@@ -3,6 +3,7 @@ package models
 import (
 	"bytes"
 	"crypto/ecdsa"
+
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
@@ -181,10 +182,19 @@ type StakingVCInfo struct {
 }
 
 type MinerInfo struct {
-	ID         string `json:"id" db:"ID"`
-	Name       string `json:"name" db:"Name"`
-	MAC        string `json:"mac" db:"MAC"`
-	CreateTime string `json:"createTime" db:"CreateTime"`
+	ID           string   `db:"ID"`
+	Name         string   `db:"Name"`
+	SSID         *string  `db:"SSID"`
+	BSSID        *string  `db:"BSSID"`
+	CreateTime   string   `db:"CreateTime"`
+	Longitude    *float64 `db:"Longitude"`
+	Latitude     *float64 `db:"Latitude"`
+	OnlineStatus bool     `db:"OnlineStatus"`
+	MiningPower  *float64 `db:"MiningPower"`
+	IsMinable    bool     `db:"IsMinable"`
+	DID          string   `db:"DID"`
+	Host         string   `db:"Host"`
+	IsVirtual    bool     `db:"IsVirtual"`
 }
 
 type VCSchemaChanged struct {
@@ -297,6 +307,12 @@ func GenerateTestDIDDocument() *DIDDocument {
 	return document
 }
 
+func GenerateTestResolvedDIDDocument() *DIDDocument {
+	document := GenerateTestDIDDocument()
+	document.VerificationMethod[0].BlockchainAccountId = "eip155:1666600000:0x25007b7AB5b0717F2Edd155F70746719e1862A52"
+	return document
+}
+
 func NewSubjectInfo(id string, givenName, familyName, gender, birthCountry, birthDate string) *SubjectInfo {
 	return &SubjectInfo{
 		ID:           id,
@@ -384,7 +400,7 @@ func GenerateTestVC() *VerifiableCredential {
 		"2022-03-31T12:53:19-07:00",
 		"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification",
 		PurposeAuth,
-		"eyJhbGciOiJFUzI1NiJ9..uXiwqwehyniumzaVlcOQSCfbe6xstKE7zapUN2bWeDn9bI9rEUETl8duT2ej_7GFB2BUu5nh09t3zKIfV-4aiQ",
+		"eyJhbGciOiJFUzI1NiJ9..IklF2w-lM8CDeBBxKjoAEf_t22jngbmtI9n7hd_47zE_d2Qcj2kwHBHwHFVOTL3nqTrkycVdZmWtgw3M6tMqoA",
 		[]byte{4, 103, 89, 134, 238, 118, 86, 61, 43, 58, 216, 220, 171, 26, 136, 74, 220, 205, 222, 156, 30, 162, 206, 49, 234, 95, 43, 142, 116, 148, 41, 186, 156, 198, 8, 168, 219, 47, 3, 102, 97, 180, 96, 99, 19, 32, 179, 209, 93, 56, 16, 195, 2, 144, 196, 166, 145, 6, 168, 114, 247, 0, 246, 116, 118},
 	)
 
@@ -445,7 +461,7 @@ func GenerateTestMiningLicenseVC() *VerifiableCredential {
 	return NewVerifiableCredential(
 		[]string{ContextSecp256k1, ContextCredential},
 		"http://metablox.com/credentials/1",
-		[]string{TypeMining, TypeCredential},
+		[]string{TypeCredential, TypeMining},
 		"did:metablox:sampleIssuer",
 		"2022-03-31T12:53:19-07:00",
 		"2032-03-31T12:53:19-07:00",
@@ -466,7 +482,7 @@ func GenerateTestPresentation() *VerifiablePresentation {
 		"2022-03-31T12:53:19-07:00",
 		"did:metablox:7rb6LjVKYSEf4LLRqbMQGgdeE8MYXkfS7dhjvJzUckEX#verification",
 		PurposeAuth,
-		"eyJhbGciOiJFUzI1NiJ9..wtQpBWSAalLhNarTsn2jzXDG6K2n0zqSiE-G467gDklj51qH7ysbAlX_gymJrxrHUePJUYVneKOLKb-QH8eaGQ",
+		"eyJhbGciOiJFUzI1NiJ9..PKCD7kcMsRLD2hYGvkdvsYxpIT-krrkYs4VZmjqYOZ4gtUEYkKpZKW8cUUSHmF0Tb4IxkGaq3b4H__3HiQNGyw",
 		"sampleNonce",
 		[]byte{4, 103, 89, 134, 238, 118, 86, 61, 43, 58, 216, 220, 171, 26, 136, 74, 220, 205, 222, 156, 30, 162, 206, 49, 234, 95, 43, 142, 116, 148, 41, 186, 156, 198, 8, 168, 219, 47, 3, 102, 97, 180, 96, 99, 19, 32, 179, 209, 93, 56, 16, 195, 2, 144, 196, 166, 145, 6, 168, 114, 247, 0, 246, 116, 118},
 	)
