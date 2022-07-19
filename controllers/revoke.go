@@ -10,6 +10,7 @@ import (
 	logger "github.com/sirupsen/logrus"
 )
 
+//revoke the first credential in the provided presentation
 func RevokeVC(c *gin.Context) (*models.VerifiableCredential, error) {
 
 	input := models.CreatePresentation()
@@ -18,7 +19,7 @@ func RevokeVC(c *gin.Context) (*models.VerifiableCredential, error) {
 		return nil, err
 	}
 
-	err := CheckNonce(c.ClientIP(), input.Proof.Nonce)
+	err := CheckNonce(c.ClientIP(), input.Proof.Nonce) //presentation must have valid nonce
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +46,7 @@ func RevokeVC(c *gin.Context) (*models.VerifiableCredential, error) {
 
 	vcBytes := [32]byte{}
 	copy(vcBytes[:], credentials.ConvertVCToBytes(input.VerifiableCredential[0]))
-	err = contract.RevokeVC(vcBytes)
+	err = contract.RevokeVC(vcBytes) //currently does nothing
 	if err != nil {
 		return nil, err
 	}

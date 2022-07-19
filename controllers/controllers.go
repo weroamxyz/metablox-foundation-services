@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+//used to map ip addresses to their assigned nonces
 var NonceLookup map[string]string
 
 func InitializeValues() {
@@ -89,6 +90,7 @@ func GetMinerListHandler(c *gin.Context) {
 	ResponseSuccess(c, minerList)
 }
 
+//Get a nonce for the user, which will be needed when creating presentations. Lasts 1 minute.
 func GenerateNonceHandler(c *gin.Context) {
 	nonce := CreateNonce(c.ClientIP())
 	ResponseSuccess(c, nonce)
@@ -107,6 +109,7 @@ func GenerateTestSignatures(c *gin.Context) {
 	ResponseSuccessWithMsg(c, "Generated signature '"+signature+"'")
 }
 
+//register the credential issuer in the smart contract
 func AssignIssuer(c *gin.Context) {
 	var inputs struct {
 		CredentialKey string
@@ -167,10 +170,12 @@ func ReadVCChangedEvents(c *gin.Context) {
 	ResponseSuccessWithMsg(c, "Success")
 }
 
+//get public key of the issuer
 func GetIssuerPublicKeyHandler(c *gin.Context) {
 	ResponseSuccess(c, crypto.FromECDSAPub(&credentials.IssuerPrivateKey.PublicKey))
 }
 
+//test function that creates a signature for a presentation using the test issuer key
 func GenerateTestingPresentationSignatures(c *gin.Context) {
 	presentation := models.CreatePresentation()
 	c.BindJSON(presentation)

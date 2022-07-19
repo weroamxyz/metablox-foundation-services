@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+
 	"github.com/MetaBloxIO/metablox-foundation-services/comm/regutil"
 	"github.com/MetaBloxIO/metablox-foundation-services/contract"
 	"github.com/MetaBloxIO/metablox-foundation-services/credentials"
@@ -12,6 +13,7 @@ import (
 	logger "github.com/sirupsen/logrus"
 )
 
+//register a DID document in the registry smart contract
 func SendDocToRegistry(c *gin.Context) error {
 	document := models.CreateDIDDocument()
 	if err := c.BindJSON(document); err != nil {
@@ -31,6 +33,7 @@ func SendDocToRegistry(c *gin.Context) error {
 	return nil
 }
 
+//register a DID without needing a full did document
 func RegisterDIDForUser(c *gin.Context) (map[string]interface{}, error) {
 	// 1.new param instance
 	register := models.NewRegisterDID()
