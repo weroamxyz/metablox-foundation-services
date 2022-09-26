@@ -82,7 +82,7 @@ func ConvertTimesToDBFormat(vc *models.VerifiableCredential) error {
 
 //Base function for creating VCs. Called by any function that creates a type of VC to initialize universal values
 func CreateVC(issuerDocument *models.DIDDocument) (*models.VerifiableCredential, error) {
-	context := []string{models.ContextCredential, models.ContextSecp256k1}
+	context := []string{models.ContextSecp256k1, models.ContextCredential}
 	vcType := []string{models.TypeCredential}
 	loc, _ := time.LoadLocation("UTC")
 	expirationDate := time.Now().In(loc).AddDate(10, 0, 0).Format(time.RFC3339) //arbitrarily setting VCs to last for 10 years for the moment, can change when necessary
@@ -108,7 +108,7 @@ func CreateWifiAccessVC(issuerDocument *models.DIDDocument, wifiAccessInfo *mode
 		if err != nil {
 			return nil, err
 		}
-		vc.Context = []string{models.ContextCredential, models.ContextSecp256k1}
+		vc.Context = []string{models.ContextSecp256k1, models.ContextCredential}
 		vc.Type = []string{models.TypeCredential, models.TypeWifi}
 		vc.ID = baseIDString + vc.ID
 		err = ConvertTimesFromDBFormat(vc)
@@ -174,7 +174,7 @@ func CreateMiningLicenseVC(issuerDocument *models.DIDDocument, miningLicenseInfo
 		if err != nil {
 			return nil, err
 		}
-		vc.Context = []string{models.ContextCredential, models.ContextSecp256k1}
+		vc.Context = []string{models.ContextSecp256k1, models.ContextCredential}
 		vc.Type = []string{models.TypeCredential, models.TypeMining}
 		vc.ID = baseIDString + vc.ID
 		err = ConvertTimesFromDBFormat(vc)
@@ -240,7 +240,7 @@ func CreateStakingVC(issuerDocument *models.DIDDocument, stakingInfo *models.Sta
 		if err != nil {
 			return nil, err
 		}
-		vc.Context = []string{models.ContextCredential, models.ContextSecp256k1}
+		vc.Context = []string{models.ContextSecp256k1, models.ContextCredential}
 		vc.Type = []string{models.TypeCredential, models.TypeStaking}
 		vc.ID = baseIDString + vc.ID
 		err = ConvertTimesFromDBFormat(vc)
