@@ -35,5 +35,9 @@ func Setup() {
 	r.POST("/testing/readvcchanged", controllers.ReadVCChangedEvents)
 	r.POST("/testing/signpresentation", controllers.GenerateTestingPresentationSignatures)
 
+	r.POST("/foundation/workProof", controllers.WorkProofHandler)
+
+	r.GET("/foundation/getProfit", controllers.GetProfitHandler)
+
 	r.Run(":8888")
 }
