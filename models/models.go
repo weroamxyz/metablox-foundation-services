@@ -3,6 +3,8 @@ package models
 import (
 	"bytes"
 	"crypto/ecdsa"
+	"github.com/shopspring/decimal"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
@@ -118,8 +120,8 @@ type VerifiableCredential struct {
 	Revoked           bool        `json:"revoked" db:"Revoked"`
 }
 
-//This can be a type of input form to set up the VC.
-//Temp fields here currently, will be changed in the future
+// This can be a type of input form to set up the VC.
+// Temp fields here currently, will be changed in the future
 type SubjectInfo struct {
 	ID           string `json:"id"`
 	GivenName    string `json:"givenName"`
@@ -182,25 +184,34 @@ type StakingVCInfo struct {
 }
 
 type MinerInfo struct {
-	ID           string   `db:"ID"`
-	Name         string   `db:"Name"`
-	SSID         *string  `db:"SSID"`
-	BSSID        *string  `db:"BSSID"`
-	CreateTime   string   `db:"CreateTime"`
-	Longitude    *float64 `db:"Longitude"`
-	Latitude     *float64 `db:"Latitude"`
-	OnlineStatus bool     `db:"OnlineStatus"`
-	MiningPower  *float64 `db:"MiningPower"`
-	IsMinable    bool     `db:"IsMinable"`
-	DID          string   `db:"DID"`
-	Host         string   `db:"Host"`
-	IsVirtual    bool     `db:"IsVirtual"`
+	ID             string          `db:"ID" json:"id"`
+	Name           string          `db:"Name" json:"name"`
+	SSID           *string         `db:"SSID" json:"ssid"`
+	BSSID          *string         `db:"BSSID" json:"bssid"`
+	Longitude      decimal.Decimal `db:"Longitude" json:"longitude"`
+	Latitude       decimal.Decimal `db:"Latitude" json:"latitude"`
+	OnlineStatus   bool            `db:"OnlineStatus" json:"onlineStatus"`
+	MiningPower    *float64        `db:"MiningPower" json:"miningPower"`
+	IsMinable      bool            `db:"IsMinable" json:"isMinable"`
+	DID            string          `db:"DID" json:"did"`
+	Host           string          `db:"Host" json:"host"`
+	IsVirtual      bool            `db:"IsVirtual" json:"isVirtual"`
+	DeviceName     string          `db:"DeviceName" json:"deviceName"`
+	Location       string          `db:"Location" json:"location"`
+	RewardEarned   string          `db:"RewardEarned" json:"rewardEarned"`
+	SignalStrength string          `db:"SignalStrength" json:"signalStrength"`
+	CreateTime     *time.Time      `db:"CreateTime" json:"createTime"`
 }
 
 type VCSchemaChanged struct {
 	VcName string
 	Name   [32]byte
 	Value  []byte
+}
+
+type WifiUserInfo struct {
+	Username string `json:"username" db:"username"`
+	Password string `json:"password" db:"value"`
 }
 
 func CreateDIDDocument() *DIDDocument {

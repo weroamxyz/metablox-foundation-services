@@ -9,6 +9,13 @@ mysql:
   password: "testing"
   dbname: "foundationService"
 
+wifiDB:
+  host: "172.31.8.73"
+  port: 3306
+  user: "root"
+  password: "123456"
+  dbname: "radus"
+
 metablox:
-  rpcUrl: "https://api.s0.ps.hmny.io/"
-  registryContract: "0x8a9DE3908DDD37b1F2D46D875214237C0505BF94"
+  rpcUrl: "https://api.s0.b.hmny.io"
+  registryContract: "0x3F4b2552e04c0EeDd1054272F46Bf90cAA143d51"

@@ -11,6 +11,10 @@ type ResponseData struct {
 	Msg  interface{} `json:"msg"`
 	Data interface{} `json:"data"`
 }
+type ResponsePageData struct {
+	ResponseData
+	total int64 `json:"total"`
+}
 
 func ResponseError(c *gin.Context, code ResCode) {
 	c.JSON(http.StatusBadRequest, &ResponseData{
@@ -33,6 +37,17 @@ func ResponseSuccess(c *gin.Context, data interface{}) {
 		CodeSuccess,
 		CodeSuccess.Msg(),
 		data,
+	})
+}
+
+func ResponseSuccessWithPage(c *gin.Context, data interface{}, total int64) {
+	c.JSON(http.StatusOK, &ResponsePageData{
+		ResponseData{
+			CodeSuccess,
+			CodeSuccess.Msg(),
+			data,
+		},
+		total,
 	})
 }
 

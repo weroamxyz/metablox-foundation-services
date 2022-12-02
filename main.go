@@ -8,6 +8,7 @@ import (
 	"github.com/MetaBloxIO/metablox-foundation-services/routers"
 	"github.com/MetaBloxIO/metablox-foundation-services/settings"
 	logger "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 func main() {
@@ -18,6 +19,14 @@ func main() {
 	}
 
 	err = dao.InitSql()
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+
+	sqlConf := &dao.Config{}
+	viper.UnmarshalKey("wifiDB", sqlConf)
+	err = dao.InitWifiDB(sqlConf)
 	if err != nil {
 		logger.Error(err)
 		return
