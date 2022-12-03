@@ -13,7 +13,7 @@ type ResponseData struct {
 }
 type ResponsePageData struct {
 	ResponseData
-	total int64 `json:"total"`
+	Total int64 `json:"total"`
 }
 
 func ResponseError(c *gin.Context, code ResCode) {
@@ -40,7 +40,7 @@ func ResponseSuccess(c *gin.Context, data interface{}) {
 	})
 }
 
-func ResponseSuccessWithPage(c *gin.Context, data interface{}, total int64) {
+func ResponseSuccessWithPageData(c *gin.Context, data interface{}, total int64) {
 	c.JSON(http.StatusOK, &ResponsePageData{
 		ResponseData{
 			CodeSuccess,

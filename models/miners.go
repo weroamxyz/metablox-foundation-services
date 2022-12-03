@@ -1,6 +1,29 @@
 package models
 
-import "github.com/shopspring/decimal"
+import (
+	"github.com/shopspring/decimal"
+	"time"
+)
+
+type MinerInfo struct {
+	ID             string          `db:"ID" json:"id"`
+	Name           string          `db:"Name" json:"name"`
+	SSID           *string         `db:"SSID" json:"ssid"`
+	BSSID          *string         `db:"BSSID" json:"bssid"`
+	Longitude      decimal.Decimal `db:"Longitude" json:"longitude"`
+	Latitude       decimal.Decimal `db:"Latitude" json:"latitude"`
+	OnlineStatus   bool            `db:"OnlineStatus" json:"onlineStatus"`
+	MiningPower    *float64        `db:"MiningPower" json:"miningPower"`
+	IsMinable      bool            `db:"IsMinable" json:"isMinable"`
+	DID            string          `db:"DID" json:"did"`
+	Host           string          `db:"Host" json:"host"`
+	IsVirtual      bool            `db:"IsVirtual" json:"isVirtual"`
+	DeviceName     string          `db:"DeviceName" json:"deviceName"`
+	Location       string          `db:"Location" json:"location"`
+	RewardEarned   string          `db:"RewardEarned" json:"rewardEarned"`
+	SignalStrength string          `db:"SignalStrength" json:"signalStrength"`
+	CreateTime     *time.Time      `db:"CreateTime" json:"createTime"`
+}
 
 type MinerRewardReq struct {
 	DID string `json:"did,omitempty" db:"DID"`

@@ -1,25 +1,43 @@
 package controllers
 
 import (
+	"github.com/MetaBloxIO/metablox-foundation-services/comm/requtil"
+	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/MetaBloxIO/metablox-foundation-services/service"
 	"github.com/gin-gonic/gin"
 )
 
 func GetAppRewardsPageHandler(c *gin.Context) {
 
-	value := c.Query("bizDate")
-
-	list, total, err := service.GetAppRewardsPage(value)
+	req, err := requtil.ShouldBindQuery[models.AppRewardsPageReq](c)
 	if err != nil {
 		ResponseErrorWithMsg(c, CodeError, err.Error())
 		return
 	}
 
-	ResponseSuccessWithPage(c, list, total)
+	m := &models.AppRewardsPageReqDTO{
+		AppRewardsPageReq: *req,
+		UserType:          "App",
+	}
+	list, total, err := service.GetAppRewardsPage(m)
+	if err != nil {
+		ResponseErrorWithMsg(c, CodeError, err.Error())
+		return
+	}
+	ResponseSuccessWithPageData(c, list, total)
 }
 func GetAppTotalRewardsHandler(c *gin.Context) {
 
-	data, err := service.GetAppTotalRewards()
+	req, err := requtil.ShouldBindQuery[models.AppTotalRewardsReq](c)
+	if err != nil {
+		ResponseErrorWithMsg(c, CodeError, err.Error())
+		return
+	}
+
+	data, err := service.GetAppTotalRewards(&models.AppTotalRewardsReqDTO{
+		AppTotalRewardsReq: *req,
+		UserType:           "App",
+	})
 	if err != nil {
 		ResponseErrorWithMsg(c, CodeError, err.Error())
 		return
