@@ -40,16 +40,6 @@ func IssueMiningVCHandler(c *gin.Context) {
 	ResponseSuccess(c, newVC)
 }
 
-func IssueStakingVCHandler(c *gin.Context) {
-	newVC, err := IssueStakingVC(c)
-	if err != nil {
-		ResponseErrorWithMsg(c, CodeError, err.Error())
-		return
-	}
-
-	ResponseSuccess(c, newVC)
-}
-
 func RenewVCHandler(c *gin.Context) {
 	renewedVC, err := RenewVC(c)
 	if err != nil {

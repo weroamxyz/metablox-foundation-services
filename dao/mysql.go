@@ -105,33 +105,6 @@ func UploadMiningLicenseVC(vc models.VerifiableCredential) (int, error) {
 	return int(newID), nil
 }
 
-func UploadStakingVC(vc models.VerifiableCredential) (int, error) {
-	tx, err := SqlDB.Beginx()
-	if err != nil {
-		return 0, err
-	}
-
-	sqlStr := "insert into Credentials (Type, Issuer, IssuanceDate, ExpirationDate, Description, Revoked) values ('StakingVC', :Issuer, :IssuanceDate, :ExpirationDate, :Description, 0)"
-	result, err := tx.NamedExec(sqlStr, vc)
-	if err != nil {
-		tx.Rollback()
-		return 0, err
-	}
-	newID, _ := result.LastInsertId()
-	sqlStr = "insert into StakingVCInfo (CredentialID, ID) values (?,?)"
-	stakingInfo := vc.CredentialSubject.(models.StakingVCInfo)
-	_, err = tx.Exec(sqlStr, newID, stakingInfo.ID)
-	if err != nil {
-		tx.Rollback()
-		return 0, err
-	}
-	err = tx.Commit()
-	if err != nil {
-		return 0, err
-	}
-	return int(newID), nil
-}
-
 func UpdateVCExpirationDate(id, expirationDate string) error {
 	sqlStr := "update Credentials set ExpirationDate = ? where ID = ?"
 	_, err := SqlDB.Exec(sqlStr, expirationDate, id)
@@ -222,38 +195,6 @@ func GetMiningLicenseFromDB(id string) (*models.VerifiableCredential, error) {
 	}
 
 	vc.CredentialSubject = *miningInfo
-	return vc, nil
-}
-
-func CheckStakingVCForExistence(id string) (bool, error) {
-	var count int
-	sqlStr := "select count(*) from StakingVCInfo where ID = ?"
-	err := SqlDB.Get(&count, sqlStr, id)
-	if err != nil {
-		return false, err
-	}
-	if count > 0 {
-		return true, nil
-	}
-	return false, nil
-}
-
-func GetStakingVCFromDB(id string) (*models.VerifiableCredential, error) {
-	stakingInfo := models.CreateStakingVCInfo()
-	sqlStr := "select * from StakingVCInfo where ID = ?"
-	err := SqlDB.Get(stakingInfo, sqlStr, id)
-	if err != nil {
-		return nil, err
-	}
-
-	vc := models.CreateVerifiableCredential()
-	sqlStr = "select ID, Issuer, IssuanceDate, ExpirationDate, Description, Revoked from Credentials where ID = ?"
-	err = SqlDB.Get(vc, sqlStr, stakingInfo.CredentialID)
-	if err != nil {
-		return nil, err
-	}
-
-	vc.CredentialSubject = *stakingInfo
 	return vc, nil
 }
 

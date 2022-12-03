@@ -67,32 +67,3 @@ func IssueMiningVC(c *gin.Context) (*models.VerifiableCredential, error) {
 
 	return newVC, nil
 }
-
-// issue a staking credential using inputted StakingVCInfo, or return the credential that already exists for the DID in the input
-func IssueStakingVC(c *gin.Context) (*models.VerifiableCredential, error) {
-	didString := credentials.IssuerDID
-
-	stakingInfo := models.CreateStakingVCInfo()
-
-	if err := c.BindJSON(&stakingInfo); err != nil {
-		return nil, err
-	}
-
-	opts := models.CreateResolutionOptions()
-	resolutionMeta, issuerDocument, _ := did.Resolve(didString, opts)
-	if resolutionMeta.Error != "" {
-		return nil, errors.New(resolutionMeta.Error)
-	}
-
-	newVC, err := credentials.CreateStakingVC(issuerDocument, stakingInfo, credentials.IssuerPrivateKey)
-	if err != nil {
-		return nil, err
-	}
-
-	err = contract.CreateVC(newVC, c.Param("did"), credentials.IssuerPrivateKey)
-	if err != nil {
-		return nil, err
-	}
-
-	return newVC, nil
-}

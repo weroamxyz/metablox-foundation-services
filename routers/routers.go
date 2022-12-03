@@ -30,10 +30,6 @@ func Setup() {
 	r.POST("/vc/mining/renew", controllers.RenewVCHandler)
 	r.POST("/vc/mining/revoke", controllers.RevokeVCHandler)
 
-	r.POST("/vc/staking/issue", controllers.IssueStakingVCHandler)
-	r.POST("/vc/staking/renew", controllers.RenewVCHandler)
-	r.POST("/vc/staking/revoke", controllers.RevokeVCHandler)
-
 	r.GET("/nonce", controllers.GenerateNonceHandler)
 
 	r.GET("/pubkey", controllers.GetIssuerPublicKeyHandler)
