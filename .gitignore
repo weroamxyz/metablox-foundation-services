@@ -16,5 +16,5 @@
 
 # IDE directories
 .idea/
-
+logs
 config.yaml

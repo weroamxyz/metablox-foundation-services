@@ -1,6 +1,7 @@
 package main
 
 import (
+	logrusConf "github.com/MetaBloxIO/metablox-foundation-services/comm/logger"
 	"github.com/MetaBloxIO/metablox-foundation-services/contract"
 	"github.com/MetaBloxIO/metablox-foundation-services/controllers"
 	"github.com/MetaBloxIO/metablox-foundation-services/credentials"
@@ -13,6 +14,14 @@ import (
 
 func main() {
 	err := settings.Init()
+	if err != nil {
+		logger.Error(err)
+		return
+	}
+
+	loggerConf := &logrusConf.Config{}
+	viper.UnmarshalKey("logger", loggerConf)
+	err = logrusConf.Init(loggerConf)
 	if err != nil {
 		logger.Error(err)
 		return

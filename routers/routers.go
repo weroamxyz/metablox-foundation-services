@@ -1,6 +1,7 @@
 package routers
 
 import (
+	"github.com/MetaBloxIO/metablox-foundation-services/comm/logger"
 	"github.com/MetaBloxIO/metablox-foundation-services/controllers"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -8,7 +9,8 @@ import (
 )
 
 func Setup() {
-	r := gin.Default()
+	r := gin.New()
+	r.Use(gin.LoggerWithWriter(logger.GetLogWriter()), gin.RecoveryWithWriter(logger.GetLogWriter()))
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"POST", "GET", "PUT", "DELETE", "OPTIONS"},

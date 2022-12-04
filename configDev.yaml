@@ -19,3 +19,11 @@ wifiDB:
 metablox:
   rpcUrl: "https://api.s0.b.hmny.io"
   registryContract: "0x3F4b2552e04c0EeDd1054272F46Bf90cAA143d51"
+
+logger:
+  path: "../logs/"
+  file: "foundation.log"
+  level: "all"
+  stdout: true
+  rotateTime: 24
+  rotateLimit: 7
