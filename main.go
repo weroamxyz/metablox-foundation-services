@@ -9,10 +9,13 @@ import (
 	"github.com/MetaBloxIO/metablox-foundation-services/routers"
 	"github.com/MetaBloxIO/metablox-foundation-services/settings"
 	logger "github.com/sirupsen/logrus"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
 func main() {
+	pflag.Parse()
+
 	err := settings.Init()
 	if err != nil {
 		logger.Error(err)

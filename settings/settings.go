@@ -1,25 +1,34 @@
 package settings
 
 import (
-	"runtime"
-	"strings"
-
+	"fmt"
 	"github.com/fsnotify/fsnotify"
 	logger "github.com/sirupsen/logrus"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
-func Init() (err error) {
-	_, fileName, _, _ := runtime.Caller(0)
-	filePath := fileName[:len(fileName)-20]
-	viper.SetConfigFile(filePath + "/config.yaml")
-	err = viper.ReadInConfig()
-	if err != nil {
-		return err
-	}
+var (
+	confPath string
+	port     string
+)
 
-	if strings.EqualFold("devnet", viper.GetString("network")) {
-		viper.SetConfigFile(filePath + "/configDev.yaml")
+func init() {
+	pflag.StringVarP(&confPath, "conf", "c", "", "config file path")
+}
+
+func Init() (err error) {
+
+	viper.SetConfigType("yaml")
+	// the "config.yaml" in config/ folder has higher priority,then ""config.yaml"" in root folder
+	viper.AddConfigPath("config/")
+	viper.AddConfigPath(".")
+	viper.SetConfigName("config")
+	viper.ReadInConfig()
+
+	if confPath != "" {
+		fmt.Println("loading external configuration...")
+		viper.SetConfigFile(confPath)
 		err = viper.MergeInConfig()
 		if err != nil {
 			return err

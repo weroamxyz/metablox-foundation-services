@@ -1,9 +1,9 @@
-network: devnet
 
 storage:
   key_saving: "./wallet/"
   key_loading: "./wallet/"
   issuer_key_file: "issuer"
+
 mysql:
   host: "127.0.0.1"
   port: 3306
@@ -16,7 +16,7 @@ wifiDB:
   port: 3309
   user: "root"
   password: "123456"
-  dbname: "radus"
+  dbname: "radius"
 
 metablox:
   rpcUrl: "https://api.s0.b.hmny.io"
