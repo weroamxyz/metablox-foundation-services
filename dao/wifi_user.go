@@ -2,9 +2,11 @@ package dao
 
 import (
 	"github.com/Masterminds/squirrel"
+	"github.com/MetaBloxIO/metablox-foundation-services/comm/consts"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
+	"github.com/shopspring/decimal"
 )
 
 func SelectNearbyMinersList(dto *models.MinersDTO) ([]*models.MinersWithDistanceDTO, error) {
@@ -34,9 +36,9 @@ func SelectNearbyMinersList(dto *models.MinersDTO) ([]*models.MinersWithDistance
     ),0),2) AS distance`).From("MinerInfo").OrderBy(" distance ASC")
 
 	// max 30km
-	//if dto.Distance.IsZero() || dto.Distance.GreaterThan(decimal.NewFromFloat(30)) {
-	//	dto.Distance = decimal.NewFromFloat(30)
-	//}
+	if dto.Distance.IsZero() || dto.Distance.GreaterThan(decimal.NewFromFloat(30)) {
+		dto.Distance = decimal.NewFromFloat(consts.MaxDistance)
+	}
 
 	//sql = sql.Having("distance<=?", dto.Distance)
 	var list = make([]*models.MinersWithDistanceDTO, 0)

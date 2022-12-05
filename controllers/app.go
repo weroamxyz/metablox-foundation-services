@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/MetaBloxIO/metablox-foundation-services/comm/consts"
 	"github.com/MetaBloxIO/metablox-foundation-services/comm/requtil"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/MetaBloxIO/metablox-foundation-services/service"
@@ -17,7 +18,7 @@ func GetAppRewardsPageHandler(c *gin.Context) {
 
 	m := &models.AppRewardsPageReqDTO{
 		AppRewardsPageReq: *req,
-		UserType:          "App",
+		UserType:          consts.AppUser,
 	}
 	list, total, err := service.GetAppRewardsPage(m)
 	if err != nil {
@@ -26,6 +27,7 @@ func GetAppRewardsPageHandler(c *gin.Context) {
 	}
 	ResponseSuccessWithPageData(c, list, total)
 }
+
 func GetAppTotalRewardsHandler(c *gin.Context) {
 
 	req, err := requtil.ShouldBindQuery[models.AppTotalRewardsReq](c)

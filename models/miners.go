@@ -16,11 +16,9 @@ type MinerInfo struct {
 	MiningPower    *float64        `db:"MiningPower" json:"miningPower"`
 	IsMinable      bool            `db:"IsMinable" json:"isMinable"`
 	DID            string          `db:"DID" json:"did"`
-	Host           string          `db:"Host" json:"host"`
 	IsVirtual      bool            `db:"IsVirtual" json:"isVirtual"`
 	DeviceName     string          `db:"DeviceName" json:"deviceName"`
 	Location       string          `db:"Location" json:"location"`
-	RewardEarned   string          `db:"RewardEarned" json:"rewardEarned"`
 	SignalStrength string          `db:"SignalStrength" json:"signalStrength"`
 	CreateTime     *time.Time      `db:"CreateTime" json:"createTime"`
 }
@@ -50,4 +48,5 @@ type MinersDTO struct {
 type MinersWithDistanceDTO struct {
 	Distance decimal.Decimal `json:"distance" db:"distance"`
 	MinerInfo
+	IsVirtual bool `db:"IsVirtual" json:"-"`
 }

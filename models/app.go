@@ -49,7 +49,7 @@ type AppTotalRewardsReqDTO struct {
 }
 
 type AppTotalRewardsDTO struct {
-	LatestWithdrawnDate *time.Time `json:"latestWithdrawnDate" db:"latestWithdrawnDate"`
-	RewardsBalance      string     `json:"rewardsBalance" db:"rewardsBalance"`
-	TotalWithdrawn      string     `json:"totalWithdrawn" db:"totalWithdrawn"`
+	LatestWithdrawalTime *time.Time `json:"latestWithdrawalTime" db:"latestWithdrawalTime"`
+	RewardsBalance       string     `json:"rewardsBalance" db:"rewardsBalance"`
+	TotalWithdrawn       string     `json:"totalWithdrawn" db:"totalWithdrawn"`
 }

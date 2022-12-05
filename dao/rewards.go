@@ -75,7 +75,7 @@ func SelectAppTotalRewards(dto *models.AppTotalRewardsReqDTO) (*models.AppTotalR
 	sqlData := squirrel.Select(`
 			round(ifnull(sum(if(is_withdrawn=0,rewards,0)),0),2) as rewardsBalance,
 			round(ifnull(sum(if(is_withdrawn=1,rewards,0)),0),2) as totalWithdrawn,
-			max(if(is_withdrawn=1,withdrawal_time,null)) as latestWithdrawnDate
+			max(if(is_withdrawn=1,withdrawal_time,null)) as latestWithdrawalTime
 			`).From("rewards_record")
 
 	// query conditions
