@@ -7,6 +7,8 @@ import (
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/MetaBloxIO/metablox-foundation-services/presentations"
 	"github.com/duke-git/lancet/v2/slice"
+	"github.com/mitchellh/mapstructure"
+	errors2 "github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 	logger "github.com/sirupsen/logrus"
 	"time"
@@ -19,25 +21,26 @@ func WorkloadValidate(req *models.WorkloadDTO) error {
 	//if resolutionMeta.Error != "" {
 	//	return errors.New(resolutionMeta.Error)
 	//}
+	var err0 error
 
 	success0, err0 := presentations.VerifyVP(req.Identity.Miner)
 	if err0 != nil {
 		logger.Warn(err0)
+		return errors2.New("verify miner's vp failed")
 	}
 
 	if !success0 {
 		return errval.ErrVerifyPresent
-		logger.Warn("Miner Verify failed", errval.ErrVerifyPresent)
 	}
 
 	success1, err1 := presentations.VerifyVP(req.Identity.Validator)
 	if err1 != nil {
-		logger.Warn(err1)
+		logger.Warn(err0)
+		return errors2.New("verify validator's vp failed")
 	}
 
 	if !success1 {
 		return errval.ErrVerifyPresent
-		logger.Warn("Validator Verify failed", errval.ErrVerifyPresent)
 	}
 
 	info := models.MiningLicenseInfo{}
@@ -46,20 +49,22 @@ func WorkloadValidate(req *models.WorkloadDTO) error {
 	if len(credentials) > 0 {
 		for _, vc := range credentials {
 			if slice.Contain[string](vc.Type, "VerifiableCredential") && slice.Contain(vc.Type, "MiningLicense") {
-				m, ok := vc.CredentialSubject.(map[string]string)
-				if ok {
-					info.CredentialID = m["credentialID"]
-					info.Model = m["model"]
-					info.Serial = m["serial"]
-					info.Name = m["name"]
+				m := make(map[string]string)
+				if err := mapstructure.Decode(vc.CredentialSubject, &m); err != nil {
+					return err
 				}
+				info.CredentialID = m["credentialID"]
+				info.Model = m["model"]
+				info.Serial = m["serial"]
+				info.Name = m["name"]
+				break
 			}
 		}
 	}
 
 	qosJson, _ := json.Marshal(req.Qos)
 	tracksJson, _ := json.Marshal(req.Tracks)
-	workload := &models.Workload{
+	workload := &models.WorkloadRecord{
 		Miner:        req.Identity.Miner.Holder,
 		Validator:    req.Identity.Validator.Holder,
 		Qos:          string(qosJson),

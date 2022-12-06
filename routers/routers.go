@@ -1,7 +1,7 @@
 package routers
 
 import (
-	"github.com/MetaBloxIO/metablox-foundation-services/comm/logger"
+	"github.com/MetaBloxIO/metablox-foundation-services/comm/log"
 	"github.com/MetaBloxIO/metablox-foundation-services/controllers"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -10,7 +10,7 @@ import (
 
 func Setup() {
 	r := gin.New()
-	r.Use(gin.LoggerWithWriter(logger.GetLogWriter()), gin.RecoveryWithWriter(logger.GetLogWriter()))
+	r.Use(gin.LoggerWithWriter(log.GetLogWriter()), gin.RecoveryWithWriter(log.GetLogWriter()))
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"POST", "GET", "PUT", "DELETE", "OPTIONS"},
@@ -19,13 +19,12 @@ func Setup() {
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
-	r.POST("/registry/storedoc", controllers.SendDocToRegistryHandler)
 	r.POST("/registry/storedid", controllers.RegisterDIDHandler)
 
 	r.POST("/vc/wifi/issue", controllers.IssueWifiVCHandler)
 	r.POST("/vc/wifi/renew", controllers.RenewVCHandler)
 	r.POST("/vc/wifi/revoke", controllers.RevokeVCHandler)
-	r.GET("/vc/wifi/userInfo", controllers.GetWifiUserInfoHandler)
+	r.POST("/vc/wifi/userInfo", controllers.GetWifiUserInfoHandler)
 	r.GET("/vc/wifi/certFile", controllers.GetWifiCertFileHandler)
 
 	r.POST("/vc/mining/issue", controllers.IssueMiningVCHandler)
@@ -44,6 +43,8 @@ func Setup() {
 
 	r.POST("/workload/validate", controllers.WorkloadValidateHandler)
 	r.GET("/miners", controllers.GetNearbyMinersListHandler)
+	r.GET("/miner/getByBssid", controllers.GetMinerDetailHandler)
+	r.GET("/miner/detail", controllers.GetMinerDetailHandler)
 	r.GET("/app/rewardsPage", controllers.GetAppRewardsPageHandler)
 	r.GET("/app/totalRewards", controllers.GetAppTotalRewardsHandler)
 

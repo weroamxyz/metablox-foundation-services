@@ -2,7 +2,6 @@ package models
 
 import (
 	"github.com/shopspring/decimal"
-	"time"
 )
 
 type Page struct {
@@ -34,9 +33,9 @@ type AppRewardsPageReqDTO struct {
 
 type AppRewardsPageDTO struct {
 	Id          int64           `json:"id" db:"id"`
-	BizDate     string          `json:"bizDate" db:"biz_date"`
+	BizDate     string          `json:"bizDate" db:"bizDate"`
 	Rewards     decimal.Decimal `json:"rewards" db:"rewards"`
-	IsWithdrawn bool            `json:"isWithdrawn" db:"is_withdrawn"`
+	IsWithdrawn bool            `json:"isWithdrawn" db:"isWithdrawn"`
 }
 
 type AppTotalRewardsReq struct {
@@ -49,7 +48,7 @@ type AppTotalRewardsReqDTO struct {
 }
 
 type AppTotalRewardsDTO struct {
-	LatestWithdrawalTime *time.Time `json:"latestWithdrawalTime" db:"latestWithdrawalTime"`
+	LatestWithdrawalTime string `json:"latestWithdrawalTime" db:"latestWithdrawalTime"`
 	RewardsBalance       string     `json:"rewardsBalance" db:"rewardsBalance"`
 	TotalWithdrawn       string     `json:"totalWithdrawn" db:"totalWithdrawn"`
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/jmoiron/sqlx"
+	"github.com/shopspring/decimal"
 	logger "github.com/sirupsen/logrus"
 )
 
@@ -13,7 +14,7 @@ func SelectRewardRecordPage(req *models.AppRewardsPageReqDTO) ([]*models.AppRewa
 		count int64
 	)
 
-	sqlData := squirrel.Select("id,biz_date,rewards,is_withdrawn").From("rewards_record").OrderBy("id desc")
+	sqlData := squirrel.Select("id,unix_timestamp(biz_date) bizDate,rewards,is_withdrawn isWithdrawn").From("rewards_record").OrderBy("id desc")
 	sqlCount := squirrel.Select("count(*)").From("rewards_record")
 
 	if req.Did != "" {
@@ -73,9 +74,9 @@ func SelectRewardRecordPage(req *models.AppRewardsPageReqDTO) ([]*models.AppRewa
 func SelectAppTotalRewards(dto *models.AppTotalRewardsReqDTO) (*models.AppTotalRewardsDTO, error) {
 
 	sqlData := squirrel.Select(`
-			round(ifnull(sum(if(is_withdrawn=0,rewards,0)),0),2) as rewardsBalance,
-			round(ifnull(sum(if(is_withdrawn=1,rewards,0)),0),2) as totalWithdrawn,
-			max(if(is_withdrawn=1,withdrawal_time,null)) as latestWithdrawalTime
+			round(ifnull(sum(if(is_withdrawn=0,rewards,0)),0),5) as rewardsBalance,
+			round(ifnull(sum(if(is_withdrawn=1,rewards,0)),0),5) as totalWithdrawn,
+			ifnull(max(if(is_withdrawn=1,unix_timestamp(withdrawal_time),0)),0) as latestWithdrawalTime
 			`).From("rewards_record")
 
 	// query conditions
@@ -96,4 +97,13 @@ func SelectAppTotalRewards(dto *models.AppTotalRewardsReqDTO) (*models.AppTotalR
 		return nil, err
 	}
 	return data, nil
+}
+
+func SelectTotalRewardsByDID(did string) (decimal.Decimal, error) {
+	sqlStr := `select round(ifnull(sum(rewards),0),5) from rewards_record where did  ='?'`
+	var amount decimal.Decimal
+	if err := SqlDB.Get(&amount, sqlStr, did); err != nil {
+		return decimal.Decimal{}, err
+	}
+	return amount, nil
 }

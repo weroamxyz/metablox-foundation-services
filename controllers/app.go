@@ -38,7 +38,7 @@ func GetAppTotalRewardsHandler(c *gin.Context) {
 
 	data, err := service.GetAppTotalRewards(&models.AppTotalRewardsReqDTO{
 		AppTotalRewardsReq: *req,
-		UserType:           "App",
+		UserType:           consts.AppUser,
 	})
 	if err != nil {
 		ResponseErrorWithMsg(c, CodeError, err.Error())

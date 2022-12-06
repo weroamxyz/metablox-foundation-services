@@ -60,16 +60,6 @@ func RevokeVCHandler(c *gin.Context) {
 	ResponseSuccess(c, revokedVC)
 }
 
-func SendDocToRegistryHandler(c *gin.Context) {
-	err := SendDocToRegistry(c)
-	if err != nil {
-		ResponseErrorWithMsg(c, CodeError, err.Error())
-		return
-	}
-
-	ResponseSuccessWithMsg(c, "DID document has been successfully uploaded to registry")
-}
-
 // Get a nonce for the user, which will be needed when creating presentations. Lasts 1 minute.
 func GenerateNonceHandler(c *gin.Context) {
 	nonce := CreateNonce(c.ClientIP())

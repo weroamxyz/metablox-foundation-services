@@ -12,10 +12,10 @@ import (
 func SelectNearbyMinersList(dto *models.MinersDTO) ([]*models.MinersWithDistanceDTO, error) {
 
 	if dto.Latitude.IsZero() || dto.Longitude.IsZero() {
-		return nil, errors.New("longitude & latitude are required")
+		return nil, errors.New("both longitude and latitude are required")
 	}
 
-	sql := squirrel.Select(` *,
+	sql := squirrel.Select(` *,unix_timestamp(CreateTime) createTime,
 	ROUND(
     IFNULL(6378.138 * 2 * ASIN(
       SQRT(
@@ -36,7 +36,7 @@ func SelectNearbyMinersList(dto *models.MinersDTO) ([]*models.MinersWithDistance
     ),0),2) AS distance`).From("MinerInfo").OrderBy(" distance ASC")
 
 	// max 30km
-	if dto.Distance.IsZero() || dto.Distance.GreaterThan(decimal.NewFromFloat(30)) {
+	if dto.Distance.IsZero() || dto.Distance.GreaterThan(decimal.NewFromFloat(consts.MaxDistance)) {
 		dto.Distance = decimal.NewFromFloat(consts.MaxDistance)
 	}
 

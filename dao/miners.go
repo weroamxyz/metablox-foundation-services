@@ -1,42 +1,50 @@
 package dao
 
-import "github.com/MetaBloxIO/metablox-foundation-services/models"
+import (
+	"github.com/Masterminds/squirrel"
+	"github.com/MetaBloxIO/metablox-foundation-services/models"
+)
 
-func GetAllMinerInfo() ([]*models.MinerInfo, error) {
-	var miners []*models.MinerInfo
-	sqlStr := "select * from MinerInfo"
-	rows, err := SqlDB.Queryx(sqlStr)
+func GetMinerInfo(dto *models.MinerDetailReqDTO) (*models.MinerInfoDTO, error) {
+
+	sqlExp := squirrel.Select("*").From("MinerInfo").Limit(1)
+
+	if dto.BSSID != "" {
+		sqlExp = sqlExp.Where("BSSID=?", dto.BSSID)
+	}
+
+	sql, args, err := sqlExp.ToSql()
+	if err != nil {
+		return nil, err
+	}
+	miner := models.CreateMinerInfo()
+	err = SqlDB.Get(miner, sql, args...)
 	if err != nil {
 		return nil, err
 	}
 
-	for rows.Next() {
-		miner := models.CreateMinerInfo()
-		err = rows.StructScan(miner)
-		if err != nil {
-			return nil, err
-		}
-		miners = append(miners, miner)
+	amount, err := SelectTotalRewardsByDID(miner.DID)
+	if err != nil {
+		return nil, err
 	}
-	return miners, nil
-}
 
-//
-//func GetAllVirtualMinerInfo() ([]*models.MinerInfo, error) {
-//	var miners []*models.MinerInfo
-//	sqlStr := "select * from MinerInfo where IsVirtual = 1"
-//	rows, err := SqlDB.Queryx(sqlStr)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	for rows.Next() {
-//		miner := models.CreateMinerInfo()
-//		err = rows.StructScan(miner)
-//		if err != nil {
-//			return nil, err
-//		}
-//		miners = append(miners, miner)
-//	}
-//	return miners, nil
-//}
+	m := &models.MinerInfoDTO{
+		ID:             miner.ID,
+		Name:           miner.Name,
+		SSID:           miner.SSID,
+		BSSID:          miner.BSSID,
+		Longitude:      miner.Longitude,
+		Latitude:       miner.Latitude,
+		Availability:   miner.OnlineStatus,
+		RewardEarned:   amount,
+		MiningPower:    miner.MiningPower,
+		IsMinable:      miner.IsMinable,
+		DID:            miner.DID,
+		DeviceName:     miner.DeviceName,
+		Address:        miner.Location,
+		SignalStrength: miner.SignalStrength,
+		CreateTime:     miner.CreateTime,
+	}
+
+	return m, nil
+}

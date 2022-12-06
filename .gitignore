@@ -17,6 +17,6 @@
 # IDE directories
 .idea/
 logs/
-config?*.yaml
-config?*.yml
-
+config*.yaml
+config*.yml
+!config_example.yaml

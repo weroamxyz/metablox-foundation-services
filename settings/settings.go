@@ -10,7 +10,6 @@ import (
 
 var (
 	confPath string
-	port     string
 )
 
 func init() {

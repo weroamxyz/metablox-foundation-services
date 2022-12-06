@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
+	"github.com/mitchellh/mapstructure"
 	"strconv"
 	"strings"
 	"time"
@@ -373,10 +374,20 @@ func ConvertVCToBytes(vc models.VerifiableCredential) []byte {
 
 	switch vc.Type[1] {
 	case models.TypeWifi:
-		wifiAccessInfo := vc.CredentialSubject.(models.WifiAccessInfo)
+		m := &models.WifiAccessInfo{}
+		err := mapstructure.Decode(vc.CredentialSubject, m)
+		if err != nil {
+			return nil
+		}
+		wifiAccessInfo := m
 		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(wifiAccessInfo.ID), []byte(wifiAccessInfo.Type)}, []byte{})
 	case models.TypeMining:
-		miningLicenseInfo := vc.CredentialSubject.(models.MiningLicenseInfo)
+		m := &models.MiningLicenseInfo{}
+		err := mapstructure.Decode(vc.CredentialSubject, m)
+		if err != nil {
+			return nil
+		}
+		miningLicenseInfo := m
 		convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(miningLicenseInfo.ID), []byte(miningLicenseInfo.Name), []byte(miningLicenseInfo.Model), []byte(miningLicenseInfo.Serial)}, []byte{})
 	}
 
