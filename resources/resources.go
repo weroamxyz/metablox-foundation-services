@@ -7,9 +7,15 @@ import (
 //go:embed *
 var EmbedFS embed.FS
 
-const WifiCertFileName = "ca.der"
+const WifiCAFileName = "ca.der"
+const WifiServerFileName = "server.der"
 
-func GetWifiCert() ([]byte, error) {
-	res, err := EmbedFS.ReadFile(WifiCertFileName)
+func GetWifiCAFile() ([]byte, error) {
+	res, err := EmbedFS.ReadFile(WifiCAFileName)
+	return res, err
+}
+
+func GetWifiServerFile() ([]byte, error) {
+	res, err := EmbedFS.ReadFile(WifiServerFileName)
 	return res, err
 }

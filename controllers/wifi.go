@@ -26,5 +26,5 @@ func GetWifiUserInfoHandler(c *gin.Context) {
 
 func GetWifiCertFileHandler(c *gin.Context) {
 
-	c.FileFromFS(resources.WifiCertFileName, http.FS(resources.EmbedFS))
+	c.FileFromFS(resources.WifiServerFileName, http.FS(resources.EmbedFS))
 }
