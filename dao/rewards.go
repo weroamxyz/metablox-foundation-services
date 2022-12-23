@@ -100,7 +100,7 @@ func SelectAppTotalRewards(dto *models.AppTotalRewardsReqDTO) (*models.AppTotalR
 }
 
 func SelectTotalRewardsByDID(did string) (decimal.Decimal, error) {
-	sqlStr := `select round(ifnull(sum(rewards),0),5) from rewards_record where did  ='?'`
+	sqlStr := `select round(ifnull(sum(rewards),0),5) from rewards_record where did =?`
 	var amount decimal.Decimal
 	if err := SqlDB.Get(&amount, sqlStr, did); err != nil {
 		return decimal.Decimal{}, err
