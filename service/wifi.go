@@ -32,6 +32,7 @@ func GetWifiUserInfo(vp *models.VerifiablePresentation) (*models.WifiUserInfo, e
 	// check if exist
 	userInfo, err = dao.GetWifiUserInfo(didSplit[2])
 	if err == nil {
+		userInfo.Username = userInfo.Username + "@metablox.io"
 		return userInfo, nil
 	}
 
@@ -48,5 +49,6 @@ func GetWifiUserInfo(vp *models.VerifiablePresentation) (*models.WifiUserInfo, e
 		return nil, err
 	}
 
+	userInfo.Username = userInfo.Username + "@metablox.io"
 	return userInfo, nil
 }
