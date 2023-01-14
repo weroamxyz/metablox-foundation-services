@@ -10,7 +10,7 @@ func GetMinerInfo(dto *models.MinerDetailReqDTO) (*models.MinerInfoDTO, error) {
 	sqlExp := squirrel.Select("*").From("MinerInfo").Limit(1)
 
 	if dto.BSSID != "" {
-		sqlExp = sqlExp.Where("BSSID=?", dto.BSSID)
+		sqlExp = sqlExp.Where("find_in_set(?,bssid)", dto.BSSID)
 	}
 
 	sql, args, err := sqlExp.ToSql()

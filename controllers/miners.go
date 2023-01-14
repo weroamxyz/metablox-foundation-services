@@ -40,7 +40,7 @@ func GetMinerDetailHandler(c *gin.Context) {
 		return
 	}
 
-	list, err := service.GetMinerDetail(&models.MinerDetailReqDTO{
+	list, err := service.GetMinerDetailByBSSID(&models.MinerDetailReqDTO{
 		BSSID: req.BSSID,
 	})
 

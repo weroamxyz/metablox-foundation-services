@@ -10,6 +10,6 @@ func GetNearbyMinersList(dto *models.MinersDTO) ([]*models.MinersWithDistanceDTO
 	return dao.SelectNearbyMinersList(dto)
 }
 
-func GetMinerDetail(reqDto *models.MinerDetailReqDTO) (*models.MinerInfoDTO, error) {
+func GetMinerDetailByBSSID(reqDto *models.MinerDetailReqDTO) (*models.MinerInfoDTO, error) {
 	return dao.GetMinerInfo(reqDto)
 }
