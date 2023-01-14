@@ -32,7 +32,7 @@ func GetMinerInfo(dto *models.MinerDetailReqDTO) (*models.MinerInfoDTO, error) {
 		ID:             miner.ID,
 		Name:           miner.Name,
 		SSID:           miner.SSID,
-		BSSID:          miner.BSSID,
+		BSSID:          dto.BSSID,
 		Longitude:      miner.Longitude,
 		Latitude:       miner.Latitude,
 		Availability:   miner.OnlineStatus,

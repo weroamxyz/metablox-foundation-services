@@ -1,6 +1,8 @@
 package dao
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/Masterminds/squirrel"
 	"github.com/MetaBloxIO/metablox-foundation-services/comm/consts"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
@@ -14,6 +16,13 @@ func SelectNearbyMinersList(dto *models.MinersDTO) ([]*models.MinersWithDistance
 	if dto.Latitude.IsZero() || dto.Longitude.IsZero() {
 		return nil, errors.New("both longitude and latitude are required")
 	}
+
+	// max 30km
+	if dto.Distance.IsZero() || dto.Distance.GreaterThan(decimal.NewFromFloat(consts.MaxDistance)) {
+		dto.Distance = decimal.NewFromFloat(consts.MaxDistance)
+	}
+	bytes, _ := json.Marshal(dto)
+	fmt.Println(string(bytes))
 
 	sql := squirrel.Select(` *,unix_timestamp(CreateTime) createTime,
 	ROUND(
@@ -35,20 +44,18 @@ func SelectNearbyMinersList(dto *models.MinersDTO) ([]*models.MinersWithDistance
       )
     ),0),2) AS distance`).From("MinerInfo").OrderBy(" distance ASC")
 
-	// max 30km
-	if dto.Distance.IsZero() || dto.Distance.GreaterThan(decimal.NewFromFloat(consts.MaxDistance)) {
-		dto.Distance = decimal.NewFromFloat(consts.MaxDistance)
-	}
-
-	//sql = sql.Having("distance<=?", dto.Distance)
+	sql = sql.Having("distance<=?", dto.Distance)
 	var list = make([]*models.MinersWithDistanceDTO, 0)
 	var rows *sqlx.Rows
 
 	sqlStr, args, err := sql.ToSql()
+	fmt.Println("sql statement  ", sqlStr)
+	fmt.Println("sql args   ", args)
 	if err != nil {
 		return list, err
 	}
 	rows, err = SqlDB.Queryx(sqlStr, args...)
+
 	if err != nil {
 		return list, err
 	}

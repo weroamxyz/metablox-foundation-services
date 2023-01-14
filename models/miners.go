@@ -35,7 +35,7 @@ type NFTRewardReq struct {
 
 type MinersReq struct {
 	Latitude  decimal.Decimal `json:"latitude" form:"latitude"`
-	Longitude decimal.Decimal `json:"longitude" form:"latitude"`
+	Longitude decimal.Decimal `json:"longitude" form:"longitude"`
 	Distance  decimal.Decimal `json:"distance" form:"distance"`
 }
 
