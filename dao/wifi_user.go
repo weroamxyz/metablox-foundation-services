@@ -49,8 +49,6 @@ func SelectNearbyMinersList(dto *models.MinersDTO) ([]*models.MinersWithDistance
 	var rows *sqlx.Rows
 
 	sqlStr, args, err := sql.ToSql()
-	fmt.Println("sql statement  ", sqlStr)
-	fmt.Println("sql args   ", args)
 	if err != nil {
 		return list, err
 	}

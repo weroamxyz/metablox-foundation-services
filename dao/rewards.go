@@ -6,6 +6,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/shopspring/decimal"
 	logger "github.com/sirupsen/logrus"
+	"time"
 )
 
 func SelectRewardRecordPage(req *models.AppRewardsPageReqDTO) ([]*models.AppRewardsPageDTO, int64, error) {
@@ -106,4 +107,27 @@ func SelectTotalRewardsByDID(did string) (decimal.Decimal, error) {
 		return decimal.Decimal{}, err
 	}
 	return amount, nil
+}
+
+func CheckRewardsByDIDAndValidator(did string, bizDate *time.Time) (bool, error) {
+	sqlStr := `select count(*) from rewards_record where did =? and date(biz_date) = date(?)`
+	var count int
+	if err := SqlDB.Get(&count, sqlStr, did, bizDate); err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+func InsertRewards(do *models.RewardsRecord) (count int64, err error) {
+	if err != nil {
+		return 0, err
+	}
+	sqlStr := "insert into rewards_record (biz_date,did,user_type,is_withdrawn,owner_address,rewards,create_time,withdrawal_time) values (:biz_date,:did,:user_type,:is_withdrawn,:owner_address,:rewards,:create_time,:withdrawal_time)"
+	result, err := SqlDB.NamedExec(sqlStr, do)
+	if err != nil {
+		return 0, err
+	}
+	newID, _ := result.LastInsertId()
+
+	return newID, nil
 }

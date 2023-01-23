@@ -58,5 +58,10 @@ func main() {
 		return
 	}
 
+	//if err = service.InitEvent(); err != nil {
+	//	logger.Error(err)
+	//	return
+	//}
+
 	routers.Setup()
 }

@@ -80,6 +80,8 @@ func WorkloadValidate(req *models.WorkloadDTO) error {
 		return err
 	}
 
+	//event.Publish(event.WorkloadValidated, workload)
+
 	return nil
 }
 
