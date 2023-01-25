@@ -45,6 +45,7 @@ func Setup() {
 	r.GET("/miners", controllers.GetNearbyMinersListHandler)
 	r.GET("/miner/getByBssid", controllers.GetMinerDetailHandler)
 	r.GET("/miner/detail", controllers.GetMinerDetailHandler)
+	r.POST("/miner/heartbeat", controllers.HeartbeatHandler)
 	r.GET("/app/rewardsPage", controllers.GetAppRewardsPageHandler)
 	r.GET("/app/totalRewards", controllers.GetAppTotalRewardsHandler)
 

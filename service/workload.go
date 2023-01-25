@@ -2,6 +2,7 @@ package service
 
 import (
 	"encoding/json"
+	"github.com/MetaBloxIO/metablox-foundation-services/comm/event"
 	"github.com/MetaBloxIO/metablox-foundation-services/dao"
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
@@ -80,7 +81,7 @@ func WorkloadValidate(req *models.WorkloadDTO) error {
 		return err
 	}
 
-	//event.Publish(event.WorkloadValidated, workload)
+	event.Publish(event.WorkloadValidated, workload)
 
 	return nil
 }

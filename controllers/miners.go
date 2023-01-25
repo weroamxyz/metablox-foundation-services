@@ -51,3 +51,20 @@ func GetMinerDetailHandler(c *gin.Context) {
 
 	ResponseSuccess(c, list)
 }
+
+func HeartbeatHandler(c *gin.Context) {
+
+	req, err := requtil.ShouldBindJSON[models.HeartbeatInfo](c)
+	if err != nil {
+		return
+	}
+
+	err = service.HandleHeartBeat(req)
+
+	if err != nil {
+		ResponseErrorWithMsg(c, CodeError, err.Error())
+		return
+	}
+
+	ResponseSuccessWithMsg(c, "success")
+}

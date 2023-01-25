@@ -48,3 +48,17 @@ func GetMinerInfo(dto *models.MinerDetailReqDTO) (*models.MinerInfoDTO, error) {
 
 	return m, nil
 }
+
+func InsertOrUpdateMinerInfo(info *models.MinerInfo) error {
+
+	sqlStr := `INSERT INTO minerinfo ( SSID, BSSID, OnlineStatus, MiningPower, DID, IsVirtual, SignalStrength, CreateTime, IsMinable )
+			VALUES( ?, ?, ?,?, ?, ?, ?, ?, ? ) 
+			ON DUPLICATE KEY UPDATE SSID =VALUES( SSID ),BSSID =VALUES( BSSID ),OnlineStatus =VALUES( OnlineStatus ),
+	                        MiningPower =VALUES( MiningPower ),IsVirtual =VALUES( IsVirtual ),
+	                        SignalStrength =VALUES( SignalStrength ),IsMinable =VALUES(IsMinable)`
+
+	_, err := SqlDB.Exec(sqlStr, info.SSID, info.BSSID, info.OnlineStatus, info.MiningPower, info.DID, info.IsVirtual, info.SignalStrength, info.CreateTime, info.IsMinable)
+	return err
+
+	return nil
+}
