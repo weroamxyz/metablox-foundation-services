@@ -6,7 +6,7 @@ const AppUser = "App"
 const NftUser = "Nft"
 
 const (
-	AppRewardsPerDay       = 0.1
+	AppRewardsPerDay       = 10
 	NFTRewardsPerDayMin    = 3.5
 	NFTRewardsPerDayMax    = 3.8
 	VipNFTRewardsPerDayMin = 5.2
