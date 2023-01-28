@@ -6,6 +6,7 @@ import (
 	"github.com/MetaBloxIO/metablox-foundation-services/comm/sqlutil"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/jmoiron/sqlx"
+	"time"
 )
 import "github.com/shopspring/decimal"
 
@@ -58,6 +59,15 @@ func GetProfitByDID(id string) (decimal.Decimal, error) {
 	}
 
 	return total, nil
+}
+
+func SelectCountWorkloadByDIDAndValidator(miner string, validator string, bizDate time.Time) (int, error) {
+	sqlStr := `select count(*) from workload_record where miner =? and validator = ? and date(create_time) = date(?)`
+	var count int
+	if err := SqlDB.Get(&count, sqlStr, miner, validator, bizDate); err != nil {
+		return 0, err
+	}
+	return count, nil
 }
 
 func InsertWorkload(workload *models.WorkloadRecord) (int64, error) {

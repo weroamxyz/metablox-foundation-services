@@ -24,15 +24,27 @@ func RewardToAppUser(wl *models.WorkloadRecord) {
 		logger.Error("workload is nil")
 		return
 	}
-	flag, err := CheckRewardRecordByCreateTimeAndValidator(wl.Validator, wl.CreateTime.UTC())
+
+	count, err := dao.SelectCountWorkloadByDIDAndValidator(wl.Miner, wl.Validator, wl.CreateTime.UTC())
 	if err != nil {
 		logger.Error(err.Error())
-	}
-
-	if flag {
-		logger.Info("the user has reward today")
 		return
 	}
+
+	if count > 1 {
+		logger.Info("rewards exists")
+		return
+	}
+
+	//flag, err := CheckRewardRecordByCreateTimeAndValidator(wl.Validator, wl.CreateTime.UTC())
+	//if err != nil {
+	//	logger.Error(err.Error())
+	//}
+
+	//if flag {
+	//	logger.Info("the user has reward today")
+	//	return
+	//}
 
 	now := wl.CreateTime.UTC()
 
