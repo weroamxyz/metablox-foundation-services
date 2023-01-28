@@ -1,6 +1,5 @@
 package controllers
 
-import "C"
 import (
 	"github.com/MetaBloxIO/metablox-foundation-services/comm/requtil"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
@@ -8,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func WorkloadValidateHandler(c *gin.Context) {
+func WorkloadValidationHandler(c *gin.Context) {
 
 	req, err := requtil.ShouldBindJSON[models.WorkloadReq](c)
 	if err != nil {

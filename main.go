@@ -53,7 +53,10 @@ func main() {
 
 	controllers.InitializeValues()
 
-	err = credentials.InitializeValues()
+	err = credentials.Init(&credentials.Config{
+		Passphrase: viper.GetString("metablox.wallet.passphrase"),
+		Keystore:   viper.GetString("metablox.wallet.keystore"),
+	})
 	if err != nil {
 		logger.Error(err)
 		return

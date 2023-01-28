@@ -20,3 +20,4 @@ logs/
 config*.yaml
 config*.yml
 !config_example.yaml
+bin/

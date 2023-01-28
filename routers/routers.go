@@ -41,7 +41,7 @@ func Setup() {
 	r.POST("/testing/readvcchanged", controllers.ReadVCChangedEvents)
 	r.POST("/testing/signpresentation", controllers.GenerateTestingPresentationSignatures)
 
-	r.POST("/workload/validate", controllers.WorkloadValidateHandler)
+	r.POST("/workload/validate", controllers.WorkloadValidationHandler)
 	r.GET("/miners", controllers.GetNearbyMinersListHandler)
 	r.GET("/miner/getByBssid", controllers.GetMinerDetailHandler)
 	r.GET("/miner/detail", controllers.GetMinerDetailHandler)

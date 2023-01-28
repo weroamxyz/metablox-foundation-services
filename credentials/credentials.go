@@ -6,7 +6,10 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/mitchellh/mapstructure"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -27,14 +30,43 @@ var IssuerPrivateKey *ecdsa.PrivateKey
 const baseIDString = "http://metablox.com/credentials/"
 
 // read in private key for issuer and generate the DID from it
-func InitializeValues() error {
+//func Init() error {
+//	var err error
+//	IssuerPrivateKey, err = key.GetIssuerPrivateKey()
+//	if err != nil {
+//		return err
+//	}
+//	IssuerDID = did.GenerateDIDString(IssuerPrivateKey)
+//	return nil
+//}
+
+type Config struct {
+	Passphrase string `json:"passphrase"`
+	Keystore   string `json:"keystore"`
+}
+
+func Init(cfg *Config) error {
 	var err error
-	IssuerPrivateKey, err = key.GetIssuerPrivateKey()
+	IssuerPrivateKey, err = keystoreToPrivateKey(cfg.Keystore, cfg.Passphrase)
 	if err != nil {
 		return err
 	}
 	IssuerDID = did.GenerateDIDString(IssuerPrivateKey)
 	return nil
+}
+
+func keystoreToPrivateKey(privateKeyFile, password string) (*ecdsa.PrivateKey, error) {
+	keystoreJSON, err := os.ReadFile(privateKeyFile)
+	if err != nil {
+		return nil, fmt.Errorf("read keyjson file failed：%s", err.Error())
+	}
+	key, err := keystore.DecryptKey(keystoreJSON, password)
+	if err != nil {
+		return nil, err
+	}
+	//privKey := hex.EncodeToString(unlockedKey.PrivateKey.D.Bytes())
+	//addr := crypto.PubkeyToAddress(unlockedKey.PrivateKey.PublicKey)
+	return key.PrivateKey, nil
 }
 
 // create a credential proof using the provided verification method string
