@@ -19,6 +19,7 @@ func Setup() {
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
+
 	r.POST("/registry/storedid", controllers.RegisterDIDHandler)
 
 	r.POST("/vc/wifi/issue", controllers.IssueWifiVCHandler)
@@ -27,9 +28,9 @@ func Setup() {
 	r.POST("/vc/wifi/userInfo", controllers.GetWifiUserInfoHandler)
 	r.GET("/vc/wifi/certFile", controllers.GetWifiCertFileHandler)
 
-	r.POST("/vc/mining/issue", controllers.IssueMiningVCHandler)
-	r.POST("/vc/mining/renew", controllers.RenewVCHandler)
-	r.POST("/vc/mining/revoke", controllers.RevokeVCHandler)
+	//r.POST("/vc/mining/issue", controllers.IssueMiningVCHandler)
+	//r.POST("/vc/mining/renew", controllers.RenewVCHandler)
+	//r.POST("/vc/mining/revoke", controllers.RevokeVCHandler)
 
 	r.GET("/nonce", controllers.GenerateNonceHandler)
 

@@ -21,7 +21,7 @@ func (s *Page) PageInfo() (offset uint64, limit uint64) {
 }
 
 type AppRewardsPageReq struct {
-	BizDate string `json:"bizDate"`
+	BizDate string `json:"bizDate" form:"bizDate"`
 	Did     string `json:"did" binding:"required" form:"did"`
 	Page
 }
@@ -49,6 +49,6 @@ type AppTotalRewardsReqDTO struct {
 
 type AppTotalRewardsDTO struct {
 	LatestWithdrawalTime string `json:"latestWithdrawalTime" db:"latestWithdrawalTime"`
-	RewardsBalance       string     `json:"rewardsBalance" db:"rewardsBalance"`
-	TotalWithdrawn       string     `json:"totalWithdrawn" db:"totalWithdrawn"`
+	RewardsBalance       string `json:"rewardsBalance" db:"rewardsBalance"`
+	TotalWithdrawn       string `json:"totalWithdrawn" db:"totalWithdrawn"`
 }
