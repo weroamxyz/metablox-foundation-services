@@ -4,8 +4,8 @@ import (
 	"github.com/MetaBloxIO/metablox-foundation-services/comm/log"
 	"github.com/MetaBloxIO/metablox-foundation-services/contract"
 	"github.com/MetaBloxIO/metablox-foundation-services/controllers"
-	"github.com/MetaBloxIO/metablox-foundation-services/credentials"
 	"github.com/MetaBloxIO/metablox-foundation-services/dao"
+	"github.com/MetaBloxIO/metablox-foundation-services/did"
 	"github.com/MetaBloxIO/metablox-foundation-services/routers"
 	"github.com/MetaBloxIO/metablox-foundation-services/service"
 	"github.com/MetaBloxIO/metablox-foundation-services/settings"
@@ -53,7 +53,7 @@ func main() {
 
 	controllers.InitializeValues()
 
-	err = credentials.Init(&credentials.Config{
+	err = did.Init(&did.Config{
 		Passphrase: viper.GetString("metablox.wallet.passphrase"),
 		Keystore:   viper.GetString("metablox.wallet.keystore"),
 	})

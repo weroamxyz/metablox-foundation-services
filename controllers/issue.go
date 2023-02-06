@@ -3,7 +3,6 @@ package controllers
 import (
 	"errors"
 	"github.com/MetaBloxIO/metablox-foundation-services/contract"
-	"github.com/MetaBloxIO/metablox-foundation-services/credentials"
 	"github.com/MetaBloxIO/metablox-foundation-services/did"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/gin-gonic/gin"
@@ -11,7 +10,7 @@ import (
 
 // IssueWifiVC issue a Wi-Fi access credential using inputted WifiAccessInfo, or return the credential that already exists for the DID in the input
 func IssueWifiVC(c *gin.Context) (*models.VerifiableCredential, error) {
-	didString := credentials.IssuerDID
+	didString := did.IssuerDID
 
 	wifiInfo := models.CreateWifiAccessInfo()
 
@@ -25,13 +24,13 @@ func IssueWifiVC(c *gin.Context) (*models.VerifiableCredential, error) {
 		return nil, errors.New(resolutionMeta.Error)
 	}
 
-	newVC, err := credentials.CreateWifiAccessVC(issuerDocument, wifiInfo, credentials.IssuerPrivateKey)
+	newVC, err := did.CreateWifiAccessVC(issuerDocument, wifiInfo, did.IssuerPrivateKey)
 	if err != nil {
 		return nil, err
 	}
 
 	//TODO: currently does nothing
-	err = contract.CreateVC(newVC, c.Param("did"), credentials.IssuerPrivateKey)
+	err = contract.CreateVC(newVC, c.Param("did"), did.IssuerPrivateKey)
 	if err != nil {
 		return nil, err
 	}

@@ -6,7 +6,6 @@ import (
 	"github.com/MetaBloxIO/metablox-foundation-services/did"
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
-	"github.com/MetaBloxIO/metablox-foundation-services/presentations"
 	"github.com/google/uuid"
 	logger "github.com/sirupsen/logrus"
 )
@@ -16,7 +15,7 @@ func GetWifiUserInfo(vp *models.VerifiablePresentation) (*models.WifiUserInfo, e
 		userInfo *models.WifiUserInfo
 	)
 
-	success, err := presentations.VerifyVP(vp)
+	success, err := did.VerifyVP(vp)
 	if err != nil {
 		logger.Warn(err)
 		return nil, err

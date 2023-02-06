@@ -1,9 +1,8 @@
-package presentations
+package did
 
 import (
 	"testing"
 
-	"github.com/MetaBloxIO/metablox-foundation-services/credentials"
 	"github.com/MetaBloxIO/metablox-foundation-services/dao"
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
@@ -25,13 +24,13 @@ func TestCreateVP(t *testing.T) {
 
 	err = dao.CreateTestWifiAccessTable()
 	assert.Nil(t, err)
-	credentials.IssuerPrivateKey = models.GenerateTestPrivKey()
+	IssuerPrivateKey = models.GenerateTestPrivKey()
 
 	issuerDocument := models.GenerateTestDIDDocument()
 	issuerDocument.ID = "did:metablox:sampleIssuer"
 	wifiAccessInfo := models.GenerateTestWifiAccessInfo()
 	issuerPrivKey := models.GenerateTestPrivKey()
-	vc, err := credentials.CreateWifiAccessVC(issuerDocument, wifiAccessInfo, issuerPrivKey)
+	vc, err := CreateWifiAccessVC(issuerDocument, wifiAccessInfo, issuerPrivKey)
 	assert.Nil(t, err)
 	credentialArray := make([]models.VerifiableCredential, 0)
 	credentialArray = append(credentialArray, *vc)

@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"github.com/MetaBloxIO/metablox-foundation-services/credentials"
+	"github.com/MetaBloxIO/metablox-foundation-services/did"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gin-gonic/gin"
 )
@@ -22,7 +22,6 @@ func IssueWifiVCHandler(c *gin.Context) {
 
 	ResponseSuccess(c, newVC)
 }
-
 
 func RenewVCHandler(c *gin.Context) {
 	renewedVC, err := RenewVC(c)
@@ -50,14 +49,10 @@ func GenerateNonceHandler(c *gin.Context) {
 	ResponseSuccess(c, nonce)
 }
 
-
-
-
 // get public key of the issuer
 func GetIssuerPublicKeyHandler(c *gin.Context) {
-	ResponseSuccess(c, crypto.FromECDSAPub(&credentials.IssuerPrivateKey.PublicKey))
+	ResponseSuccess(c, crypto.FromECDSAPub(&did.IssuerPrivateKey.PublicKey))
 }
-
 
 func RegisterDIDHandler(c *gin.Context) {
 	hash, err := RegisterDIDForUser(c)

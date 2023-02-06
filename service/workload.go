@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"github.com/MetaBloxIO/metablox-foundation-services/comm/event"
 	"github.com/MetaBloxIO/metablox-foundation-services/dao"
+	"github.com/MetaBloxIO/metablox-foundation-services/did"
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
-	"github.com/MetaBloxIO/metablox-foundation-services/presentations"
 	"github.com/duke-git/lancet/v2/slice"
 	"github.com/mitchellh/mapstructure"
 	errors2 "github.com/pkg/errors"
@@ -24,7 +24,7 @@ func WorkloadValidate(req *models.WorkloadDTO) error {
 	//}
 	var err0 error
 
-	success0, err0 := presentations.VerifyVP(req.Identity.Miner)
+	success0, err0 := did.VerifyVP(req.Identity.Miner)
 	if err0 != nil {
 		logger.Warn(err0)
 		return errors2.New("verify miner's vp failed")
@@ -34,7 +34,7 @@ func WorkloadValidate(req *models.WorkloadDTO) error {
 		return errval.ErrVerifyPresent
 	}
 
-	success1, err1 := presentations.VerifyVP(req.Identity.Validator)
+	success1, err1 := did.VerifyVP(req.Identity.Validator)
 	if err1 != nil {
 		logger.Warn(err0)
 		return errors2.New("verify validator's vp failed")

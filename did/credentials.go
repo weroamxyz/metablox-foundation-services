@@ -1,4 +1,4 @@
-package credentials
+package did
 
 import (
 	"bytes"
@@ -15,9 +15,7 @@ import (
 	"time"
 
 	"github.com/MetaBloxIO/metablox-foundation-services/dao"
-	"github.com/MetaBloxIO/metablox-foundation-services/did"
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
-	"github.com/MetaBloxIO/metablox-foundation-services/key"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/ethereum/go-ethereum/crypto"
 )
@@ -51,7 +49,7 @@ func Init(cfg *Config) error {
 	if err != nil {
 		return err
 	}
-	IssuerDID = did.GenerateDIDString(IssuerPrivateKey)
+	IssuerDID = GenerateDIDString(IssuerPrivateKey)
 	return nil
 }
 
@@ -185,7 +183,7 @@ func CreateWifiAccessVC(issuerDocument *models.DIDDocument, wifiAccessInfo *mode
 	//public key matches the private key used to make the signature
 	hashedVC := sha256.Sum256(ConvertVCToBytes(*vc))
 
-	signatureData, err := key.CreateJWSSignature(issuerPrivKey, hashedVC[:])
+	signatureData, err := CreateJWSSignature(issuerPrivKey, hashedVC[:])
 	if err != nil {
 		return nil, err
 	}
@@ -251,7 +249,7 @@ func CreateMiningLicenseVC(issuerDocument *models.DIDDocument, miningLicenseInfo
 	//public key matches the private key used to make the signature
 	hashedVC := sha256.Sum256(ConvertVCToBytes(*vc))
 
-	signatureData, err := key.CreateJWSSignature(issuerPrivKey, hashedVC[:])
+	signatureData, err := CreateJWSSignature(issuerPrivKey, hashedVC[:])
 	if err != nil {
 		return nil, err
 	}
@@ -291,7 +289,7 @@ func RenewVC(vc *models.VerifiableCredential, issuerPrivKey *ecdsa.PrivateKey) e
 
 	hashedVC := sha256.Sum256(ConvertVCToBytes(*vc))
 
-	signatureData, err := key.CreateJWSSignature(issuerPrivKey, hashedVC[:]) //since the expiration date has changed, the signature must also change
+	signatureData, err := CreateJWSSignature(issuerPrivKey, hashedVC[:]) //since the expiration date has changed, the signature must also change
 	if err != nil {
 		return err
 	}
@@ -339,7 +337,7 @@ func VerifyVC(vc *models.VerifiableCredential) (bool, error) {
 		return false, errval.ErrUnknownIssuer
 	}
 
-	resolutionMeta, issuerDoc, _ := did.Resolve(vc.Issuer, models.CreateResolutionOptions())
+	resolutionMeta, issuerDoc, _ := Resolve(vc.Issuer, models.CreateResolutionOptions())
 	if resolutionMeta.Error != "" {
 		return false, errors.New(resolutionMeta.Error)
 	}
@@ -363,7 +361,7 @@ func VerifyVC(vc *models.VerifiableCredential) (bool, error) {
 			return false, errval.ErrSecp256k1WrongVMType
 		}
 
-		success := key.CompareAddresses(targetVM, publicKey) //vm must have the address that matches the proof's public key
+		success := CompareAddresses(targetVM, publicKey) //vm must have the address that matches the proof's public key
 		if !success {
 			return false, errval.ErrWrongAddress
 		}
@@ -383,7 +381,7 @@ func VerifyVCSecp256k1(vc *models.VerifiableCredential, pubKey *ecdsa.PublicKey)
 	copiedVC.Proof.JWSSignature = ""
 	hashedVC := sha256.Sum256(ConvertVCToBytes(copiedVC))
 
-	result, err := key.VerifyJWSSignature(vc.Proof.JWSSignature, pubKey, hashedVC[:])
+	result, err := VerifyJWSSignature(vc.Proof.JWSSignature, pubKey, hashedVC[:])
 	if err != nil {
 		return false, err
 	}

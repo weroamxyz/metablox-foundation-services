@@ -1,4 +1,4 @@
-package key
+package did
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ import (
 	gojose "gopkg.in/square/go-jose.v2"
 )
 
-//create new private key and save it to a target file
+// create new private key and save it to a target file
 func GenerateNewPrivateKey(fileName string) (*ecdsa.PrivateKey, error) {
 	privKey, err := crypto.GenerateKey()
 	if err != nil {
@@ -31,7 +31,7 @@ func GenerateNewPrivateKey(fileName string) (*ecdsa.PrivateKey, error) {
 	return privKey, nil
 }
 
-//load an existing private key from a target file
+// load an existing private key from a target file
 func LoadPrivateKey(keyFileName string) (*ecdsa.PrivateKey, error) {
 	loadLocation := viper.GetString("storage.key_loading")
 	privData, err := os.ReadFile(loadLocation + keyFileName)
@@ -47,7 +47,7 @@ func LoadPrivateKey(keyFileName string) (*ecdsa.PrivateKey, error) {
 	return privKey, nil
 }
 
-//load private key from file, or create it if it doesn't exist yet
+// load private key from file, or create it if it doesn't exist yet
 func GetIssuerPrivateKey() (*ecdsa.PrivateKey, error) {
 	fileName := viper.GetString("storage.issuer_key_file")
 	key, err := LoadPrivateKey(fileName)
@@ -60,7 +60,7 @@ func GetIssuerPrivateKey() (*ecdsa.PrivateKey, error) {
 	return key, nil
 }
 
-//use a private key and a message to create a JWS format signature
+// use a private key and a message to create a JWS format signature
 func CreateJWSSignature(privKey *ecdsa.PrivateKey, message []byte) (string, error) {
 	signer, err := gojose.NewSigner(gojose.SigningKey{Algorithm: gojose.ES256, Key: privKey}, nil)
 	if err != nil {
@@ -96,7 +96,7 @@ func CreateJWSSignature(privKey *ecdsa.PrivateKey, message []byte) (string, erro
 	return compactserialized, nil
 }
 
-//verify a JWS format signature using the matching public key and the original message
+// verify a JWS format signature using the matching public key and the original message
 func VerifyJWSSignature(signature string, pubKey *ecdsa.PublicKey, message []byte) (bool, error) {
 	sigObject, err := gojose.ParseDetached(signature, message)
 	if err != nil {
@@ -115,7 +115,7 @@ func VerifyJWSSignature(signature string, pubKey *ecdsa.PublicKey, message []byt
 	}
 }
 
-//make sure that the address created from pubKey matches the address stored in vm's BlockChainAccountId field
+// make sure that the address created from pubKey matches the address stored in vm's BlockChainAccountId field
 func CompareAddresses(vm models.VerificationMethod, pubKey *ecdsa.PublicKey) bool {
 	givenAddress := crypto.PubkeyToAddress(*pubKey)
 	givenAccountID := "eip155:1666600000:" + givenAddress.Hex()

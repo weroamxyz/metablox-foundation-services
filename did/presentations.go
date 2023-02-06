@@ -1,4 +1,4 @@
-package presentations
+package did
 
 import (
 	"bytes"
@@ -7,15 +7,12 @@ import (
 	"errors"
 	"time"
 
-	"github.com/MetaBloxIO/metablox-foundation-services/credentials"
-	"github.com/MetaBloxIO/metablox-foundation-services/did"
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
-	"github.com/MetaBloxIO/metablox-foundation-services/key"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
-//create a presentation using 1 or more credentials. Currently unused
+// create a presentation using 1 or more credentials. Currently unused
 func CreatePresentation(credentials []models.VerifiableCredential, holderDocument models.DIDDocument, holderPrivKey *ecdsa.PrivateKey, nonce string) (*models.VerifiablePresentation, error) {
 	presentationProof := models.CreateVPProof()
 	presentationProof.Type = models.Secp256k1Sig
@@ -36,7 +33,7 @@ func CreatePresentation(credentials []models.VerifiableCredential, holderDocumen
 	//This proof is only for the presentation itself; each credential also needs to be individually verified
 	hashedVP := sha256.Sum256(ConvertVPToBytes(*presentation))
 
-	signatureData, err := key.CreateJWSSignature(holderPrivKey, hashedVP[:])
+	signatureData, err := CreateJWSSignature(holderPrivKey, hashedVP[:])
 	if err != nil {
 		return nil, err
 	}
@@ -44,11 +41,11 @@ func CreatePresentation(credentials []models.VerifiableCredential, holderDocumen
 	return presentation, nil
 }
 
-//Verify a presentation. Need to first verify the presentation's proof using the holder's DID document.
-//Afterwards, need to verify the proof of each credential included inside the presentation
+// Verify a presentation. Need to first verify the presentation's proof using the holder's DID document.
+// Afterwards, need to verify the proof of each credential included inside the presentation
 func VerifyVP(presentation *models.VerifiablePresentation) (bool, error) {
 
-	resolutionMeta, holderDoc, _ := did.Resolve(presentation.Holder, models.CreateResolutionOptions())
+	resolutionMeta, holderDoc, _ := Resolve(presentation.Holder, models.CreateResolutionOptions())
 	if resolutionMeta.Error != "" {
 		return false, errors.New(resolutionMeta.Error)
 	}
@@ -71,7 +68,7 @@ func VerifyVP(presentation *models.VerifiablePresentation) (bool, error) {
 			return false, errval.ErrSecp256k1WrongVMType
 		}
 
-		success = key.CompareAddresses(targetVM, holderKey) //vm must have the address that matches the proof's public key
+		success = CompareAddresses(targetVM, holderKey) //vm must have the address that matches the proof's public key
 		if !success {
 			return false, errval.ErrWrongAddress
 		}
@@ -86,7 +83,7 @@ func VerifyVP(presentation *models.VerifiablePresentation) (bool, error) {
 	}
 
 	for _, credential := range presentation.VerifiableCredential { //verify each individual credential stored in the presentation
-		success, err = credentials.VerifyVC(&credential)
+		success, err = VerifyVC(&credential)
 		if !success {
 			return false, err
 		}
@@ -95,23 +92,23 @@ func VerifyVP(presentation *models.VerifiablePresentation) (bool, error) {
 	return true, nil
 }
 
-//Verify that the provided public key matches the signature in the proof.
-//Since we've made sure that the address in the holder vm matches this public key,
-//verifying the signature here proves that the signature was made with the holder's private key
+// Verify that the provided public key matches the signature in the proof.
+// Since we've made sure that the address in the holder vm matches this public key,
+// verifying the signature here proves that the signature was made with the holder's private key
 func VerifyVPSecp256k1(presentation *models.VerifiablePresentation, pubKey *ecdsa.PublicKey) (bool, error) {
 	copiedVP := *presentation
 	//have to make sure to remove the signature from the copy, as the original did not have a signature at the time the signature was generated
 	copiedVP.Proof.JWSSignature = ""
 	hashedVP := sha256.Sum256(ConvertVPToBytes(copiedVP))
 
-	result, err := key.VerifyJWSSignature(presentation.Proof.JWSSignature, pubKey, hashedVP[:])
+	result, err := VerifyJWSSignature(presentation.Proof.JWSSignature, pubKey, hashedVP[:])
 	if err != nil {
 		return false, err
 	}
 	return result, nil
 }
 
-//convert presentation to bytes so it can be hashed
+// convert presentation to bytes so it can be hashed
 func ConvertVPToBytes(vp models.VerifiablePresentation) []byte {
 	var convertedBytes []byte
 
@@ -124,7 +121,7 @@ func ConvertVPToBytes(vp models.VerifiablePresentation) []byte {
 	}
 
 	for _, item := range vp.VerifiableCredential {
-		convertedBytes = bytes.Join([][]byte{convertedBytes, credentials.ConvertVCToBytes(item)}, []byte{})
+		convertedBytes = bytes.Join([][]byte{convertedBytes, ConvertVCToBytes(item)}, []byte{})
 	}
 
 	convertedBytes = bytes.Join([][]byte{convertedBytes, []byte(vp.Holder), []byte(vp.Proof.Type), []byte(vp.Proof.Created), []byte(vp.Proof.VerificationMethod), []byte(vp.Proof.ProofPurpose), []byte(vp.Proof.JWSSignature), []byte(vp.Proof.Nonce), vp.Proof.PublicKeyString}, []byte{})

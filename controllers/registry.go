@@ -5,7 +5,6 @@ import (
 
 	"github.com/MetaBloxIO/metablox-foundation-services/comm/regutil"
 	"github.com/MetaBloxIO/metablox-foundation-services/contract"
-	"github.com/MetaBloxIO/metablox-foundation-services/credentials"
 	"github.com/MetaBloxIO/metablox-foundation-services/did"
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
@@ -13,7 +12,7 @@ import (
 	logger "github.com/sirupsen/logrus"
 )
 
-//register a DID without needing a full did document
+// register a DID without needing a full did document
 func RegisterDIDForUser(c *gin.Context) (map[string]interface{}, error) {
 	// 1.new param instance
 	register := models.NewRegisterDID()
@@ -34,7 +33,7 @@ func RegisterDIDForUser(c *gin.Context) (map[string]interface{}, error) {
 		return nil, errval.ErrETHAddress
 	}
 	// 4. handle biz logic
-	tx, err := contract.RegisterDID(register, credentials.IssuerPrivateKey)
+	tx, err := contract.RegisterDID(register, did.IssuerPrivateKey)
 	if err != nil {
 		return nil, err
 	}

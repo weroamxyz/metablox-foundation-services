@@ -9,14 +9,14 @@ import (
 
 const nanoMinute = 60000000000 //number of nanoseconds in 1 minute
 
-//If user provided correct nonce, then assign them a new one and return that value
+// If user provided correct nonce, then assign them a new one and return that value
 func CreateNonce(ip string) string {
 	time.Now().UnixNano()
 	NonceLookup[ip] = strconv.Itoa(int(time.Now().UnixNano()))
 	return NonceLookup[ip]
 }
 
-//Compare the nonce a user has given with the one they are assigned. Current time must also be within 1 minute of the nonce's value
+// Compare the nonce a user has given with the one they are assigned. Current time must also be within 1 minute of the nonce's value
 func CheckNonce(ip, givenNonce string) error {
 	assignedNonce, found := NonceLookup[ip]
 	if !found {
@@ -37,7 +37,7 @@ func CheckNonce(ip, givenNonce string) error {
 	return nil
 }
 
-//delete a nonce after it has been successfully used in an operation
+// delete a nonce after it has been successfully used in an operation
 func DeleteNonce(ip string) {
 	delete(NonceLookup, ip)
 }
