@@ -38,32 +38,3 @@ func IssueWifiVC(c *gin.Context) (*models.VerifiableCredential, error) {
 
 	return newVC, nil
 }
-
-// issue a mining license credential using inputted MiningLicenseInfo, or return the credential that already exists for the DID in the input
-func IssueMiningVC(c *gin.Context) (*models.VerifiableCredential, error) {
-	didString := credentials.IssuerDID
-
-	miningInfo := models.CreateMiningLicenseInfo()
-
-	if err := c.BindJSON(&miningInfo); err != nil {
-		return nil, err
-	}
-
-	opts := models.CreateResolutionOptions()
-	resolutionMeta, issuerDocument, _ := did.Resolve(didString, opts)
-	if resolutionMeta.Error != "" {
-		return nil, errors.New(resolutionMeta.Error)
-	}
-
-	newVC, err := credentials.CreateMiningLicenseVC(issuerDocument, miningInfo, credentials.IssuerPrivateKey)
-	if err != nil {
-		return nil, err
-	}
-
-	err = contract.CreateVC(newVC, c.Param("did"), credentials.IssuerPrivateKey)
-	if err != nil {
-		return nil, err
-	}
-
-	return newVC, nil
-}

@@ -28,19 +28,9 @@ func Setup() {
 	r.POST("/vc/wifi/userInfo", controllers.GetWifiUserInfoHandler)
 	r.GET("/vc/wifi/certFile", controllers.GetWifiCertFileHandler)
 
-	//r.POST("/vc/mining/issue", controllers.IssueMiningVCHandler)
-	//r.POST("/vc/mining/renew", controllers.RenewVCHandler)
-	//r.POST("/vc/mining/revoke", controllers.RevokeVCHandler)
-
 	r.GET("/nonce", controllers.GenerateNonceHandler)
 
 	r.GET("/pubkey", controllers.GetIssuerPublicKeyHandler)
-
-	r.GET("/testing/signatures/:message", controllers.GenerateTestSignatures) //todo: don't leave this active in any release version as it is only for testing
-	r.POST("/testing/assignissuer", controllers.AssignIssuer)
-	r.POST("/testing/updatevc", controllers.SetVCAttribute)
-	r.POST("/testing/readvcchanged", controllers.ReadVCChangedEvents)
-	r.POST("/testing/signpresentation", controllers.GenerateTestingPresentationSignatures)
 
 	r.POST("/workload/validate", controllers.WorkloadValidationHandler)
 	r.GET("/miners", controllers.GetNearbyMinersListHandler)

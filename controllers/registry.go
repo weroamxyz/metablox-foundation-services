@@ -13,26 +13,6 @@ import (
 	logger "github.com/sirupsen/logrus"
 )
 
-//register a DID document in the registry smart contract
-func SendDocToRegistry(c *gin.Context) error {
-	document := models.CreateDIDDocument()
-	if err := c.BindJSON(document); err != nil {
-		return err
-	}
-
-	splitString, valid := did.PrepareDID(document.ID)
-	if !valid {
-		return errval.ErrDIDFormat
-	}
-
-	err := contract.UploadDocument(document, splitString[2], credentials.IssuerPrivateKey)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 //register a DID without needing a full did document
 func RegisterDIDForUser(c *gin.Context) (map[string]interface{}, error) {
 	// 1.new param instance
