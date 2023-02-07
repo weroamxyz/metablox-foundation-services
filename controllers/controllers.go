@@ -23,6 +23,16 @@ func IssueWifiVCHandler(c *gin.Context) {
 	ResponseSuccess(c, newVC)
 }
 
+func IssueMiningVCHandler(c *gin.Context) {
+	newVC, err := IssueMiningVC(c)
+	if err != nil {
+		ResponseErrorWithMsg(c, CodeError, err.Error())
+		return
+	}
+
+	ResponseSuccess(c, newVC)
+}
+
 func RenewVCHandler(c *gin.Context) {
 	renewedVC, err := RenewVC(c)
 	if err != nil {
