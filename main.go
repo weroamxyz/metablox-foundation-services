@@ -2,13 +2,13 @@ package main
 
 import (
 	"github.com/MetaBloxIO/metablox-foundation-services/comm/log"
+	"github.com/MetaBloxIO/metablox-foundation-services/conf"
 	"github.com/MetaBloxIO/metablox-foundation-services/contract"
-	"github.com/MetaBloxIO/metablox-foundation-services/controllers"
+	"github.com/MetaBloxIO/metablox-foundation-services/controller"
 	"github.com/MetaBloxIO/metablox-foundation-services/dao"
 	"github.com/MetaBloxIO/metablox-foundation-services/did"
-	"github.com/MetaBloxIO/metablox-foundation-services/routers"
+	"github.com/MetaBloxIO/metablox-foundation-services/router"
 	"github.com/MetaBloxIO/metablox-foundation-services/service"
-	"github.com/MetaBloxIO/metablox-foundation-services/settings"
 	logger "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -17,7 +17,7 @@ import (
 func main() {
 	pflag.Parse()
 
-	err := settings.Init()
+	err := conf.Init()
 	if err != nil {
 		logger.Error(err)
 		return
@@ -51,7 +51,7 @@ func main() {
 		return
 	}
 
-	controllers.InitializeValues()
+	controller.InitializeValues()
 
 	err = did.Init(&did.Config{
 		Passphrase: viper.GetString("metablox.wallet.passphrase"),
@@ -67,5 +67,5 @@ func main() {
 		return
 	}
 
-	routers.Setup()
+	router.Setup()
 }

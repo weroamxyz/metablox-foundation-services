@@ -1,4 +1,4 @@
-package controllers
+package controller
 
 import (
 	"github.com/MetaBloxIO/metablox-foundation-services/contract"
@@ -9,16 +9,15 @@ import (
 	logger "github.com/sirupsen/logrus"
 )
 
-// RevokeVC revoke the first credential in the provided presentation
-func RevokeVC(c *gin.Context) (*models.VerifiableCredential, error) {
-
+// renew the first credential in the provided presentation. Currently always increase the expiration date by 1 year
+func RenewVC(c *gin.Context) (*models.VerifiableCredential, error) {
 	input := models.CreatePresentation()
 
 	if err := c.BindJSON(&input); err != nil {
 		return nil, err
 	}
 
-	err := CheckNonce(c.ClientIP(), input.Proof.Nonce) //presentation must have valid nonce
+	err := CheckNonce(c.ClientIP(), input.Proof.Nonce) //presentation must have a valid nonce
 	if err != nil {
 		return nil, err
 	}
@@ -38,14 +37,14 @@ func RevokeVC(c *gin.Context) (*models.VerifiableCredential, error) {
 		return nil, errval.ErrVerifyPresent
 	}
 
-	err = did.RevokeVC(&input.VerifiableCredential[0])
+	err = did.RenewVC(&input.VerifiableCredential[0], did.IssuerPrivateKey)
 	if err != nil {
 		return nil, err
 	}
 
 	vcBytes := [32]byte{}
 	copy(vcBytes[:], did.ConvertVCToBytes(input.VerifiableCredential[0]))
-	err = contract.RevokeVC(vcBytes) //currently does nothing
+	err = contract.RenewVC(vcBytes) //currently does nothing
 	if err != nil {
 		return nil, err
 	}

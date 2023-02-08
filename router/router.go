@@ -1,8 +1,8 @@
-package routers
+package router
 
 import (
 	"github.com/MetaBloxIO/metablox-foundation-services/comm/log"
-	"github.com/MetaBloxIO/metablox-foundation-services/controllers"
+	"github.com/MetaBloxIO/metablox-foundation-services/controller"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -61,27 +61,27 @@ func Setup() {
 
 	v1 := r.Group("/foundation/v1")
 
-	v1.POST("/registry/storedid", controllers.RegisterDIDHandler)
+	v1.POST("/registry/storedid", controller.RegisterDIDHandler)
 
-	v1.POST("/vc/wifi/issue", controllers.IssueWifiVCHandler)
-	v1.POST("/vc/wifi/renew", controllers.RenewVCHandler)
-	v1.POST("/vc/wifi/revoke", controllers.RevokeVCHandler)
-	v1.POST("/vc/wifi/userInfo", controllers.GetWifiUserInfoHandler)
-	v1.GET("/vc/wifi/certFile", controllers.GetWifiCertFileHandler)
-	v1.POST("/vc/mining/issue", controllers.IssueMiningVCHandler)
-	v1.POST("/vc/mining/renew", controllers.RenewVCHandler)
-	v1.POST("/vc/mining/revoke", controllers.RevokeVCHandler)
+	v1.POST("/vc/wifi/issue", controller.IssueWifiVCHandler)
+	v1.POST("/vc/wifi/renew", controller.RenewVCHandler)
+	v1.POST("/vc/wifi/revoke", controller.RevokeVCHandler)
+	v1.POST("/vc/wifi/userInfo", controller.GetWifiUserInfoHandler)
+	v1.GET("/vc/wifi/certFile", controller.GetWifiCertFileHandler)
+	v1.POST("/vc/mining/issue", controller.IssueMiningVCHandler)
+	v1.POST("/vc/mining/renew", controller.RenewVCHandler)
+	v1.POST("/vc/mining/revoke", controller.RevokeVCHandler)
 
-	v1.GET("/nonce", controllers.GenerateNonceHandler)
-	v1.GET("/pubkey", controllers.GetIssuerPublicKeyHandler)
+	v1.GET("/nonce", controller.GenerateNonceHandler)
+	v1.GET("/pubkey", controller.GetIssuerPublicKeyHandler)
 
-	v1.POST("/workload/validate", controllers.WorkloadValidationHandler)
-	v1.GET("/miners", controllers.GetNearbyMinersListHandler)
-	v1.GET("/miner/getByBssid", controllers.GetMinerDetailHandler)
-	v1.GET("/miner/detail", controllers.GetMinerDetailHandler)
-	v1.POST("/miner/heartbeat", controllers.HeartbeatHandler)
-	v1.GET("/app/rewardsPage", controllers.GetAppRewardsPageHandler)
-	v1.GET("/app/totalRewards", controllers.GetAppTotalRewardsHandler)
+	v1.POST("/workload/validate", controller.WorkloadValidationHandler)
+	v1.GET("/miners", controller.GetNearbyMinersListHandler)
+	v1.GET("/miner/getByBssid", controller.GetMinerDetailHandler)
+	v1.GET("/miner/detail", controller.GetMinerDetailHandler)
+	v1.POST("/miner/heartbeat", controller.HeartbeatHandler)
+	v1.GET("/app/rewardsPage", controller.GetAppRewardsPageHandler)
+	v1.GET("/app/totalRewards", controller.GetAppTotalRewardsHandler)
 
 	r.Run(":8888")
 }

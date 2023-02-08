@@ -4,16 +4,16 @@ import (
 	"os"
 	"testing"
 
+	"github.com/MetaBloxIO/metablox-foundation-services/conf"
 	"github.com/MetaBloxIO/metablox-foundation-services/dao"
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
-	"github.com/MetaBloxIO/metablox-foundation-services/settings"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateMiningLicenseVC(t *testing.T) {
-	err := settings.Init()
+	err := conf.Init()
 	assert.Nil(t, err)
 	err = dao.TestDBInit()
 	assert.Nil(t, err)
@@ -68,7 +68,7 @@ func TestCreateMiningLicenseVC(t *testing.T) {
 }
 
 func TestCreateWifiAccessVC(t *testing.T) {
-	err := settings.Init()
+	err := conf.Init()
 	assert.Nil(t, err)
 	err = dao.TestDBInit()
 	assert.Nil(t, err)
@@ -102,7 +102,7 @@ func TestCreateWifiAccessVC(t *testing.T) {
 }
 
 func TestRenewVC(t *testing.T) {
-	err := settings.Init()
+	err := conf.Init()
 	assert.Nil(t, err)
 	err = dao.TestDBInit()
 	assert.Nil(t, err)
@@ -134,7 +134,7 @@ func TestRenewVC(t *testing.T) {
 }
 
 func TestRevokeVC(t *testing.T) {
-	err := settings.Init()
+	err := conf.Init()
 	assert.Nil(t, err)
 	err = dao.TestDBInit()
 	assert.Nil(t, err)

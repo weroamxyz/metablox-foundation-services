@@ -1,4 +1,4 @@
-package controllers
+package controller
 
 import (
 	"github.com/MetaBloxIO/metablox-foundation-services/comm/requtil"

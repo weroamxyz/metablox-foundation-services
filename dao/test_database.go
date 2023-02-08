@@ -3,8 +3,8 @@ package dao
 import (
 	"fmt"
 
+	"github.com/MetaBloxIO/metablox-foundation-services/conf"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
-	"github.com/MetaBloxIO/metablox-foundation-services/settings"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -24,7 +24,7 @@ func TestDBInit() (err error) {
 }
 
 func ConnectToTestDB() error {
-	err := settings.Init()
+	err := conf.Init()
 	if err != nil {
 		return err
 	}

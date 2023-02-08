@@ -3,15 +3,15 @@ package did
 import (
 	"testing"
 
+	"github.com/MetaBloxIO/metablox-foundation-services/conf"
 	"github.com/MetaBloxIO/metablox-foundation-services/dao"
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
-	"github.com/MetaBloxIO/metablox-foundation-services/settings"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateVP(t *testing.T) {
-	err := settings.Init()
+	err := conf.Init()
 	assert.Nil(t, err)
 	err = dao.TestDBInit()
 	assert.Nil(t, err)

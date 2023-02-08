@@ -116,13 +116,6 @@ the database is formatted correctly.
 | MAC         | varchar(100) |
 | CreateTime  | timestamp    |
 
-### MinerManufacturer
-
-| Column Name | Type            |
-|-------------|-----------------|
-| Name        | varchar(100) PK |
-| Email       | varchar(100)    |
-| Address     | varchar(100)    |
 
 ## Data Structures
 
