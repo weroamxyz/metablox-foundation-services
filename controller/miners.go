@@ -5,7 +5,6 @@ import (
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/MetaBloxIO/metablox-foundation-services/service"
 	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
 )
 
 func GetNearbyMinersListHandler(c *gin.Context) {
@@ -16,7 +15,8 @@ func GetNearbyMinersListHandler(c *gin.Context) {
 	}
 
 	if req.Longitude.IsZero() || req.Longitude.IsZero() {
-		ResponseErrorWithMsg(c, CodeError, errors.New("both longitude and latitude are required"))
+		ResponseErrorWithMsg(c, CodeError, "both longitude and latitude are required")
+		return
 	}
 
 	list, err := service.GetNearbyMinersList(&models.MinersDTO{
