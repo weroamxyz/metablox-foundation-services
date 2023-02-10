@@ -59,7 +59,7 @@ func Setup() {
 
 	r.Use(ForceUpgradeTips())
 
-	v1 := r.Group("/foundation/v1")
+	v1 := r.Group("/v1")
 
 	v1.POST("/registry/storedid", controller.RegisterDIDHandler)
 
