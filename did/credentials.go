@@ -81,13 +81,13 @@ func CreateProof(vm string) models.VCProof {
 
 // convert issuance and expiration times of credential from db format to RFC3339
 func ConvertTimesFromDBFormat(vc *models.VerifiableCredential) error {
-	issuanceTime, err := time.Parse("2006-01-02 15:04:05", vc.IssuanceDate)
+	issuanceTime, err := time.Parse(time.RFC3339, vc.IssuanceDate)
 	if err != nil {
 		return err
 	}
 	vc.IssuanceDate = issuanceTime.Format(time.RFC3339)
 
-	expirationTime, err := time.Parse("2006-01-02 15:04:05", vc.ExpirationDate)
+	expirationTime, err := time.Parse(time.RFC3339, vc.ExpirationDate)
 	if err != nil {
 		return err
 	}
@@ -101,13 +101,13 @@ func ConvertTimesToDBFormat(vc *models.VerifiableCredential) error {
 	if err != nil {
 		return err
 	}
-	vc.IssuanceDate = issuanceTime.Format("2006-01-02 15:04:05")
+	vc.IssuanceDate = issuanceTime.Format(time.RFC3339)
 
 	expirationTime, err := time.Parse(time.RFC3339, vc.ExpirationDate)
 	if err != nil {
 		return err
 	}
-	vc.ExpirationDate = expirationTime.Format("2006-01-02 15:04:05")
+	vc.ExpirationDate = expirationTime.Format(time.RFC3339)
 	return nil
 }
 
