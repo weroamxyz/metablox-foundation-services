@@ -2,29 +2,29 @@ package controller
 
 import (
 	"errors"
+	"github.com/MetaBloxIO/did-sdk-go"
 	"github.com/MetaBloxIO/metablox-foundation-services/contract"
-	"github.com/MetaBloxIO/metablox-foundation-services/did"
-	"github.com/MetaBloxIO/metablox-foundation-services/models"
+	"github.com/MetaBloxIO/metablox-foundation-services/service"
 	"github.com/gin-gonic/gin"
 )
 
 // IssueWifiVC issue a Wi-Fi access credential using inputted WifiAccessInfo, or return the credential that already exists for the DID in the input
-func IssueWifiVC(c *gin.Context) (*models.VerifiableCredential, error) {
+func IssueWifiVC(c *gin.Context) (*did.VerifiableCredential, error) {
 	didString := did.IssuerDID
 
-	wifiInfo := models.CreateWifiAccessInfo()
+	wifiInfo := did.CreateWifiAccessInfo()
 
 	if err := c.BindJSON(&wifiInfo); err != nil {
 		return nil, err
 	}
 
-	opts := models.CreateResolutionOptions()
-	resolutionMeta, issuerDocument, _ := did.Resolve(didString, opts)
+	opts := did.CreateResolutionOptions()
+	resolutionMeta, issuerDocument, _ := did.Resolve(didString, opts, contract.GetRegistry())
 	if resolutionMeta.Error != "" {
 		return nil, errors.New(resolutionMeta.Error)
 	}
 
-	newVC, err := did.CreateWifiAccessVC(issuerDocument, wifiInfo, did.IssuerPrivateKey)
+	newVC, err := service.CreateWifiAccessVC(issuerDocument, wifiInfo, did.IssuerPrivateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -39,22 +39,22 @@ func IssueWifiVC(c *gin.Context) (*models.VerifiableCredential, error) {
 }
 
 // IssueMiningVC issue a mining license credential using inputted MiningLicenseInfo, or return the credential that already exists for the DID in the input
-func IssueMiningVC(c *gin.Context) (*models.VerifiableCredential, error) {
+func IssueMiningVC(c *gin.Context) (*did.VerifiableCredential, error) {
 	didString := did.IssuerDID
 
-	miningInfo := models.CreateMiningLicenseInfo()
+	miningInfo := did.CreateMiningLicenseInfo()
 
 	if err := c.BindJSON(&miningInfo); err != nil {
 		return nil, err
 	}
 
-	opts := models.CreateResolutionOptions()
-	resolutionMeta, issuerDocument, _ := did.Resolve(didString, opts)
+	opts := did.CreateResolutionOptions()
+	resolutionMeta, issuerDocument, _ := did.Resolve(didString, opts, contract.GetRegistry())
 	if resolutionMeta.Error != "" {
 		return nil, errors.New(resolutionMeta.Error)
 	}
 
-	newVC, err := did.CreateMiningLicenseVC(issuerDocument, miningInfo, did.IssuerPrivateKey)
+	newVC, err := service.CreateMiningLicenseVC(issuerDocument, miningInfo, did.IssuerPrivateKey)
 	if err != nil {
 		return nil, err
 	}

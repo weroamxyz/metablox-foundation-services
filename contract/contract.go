@@ -5,9 +5,10 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"github.com/MetaBloxIO/did-sdk-go"
+	"github.com/MetaBloxIO/did-sdk-go/registry"
 	"math/big"
 	"strings"
-	"time"
 
 	"github.com/MetaBloxIO/metablox-foundation-services/comm/regutil"
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
@@ -18,7 +19,6 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
-	"github.com/MetaBloxIO/metablox-foundation-services/registry"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -55,6 +55,10 @@ func Init() error {
 	}
 
 	return nil
+}
+
+func GetRegistry() *registry.Registry {
+	return instance
 }
 
 func TestInit() error {
@@ -219,7 +223,7 @@ func ReadVCChangedEvents(credentialKey string) error {
 	return nil
 }
 
-func CreateVC(vc *models.VerifiableCredential, did string, privateKey *ecdsa.PrivateKey) error {
+func CreateVC(vc *did.VerifiableCredential, did string, privateKey *ecdsa.PrivateKey) error {
 	/*	fromAddress := crypto.PubkeyToAddress(foundationPrivateKey.PublicKey)	//todo: uncomment once smart contract is ready
 		nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
 		if err != nil {
@@ -291,7 +295,7 @@ func RevokeVC(vcBytes [32]byte) error {
 	return nil
 }
 
-func UploadDocument(document *models.DIDDocument, did string, privateKey *ecdsa.PrivateKey) error {
+func UploadDocument(document *did.DIDDocument, did string, privateKey *ecdsa.PrivateKey) error {
 	fmt.Println(did)
 	ownerAccount, _ := instance.Dids(nil, did)
 	fmt.Println(ownerAccount.Hex())
@@ -320,35 +324,6 @@ func UploadDocument(document *models.DIDDocument, did string, privateKey *ecdsa.
 
 	fmt.Println("transaction address: ", tx.Hash().Hex())
 	return nil
-}
-
-func GetDocument(targetDID string) (*models.DIDDocument, [32]byte, error) {
-	address, err := instance.Dids(nil, targetDID)
-	if err != nil {
-		return nil, [32]byte{0}, err
-	}
-
-	document := new(models.DIDDocument)
-
-	document.ID = "did:metablox:" + targetDID
-	document.Context = make([]string, 0)
-	document.Context = append(document.Context, models.ContextSecp256k1)
-	document.Context = append(document.Context, models.ContextDID)
-	document.Created = time.Now().Format(time.RFC3339) //todo: need to get this from contract
-	document.Updated = document.Created                //todo: need to get this from contract
-	document.Version = 1                               //todo: need to get this from contract
-
-	VM := models.VerificationMethod{}
-	VM.ID = document.ID + "#verification"
-	VM.BlockchainAccountId = "eip155:1666600000:" + address.Hex()
-	VM.Controller = document.ID
-	VM.MethodType = models.Secp256k1Key
-
-	document.VerificationMethod = append(document.VerificationMethod, VM)
-	document.Authentication = VM.ID
-
-	placeholderHash := [32]byte{94, 241, 27, 134, 190, 223, 112, 91, 189, 49, 221, 31, 228, 35, 189, 213, 251, 60, 60, 210, 162, 45, 151, 3, 31, 78, 41, 239, 41, 75, 198, 139}
-	return document, placeholderHash, nil
 }
 
 func RegisterDID(register *models.RegisterDID, key *ecdsa.PrivateKey) (*types.Transaction, error) {

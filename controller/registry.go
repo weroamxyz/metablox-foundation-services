@@ -3,9 +3,9 @@ package controller
 import (
 	"encoding/json"
 
+	"github.com/MetaBloxIO/did-sdk-go"
 	"github.com/MetaBloxIO/metablox-foundation-services/comm/regutil"
 	"github.com/MetaBloxIO/metablox-foundation-services/contract"
-	"github.com/MetaBloxIO/metablox-foundation-services/did"
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/gin-gonic/gin"

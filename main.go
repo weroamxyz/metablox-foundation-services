@@ -1,12 +1,12 @@
 package main
 
 import (
+	"github.com/MetaBloxIO/did-sdk-go"
 	"github.com/MetaBloxIO/metablox-foundation-services/comm/log"
 	"github.com/MetaBloxIO/metablox-foundation-services/conf"
 	"github.com/MetaBloxIO/metablox-foundation-services/contract"
 	"github.com/MetaBloxIO/metablox-foundation-services/controller"
 	"github.com/MetaBloxIO/metablox-foundation-services/dao"
-	"github.com/MetaBloxIO/metablox-foundation-services/did"
 	"github.com/MetaBloxIO/metablox-foundation-services/router"
 	"github.com/MetaBloxIO/metablox-foundation-services/service"
 	logger "github.com/sirupsen/logrus"

@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"github.com/MetaBloxIO/metablox-foundation-services/did"
+	"github.com/MetaBloxIO/did-sdk-go"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gin-gonic/gin"
 )

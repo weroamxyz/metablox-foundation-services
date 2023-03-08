@@ -2,9 +2,10 @@ package service
 
 import (
 	"encoding/json"
+	"github.com/MetaBloxIO/did-sdk-go"
 	"github.com/MetaBloxIO/metablox-foundation-services/comm/event"
+	"github.com/MetaBloxIO/metablox-foundation-services/contract"
 	"github.com/MetaBloxIO/metablox-foundation-services/dao"
-	"github.com/MetaBloxIO/metablox-foundation-services/did"
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/duke-git/lancet/v2/slice"
@@ -24,7 +25,7 @@ func WorkloadValidate(req *models.WorkloadDTO) error {
 	//}
 	var err0 error
 
-	success0, err0 := did.VerifyVP(req.Identity.Miner)
+	success0, err0 := did.VerifyVP(req.Identity.Miner, contract.GetRegistry())
 	if err0 != nil {
 		logger.Warn(err0)
 		return errors2.New("verify miner's vp failed")
@@ -34,7 +35,7 @@ func WorkloadValidate(req *models.WorkloadDTO) error {
 		return errval.ErrVerifyPresent
 	}
 
-	success1, err1 := did.VerifyVP(req.Identity.Validator)
+	success1, err1 := did.VerifyVP(req.Identity.Validator, contract.GetRegistry())
 	if err1 != nil {
 		logger.Warn(err0)
 		return errors2.New("verify validator's vp failed")
@@ -44,7 +45,7 @@ func WorkloadValidate(req *models.WorkloadDTO) error {
 		return errval.ErrVerifyPresent
 	}
 
-	info := models.MiningLicenseInfo{}
+	info := did.MiningLicenseInfo{}
 
 	credentials := req.Identity.Miner.VerifiableCredential
 	if len(credentials) > 0 {

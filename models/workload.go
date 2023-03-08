@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"github.com/MetaBloxIO/did-sdk-go"
+	"time"
+)
 
 type WorkloadReq struct {
 	Identity Identity `json:"identity" binding:"required"`
@@ -9,8 +12,8 @@ type WorkloadReq struct {
 }
 
 type Identity struct {
-	Validator *VerifiablePresentation `json:"validator" binding:"required"`
-	Miner     *VerifiablePresentation `json:"miner" binding:"required"`
+	Validator *did.VerifiablePresentation `json:"validator" binding:"required"`
+	Miner     *did.VerifiablePresentation `json:"miner" binding:"required"`
 }
 
 type WorkloadDTO struct {

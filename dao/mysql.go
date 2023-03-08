@@ -2,6 +2,7 @@ package dao
 
 import (
 	"fmt"
+	"github.com/MetaBloxIO/did-sdk-go"
 
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	_ "github.com/go-sql-driver/mysql"
@@ -51,7 +52,7 @@ func Close() {
 	SqlDB.Close()
 }
 
-func UploadWifiAccessVC(vc models.VerifiableCredential) (int, error) {
+func UploadWifiAccessVC(vc did.VerifiableCredential) (int, error) {
 	tx, err := SqlDB.Beginx()
 	if err != nil {
 		return 0, err
@@ -65,7 +66,7 @@ func UploadWifiAccessVC(vc models.VerifiableCredential) (int, error) {
 	}
 	newID, _ := result.LastInsertId()
 	sqlStr = "insert into WifiAccessInfo (CredentialID, ID, Type) values (?,?,?)"
-	wifiAccessInfo := vc.CredentialSubject.(models.WifiAccessInfo)
+	wifiAccessInfo := vc.CredentialSubject.(did.WifiAccessInfo)
 	_, err = tx.Exec(sqlStr, newID, wifiAccessInfo.ID, wifiAccessInfo.Type)
 	if err != nil {
 		tx.Rollback()
@@ -78,7 +79,7 @@ func UploadWifiAccessVC(vc models.VerifiableCredential) (int, error) {
 	return int(newID), nil
 }
 
-func UploadMiningLicenseVC(vc models.VerifiableCredential) (int, error) {
+func UploadMiningLicenseVC(vc did.VerifiableCredential) (int, error) {
 	tx, err := SqlDB.Beginx()
 	if err != nil {
 		return 0, err
@@ -92,7 +93,7 @@ func UploadMiningLicenseVC(vc models.VerifiableCredential) (int, error) {
 	}
 	newID, _ := result.LastInsertId()
 	sqlStr = "insert into MiningLicenseInfo (CredentialID, ID, Name, Model, Serial) values (?,?,?,?,?)"
-	miningLicenseInfo := vc.CredentialSubject.(models.MiningLicenseInfo)
+	miningLicenseInfo := vc.CredentialSubject.(did.MiningLicenseInfo)
 	_, err = tx.Exec(sqlStr, newID, miningLicenseInfo.ID, miningLicenseInfo.Name, miningLicenseInfo.Model, miningLicenseInfo.Serial)
 	if err != nil {
 		tx.Rollback()
@@ -147,15 +148,15 @@ func CheckWifiAccessForExistence(id string) (bool, error) {
 	return false, nil
 }
 
-func GetWifiAccessFromDB(id string) (*models.VerifiableCredential, error) {
-	wifiInfo := models.CreateWifiAccessInfo()
+func GetWifiAccessFromDB(id string) (*did.VerifiableCredential, error) {
+	wifiInfo := did.CreateWifiAccessInfo()
 	sqlStr := "select * from WifiAccessInfo where ID = ?"
 	err := SqlDB.Get(wifiInfo, sqlStr, id)
 	if err != nil {
 		return nil, err
 	}
 
-	vc := models.CreateVerifiableCredential()
+	vc := did.CreateVerifiableCredential()
 	sqlStr = "select ID, Issuer, IssuanceDate, ExpirationDate, Description, Revoked from Credentials where ID = ?"
 	err = SqlDB.Get(vc, sqlStr, wifiInfo.CredentialID)
 	if err != nil {
@@ -179,15 +180,15 @@ func CheckMiningLicenseForExistence(id string) (bool, error) {
 	return false, nil
 }
 
-func GetMiningLicenseFromDB(id string) (*models.VerifiableCredential, error) {
-	miningInfo := models.CreateMiningLicenseInfo()
+func GetMiningLicenseFromDB(id string) (*did.VerifiableCredential, error) {
+	miningInfo := did.CreateMiningLicenseInfo()
 	sqlStr := "select * from MiningLicenseInfo where ID = ?"
 	err := SqlDB.Get(miningInfo, sqlStr, id)
 	if err != nil {
 		return nil, err
 	}
 
-	vc := models.CreateVerifiableCredential()
+	vc := did.CreateVerifiableCredential()
 	sqlStr = "select ID, Issuer, IssuanceDate, ExpirationDate, Description, Revoked from Credentials where ID = ?"
 	err = SqlDB.Get(vc, sqlStr, miningInfo.CredentialID)
 	if err != nil {

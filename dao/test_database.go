@@ -2,9 +2,9 @@ package dao
 
 import (
 	"fmt"
+	"github.com/MetaBloxIO/did-sdk-go"
 
 	"github.com/MetaBloxIO/metablox-foundation-services/conf"
-	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -63,15 +63,15 @@ func DeleteTestCredentialsTable() {
 	SqlDB.Exec(sqlStr)
 }
 
-func InsertSampleIntoCredentials(vc *models.VerifiableCredential, vcType string) error {
+func InsertSampleIntoCredentials(vc *did.VerifiableCredential, vcType string) error {
 	sqlStr := "insert into Credentials (Type, Issuer, IssuanceDate, ExpirationDate, Description, Revoked) values (?,?,?,?,?,?);"
 	_, err := SqlDB.Exec(sqlStr, vcType, vc.Issuer, vc.IssuanceDate, vc.ExpirationDate, vc.Description, vc.Revoked)
 	return err
 }
 
-func RetrieveSampleFromCredentials(id string) (*models.VerifiableCredential, error) {
+func RetrieveSampleFromCredentials(id string) (*did.VerifiableCredential, error) {
 	sqlStr := "select ID, Issuer, IssuanceDate, ExpirationDate, Description, Revoked from Credentials where ID = ?;"
-	result := models.CreateVerifiableCredential()
+	result := did.CreateVerifiableCredential()
 	err := SqlDB.Get(result, sqlStr, id)
 	return result, err
 }
@@ -100,9 +100,9 @@ func DeleteTestMiningLicenseTable() {
 	SqlDB.Exec(sqlStr)
 }
 
-func RetrieveSampleFromMiningLicenseInfo(id string) (*models.MiningLicenseInfo, error) {
+func RetrieveSampleFromMiningLicenseInfo(id string) (*did.MiningLicenseInfo, error) {
 	sqlStr := "select * from MiningLicenseInfo where ID = ?;"
-	result := models.CreateMiningLicenseInfo()
+	result := did.CreateMiningLicenseInfo()
 	err := SqlDB.Get(result, sqlStr, id)
 	return result, err
 }
@@ -129,9 +129,9 @@ func DeleteTestWifiAccessTable() {
 	SqlDB.Exec(sqlStr)
 }
 
-func RetrieveSampleFromWifiAccessInfo(id string) (*models.WifiAccessInfo, error) {
+func RetrieveSampleFromWifiAccessInfo(id string) (*did.WifiAccessInfo, error) {
 	sqlStr := "select * from WifiAccessInfo where ID = ?;"
-	result := models.CreateWifiAccessInfo()
+	result := did.CreateWifiAccessInfo()
 	err := SqlDB.Get(result, sqlStr, id)
 	return result, err
 }

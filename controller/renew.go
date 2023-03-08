@@ -1,17 +1,17 @@
 package controller
 
 import (
+	"github.com/MetaBloxIO/did-sdk-go"
 	"github.com/MetaBloxIO/metablox-foundation-services/contract"
-	"github.com/MetaBloxIO/metablox-foundation-services/did"
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
-	"github.com/MetaBloxIO/metablox-foundation-services/models"
+	"github.com/MetaBloxIO/metablox-foundation-services/service"
 	"github.com/gin-gonic/gin"
 	logger "github.com/sirupsen/logrus"
 )
 
 // renew the first credential in the provided presentation. Currently always increase the expiration date by 1 year
-func RenewVC(c *gin.Context) (*models.VerifiableCredential, error) {
-	input := models.CreatePresentation()
+func RenewVC(c *gin.Context) (*did.VerifiableCredential, error) {
+	input := &did.VerifiablePresentation{}
 
 	if err := c.BindJSON(&input); err != nil {
 		return nil, err
@@ -28,7 +28,7 @@ func RenewVC(c *gin.Context) (*models.VerifiableCredential, error) {
 		input.VerifiableCredential[i] = vc
 	}
 
-	success, err := did.VerifyVP(input)
+	success, err := did.VerifyVP(input, contract.GetRegistry())
 	if err != nil {
 		logger.Warn(err)
 	}
@@ -37,7 +37,7 @@ func RenewVC(c *gin.Context) (*models.VerifiableCredential, error) {
 		return nil, errval.ErrVerifyPresent
 	}
 
-	err = did.RenewVC(&input.VerifiableCredential[0], did.IssuerPrivateKey)
+	err = service.RenewVC(&input.VerifiableCredential[0], did.IssuerPrivateKey)
 	if err != nil {
 		return nil, err
 	}

@@ -1,8 +1,8 @@
 package controller
 
 import (
+	"github.com/MetaBloxIO/did-sdk-go"
 	"github.com/MetaBloxIO/metablox-foundation-services/comm/requtil"
-	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/MetaBloxIO/metablox-foundation-services/resources"
 	"github.com/MetaBloxIO/metablox-foundation-services/service"
 	"github.com/gin-gonic/gin"
@@ -10,7 +10,7 @@ import (
 )
 
 func GetWifiUserInfoHandler(c *gin.Context) {
-	vp, err := requtil.ShouldBindJSON[models.VerifiablePresentation](c)
+	vp, err := requtil.ShouldBindJSON[did.VerifiablePresentation](c)
 	if err != nil {
 		ResponseErrorWithMsg(c, CodeError, err.Error())
 		return

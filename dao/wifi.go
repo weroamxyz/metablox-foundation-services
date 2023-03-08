@@ -1,6 +1,8 @@
 package dao
 
-import "github.com/MetaBloxIO/metablox-foundation-services/models"
+import (
+	"github.com/MetaBloxIO/metablox-foundation-services/models"
+)
 
 func GetWifiUserInfo(username string) (*models.WifiUserInfo, error) {
 	userInfo := &models.WifiUserInfo{}

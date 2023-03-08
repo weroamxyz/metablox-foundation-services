@@ -2,20 +2,21 @@ package service
 
 import (
 	"database/sql"
+	"github.com/MetaBloxIO/did-sdk-go"
+	"github.com/MetaBloxIO/metablox-foundation-services/contract"
 	"github.com/MetaBloxIO/metablox-foundation-services/dao"
-	"github.com/MetaBloxIO/metablox-foundation-services/did"
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 	"github.com/google/uuid"
 	logger "github.com/sirupsen/logrus"
 )
 
-func GetWifiUserInfo(vp *models.VerifiablePresentation) (*models.WifiUserInfo, error) {
+func GetWifiUserInfo(vp *did.VerifiablePresentation) (*models.WifiUserInfo, error) {
 	var (
 		userInfo *models.WifiUserInfo
 	)
 
-	success, err := did.VerifyVP(vp)
+	success, err := did.VerifyVP(vp, contract.GetRegistry())
 	if err != nil {
 		logger.Warn(err)
 		return nil, err

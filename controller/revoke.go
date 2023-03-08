@@ -1,18 +1,18 @@
 package controller
 
 import (
+	"github.com/MetaBloxIO/did-sdk-go"
 	"github.com/MetaBloxIO/metablox-foundation-services/contract"
-	"github.com/MetaBloxIO/metablox-foundation-services/did"
 	"github.com/MetaBloxIO/metablox-foundation-services/errval"
-	"github.com/MetaBloxIO/metablox-foundation-services/models"
+	"github.com/MetaBloxIO/metablox-foundation-services/service"
 	"github.com/gin-gonic/gin"
 	logger "github.com/sirupsen/logrus"
 )
 
 // RevokeVC revoke the first credential in the provided presentation
-func RevokeVC(c *gin.Context) (*models.VerifiableCredential, error) {
+func RevokeVC(c *gin.Context) (*did.VerifiableCredential, error) {
 
-	input := models.CreatePresentation()
+	input := &did.VerifiablePresentation{}
 
 	if err := c.BindJSON(&input); err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func RevokeVC(c *gin.Context) (*models.VerifiableCredential, error) {
 		input.VerifiableCredential[i] = vc
 	}
 
-	success, err := did.VerifyVP(input)
+	success, err := did.VerifyVP(input, contract.GetRegistry())
 	if err != nil {
 		logger.Warn(err)
 	}
@@ -38,7 +38,7 @@ func RevokeVC(c *gin.Context) (*models.VerifiableCredential, error) {
 		return nil, errval.ErrVerifyPresent
 	}
 
-	err = did.RevokeVC(&input.VerifiableCredential[0])
+	err = service.RevokeVC(&input.VerifiableCredential[0])
 	if err != nil {
 		return nil, err
 	}
