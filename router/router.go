@@ -1,13 +1,14 @@
 package router
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/MetaBloxIO/metablox-foundation-services/comm/log"
 	"github.com/MetaBloxIO/metablox-foundation-services/controller"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
-	"net/http"
-	"time"
 )
 
 var deprecatedAPIs = map[string]bool{
@@ -83,6 +84,8 @@ func Setup() {
 	v1.POST("/miner/heartbeat", controller.HeartbeatHandler)
 	v1.GET("/app/rewardsPage", controller.GetAppRewardsPageHandler)
 	v1.GET("/app/totalRewards", controller.GetAppTotalRewardsHandler)
+
+	v1.POST("/email/submission", controller.EmailSubmissionhandler)
 
 	r.Run(viper.GetString("server.port"))
 }
