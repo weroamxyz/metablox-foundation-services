@@ -19,7 +19,7 @@ func GetNearbyMerchantsListHandler(c *gin.Context) {
 		return
 	}
 
-	list, err := service.GetNearbyMerchantsList(&models.MerchantsDTO{
+	list, err := service.GetNearbyMerchantsList(&models.MerchantsReqDTO{
 		Distance:  req.Distance,
 		Latitude:  req.Latitude,
 		Longitude: req.Longitude,

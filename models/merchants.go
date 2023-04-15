@@ -30,13 +30,6 @@ type MerchantsInfo struct {
 	FreeParking bool            `json:"freeParking"` // If the store offers free-parking :)
 	Latitude    decimal.Decimal `json:"latitude"`
 	Longitude   decimal.Decimal `json:"longitude"`
-	Distance    decimal.Decimal `json:"distance"`
-}
-
-type MerchantsWithDistanceDTO struct {
-	Distance   decimal.Decimal `json:"distance" db:"distance"`
-	InfoStruct MerchantsInfo
-	CreateTime string `db:"createTime" json:"createTime"`
 }
 
 type MerchantsReq struct {
@@ -45,7 +38,7 @@ type MerchantsReq struct {
 	Distance  decimal.Decimal `json:"distance" form:"distance"`
 }
 
-type MerchantsDTO struct {
+type MerchantsReqDTO struct {
 	Latitude  decimal.Decimal `json:"latitude"`
 	Longitude decimal.Decimal `json:"longitude"`
 	Distance  decimal.Decimal `json:"distance"`
@@ -55,6 +48,15 @@ type MerchantDetailReq struct {
 	MerchantId string `json:"merchantId"`
 }
 
-type MerchantDetailDTO struct {
+type MerchantDetailReqDTO struct {
 	MerchantId string `db:"merchantId" json:"merchantId"`
+}
+
+type MerchantDetailDTO struct {
+	MerchantsInfo
+}
+
+type NearbyMerchantsDTO struct {
+	MerchantsInfo
+	Distance decimal.Decimal `json:"distance"`
 }

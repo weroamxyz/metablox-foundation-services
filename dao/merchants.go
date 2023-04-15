@@ -2,9 +2,9 @@ package dao
 
 import "github.com/MetaBloxIO/metablox-foundation-services/models"
 
-func GetMerchantDetail(dto *models.MerchantDetailDTO) (merchantDetail *models.MerchantsWithDistanceDTO, err error) {
+func GetMerchantDetail(dto *models.MerchantDetailReqDTO) (merchantDetail *models.MerchantDetailDTO, err error) {
 
-	// Query and fill up the merchantDetail using MerchantID
+	merchantDetail.MerchantId = dto.MerchantId
 
 	return merchantDetail, nil
 }
