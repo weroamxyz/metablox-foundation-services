@@ -5,9 +5,9 @@ import (
 	"github.com/MetaBloxIO/metablox-foundation-services/models"
 )
 
-func GetNearbyMerchantsList(dto *models.MerchantsReqDTO) (merchantsArr []*models.NearbyMerchantsDTO, err error) {
+func GetNearbyMerchantsList(dto *models.NearbyMerchantsReqDTO) (merchantsArr []*models.MerchantsInfo, err error) {
 
-	return merchantsArr, nil
+	return dao.GetNearbyMerchantsList(dto)
 }
 
 func GetMerchantDetailById(dto *models.MerchantDetailReqDTO) (merchantInfo *models.MerchantDetailDTO, err error) {

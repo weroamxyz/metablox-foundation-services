@@ -9,7 +9,7 @@ import (
 
 func GetNearbyMerchantsListHandler(c *gin.Context) {
 
-	req, err := requtil.ShouldBindQuery[models.MerchantsReq](c)
+	req, err := requtil.ShouldBindQuery[models.NearbyMerchantsReq](c)
 	if err != nil {
 		return
 	}
@@ -19,7 +19,7 @@ func GetNearbyMerchantsListHandler(c *gin.Context) {
 		return
 	}
 
-	list, err := service.GetNearbyMerchantsList(&models.MerchantsReqDTO{
+	list, err := service.GetNearbyMerchantsList(&models.NearbyMerchantsReqDTO{
 		Distance:  req.Distance,
 		Latitude:  req.Latitude,
 		Longitude: req.Longitude,
